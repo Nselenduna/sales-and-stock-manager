@@ -78,6 +78,20 @@ const InventoryFormScreen: React.FC<InventoryFormScreenProps> = ({ navigation, r
   const canEdit = userRole === 'admin' || userRole === 'staff';
   const canDelete = userRole === 'admin';
 
+  // Helper function for numeric input handling
+  const handleNumericInput = (text: string, defaultValue: number = 0): number => {
+    const cleanText = text.replace(/[^0-9]/g, '');
+    return cleanText === '' ? defaultValue : parseInt(cleanText) || defaultValue;
+  };
+
+  // Helper function for decimal input handling
+  const handleDecimalInput = (text: string, defaultValue: number = 0): number => {
+    // Replace comma with period for parsing, then clean other characters
+    const normalizedText = text.replace(',', '.');
+    const cleanText = normalizedText.replace(/[^0-9.]/g, '');
+    return cleanText === '' ? defaultValue : parseFloat(cleanText) || defaultValue;
+  };
+
   useEffect(() => {
     try {
       if (mode === 'edit' && productId) {
@@ -450,7 +464,10 @@ const InventoryFormScreen: React.FC<InventoryFormScreenProps> = ({ navigation, r
         <TextInput
           style={[styles.textInput, errors.quantity && styles.errorInput]}
           value={formData.quantity.toString()}
-          onChangeText={(text) => setFormData(prev => ({ ...prev, quantity: parseInt(text) || 0 }))}
+          onChangeText={(text) => {
+            const quantity = handleNumericInput(text, 0);
+            setFormData(prev => ({ ...prev, quantity }));
+          }}
           placeholder="0"
           keyboardType="numeric"
         />
@@ -462,7 +479,10 @@ const InventoryFormScreen: React.FC<InventoryFormScreenProps> = ({ navigation, r
         <TextInput
           style={[styles.textInput, errors.low_stock_threshold && styles.errorInput]}
           value={formData.low_stock_threshold.toString()}
-          onChangeText={(text) => setFormData(prev => ({ ...prev, low_stock_threshold: parseInt(text) || 10 }))}
+          onChangeText={(text) => {
+            const threshold = handleNumericInput(text, 10);
+            setFormData(prev => ({ ...prev, low_stock_threshold: threshold }));
+          }}
           placeholder="10"
           keyboardType="numeric"
         />
@@ -475,12 +495,10 @@ const InventoryFormScreen: React.FC<InventoryFormScreenProps> = ({ navigation, r
           style={[styles.textInput, errors.unit_price && styles.errorInput]}
           value={formData.unit_price?.toString() || '0'}
           onChangeText={(text) => {
-            // Allow decimal input and handle empty string
-            const cleanText = text.replace(/[^0-9.]/g, '');
-            const price = cleanText === '' ? 0 : parseFloat(cleanText) || 0;
+            const price = handleDecimalInput(text, 0);
             setFormData(prev => ({ ...prev, unit_price: price }));
           }}
-          placeholder="0.00"
+          placeholder="0,00 or 0.00"
           keyboardType="decimal-pad"
         />
         {errors.unit_price && <Text style={styles.errorText}>{errors.unit_price}</Text>}
