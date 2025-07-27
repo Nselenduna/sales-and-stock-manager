@@ -1,3 +1,12 @@
+/**
+ * Module: InventoryFormScreen
+ * Scope: Add/edit product entries
+ * Constraints:
+ *   - DO NOT include auth logic, routing, or external navigation
+ *   - ONLY use props and Zustand state defined in inventory context
+ *   - All side effects must be wrapped and testable
+ */
+
 import React, { useState, useEffect } from 'react';
 import {
   View,
@@ -510,35 +519,53 @@ const InventoryFormScreen: React.FC<InventoryFormScreenProps> = ({ navigation, r
         <Text style={styles.fieldLabel}>Unit Price</Text>
         <TextInput
           style={[styles.textInput, errors.unit_price && styles.errorInput]}
-          value={formData.unit_price?.toString() || '0'}
-          onChangeText={(text) => {
-            console.log('Unit price input:', text); // Debug log
-            
-            // Simple and direct approach
-            let cleanText = text;
-            
-            // Replace comma with period
-            cleanText = cleanText.replace(/,/g, '.');
-            
-            // Remove any non-numeric characters except period
-            cleanText = cleanText.replace(/[^0-9.]/g, '');
-            
-            // Handle multiple periods
-            const parts = cleanText.split('.');
-            if (parts.length > 2) {
-              cleanText = parts[0] + '.' + parts.slice(1).join('');
+          value={formData.unit_price === 0 ? '' : formData.unit_price?.toString() || ''}
+                  onChangeText={(text) => {
+          console.log('Unit price input:', text); // Debug log
+          
+          // Handle empty input
+          if (!text || text.trim() === '') {
+            setFormData(prev => ({ ...prev, unit_price: 0 }));
+            return;
+          }
+          
+          // Replace comma with period
+          let cleanText = text.replace(/,/g, '.');
+          
+          // Remove any non-numeric characters except period
+          cleanText = cleanText.replace(/[^0-9.]/g, '');
+          
+          // Handle multiple periods - keep only first one
+          const parts = cleanText.split('.');
+          if (parts.length > 2) {
+            cleanText = parts[0] + '.' + parts.slice(1).join('');
+          }
+          
+          // Special handling for decimal points
+          if (cleanText === '.') {
+            // User just typed a decimal point, keep it as 0
+            setFormData(prev => ({ ...prev, unit_price: 0 }));
+            return;
+          }
+          
+          // Check if it ends with a decimal point (like "3." or "11.")
+          if (cleanText.endsWith('.')) {
+            // Remove the trailing decimal point for parsing
+            const numberPart = cleanText.slice(0, -1);
+            if (numberPart === '') {
+              setFormData(prev => ({ ...prev, unit_price: 0 }));
+            } else {
+              const price = parseFloat(numberPart);
+              setFormData(prev => ({ ...prev, unit_price: isNaN(price) ? 0 : price }));
             }
-            
-            // Parse the number
-            let price = 0;
-            if (cleanText && cleanText !== '.') {
-              price = parseFloat(cleanText);
-              if (isNaN(price)) price = 0;
-            }
-            
-            console.log('Clean text:', cleanText, 'Parsed price:', price); // Debug log
-            setFormData(prev => ({ ...prev, unit_price: price }));
-          }}
+            return;
+          }
+          
+          // Normal number parsing
+          const price = parseFloat(cleanText);
+          console.log('Clean text:', cleanText, 'Parsed price:', price); // Debug log
+          setFormData(prev => ({ ...prev, unit_price: isNaN(price) ? 0 : price }));
+        }}
           placeholder="0,00 or 0.00"
           keyboardType="default"
           autoCapitalize="none"
@@ -564,7 +591,7 @@ const InventoryFormScreen: React.FC<InventoryFormScreenProps> = ({ navigation, r
 
   if (loading) {
     return (
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={styles.container} testID="inventory-form-screen">
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#007AFF" />
           <Text style={styles.loadingText}>Loading product data...</Text>
@@ -574,7 +601,7 @@ const InventoryFormScreen: React.FC<InventoryFormScreenProps> = ({ navigation, r
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} testID="inventory-form-screen">
       {renderOfflineBanner()}
       {renderDraftSaved()}
       
