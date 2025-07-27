@@ -48,8 +48,11 @@ interface ValidationErrors {
 }
 
 const InventoryFormScreen: React.FC<InventoryFormScreenProps> = ({ navigation, route }) => {
-  const { mode, productId, initialData } = route.params;
+  const { mode = 'add', productId, initialData } = route?.params || {};
   const { userRole } = useAuthStore();
+  
+  // Add mounted ref to prevent state updates after unmount
+  const isMounted = React.useRef(true);
   
   const [formData, setFormData] = useState<FormData>({
     name: '',
@@ -76,14 +79,24 @@ const InventoryFormScreen: React.FC<InventoryFormScreenProps> = ({ navigation, r
   const canDelete = userRole === 'admin';
 
   useEffect(() => {
-    if (mode === 'edit' && productId) {
-      fetchProduct();
-    } else if (initialData) {
-      setFormData(prev => ({ ...prev, ...initialData }));
+    try {
+      if (mode === 'edit' && productId) {
+        fetchProduct();
+      } else if (initialData) {
+        setFormData(prev => ({ ...prev, ...initialData }));
+      }
+      
+      // Check network status
+      checkNetworkStatus();
+    } catch (error) {
+      console.error('Error in useEffect:', error);
+      Alert.alert('Error', 'Failed to initialize form');
     }
     
-    // Check network status
-    checkNetworkStatus();
+    // Cleanup function
+    return () => {
+      isMounted.current = false;
+    };
   }, [mode, productId, initialData]);
 
   const checkNetworkStatus = () => {
@@ -105,22 +118,29 @@ const InventoryFormScreen: React.FC<InventoryFormScreenProps> = ({ navigation, r
 
       if (error) throw error;
       
-      setFormData({
-        name: data.name || '',
-        sku: data.sku || '',
-        barcode: data.barcode || '',
-        quantity: data.quantity || 0,
-        low_stock_threshold: data.low_stock_threshold || 10,
-        location: data.location || '',
-        unit_price: data.unit_price || 0,
-        description: data.description || '',
-        category: data.category || '',
-      });
+      // Check if component is still mounted before updating state
+      if (isMounted.current) {
+        setFormData({
+          name: data.name || '',
+          sku: data.sku || '',
+          barcode: data.barcode || '',
+          quantity: data.quantity || 0,
+          low_stock_threshold: data.low_stock_threshold || 10,
+          location: data.location || '',
+          unit_price: data.unit_price || 0,
+          description: data.description || '',
+          category: data.category || '',
+        });
+      }
     } catch (error) {
       console.error('Error fetching product:', error);
-      Alert.alert('Error', 'Failed to load product data');
+      if (isMounted.current) {
+        Alert.alert('Error', 'Failed to load product data');
+      }
     } finally {
-      setLoading(false);
+      if (isMounted.current) {
+        setLoading(false);
+      }
     }
   };
 
@@ -454,9 +474,14 @@ const InventoryFormScreen: React.FC<InventoryFormScreenProps> = ({ navigation, r
         <TextInput
           style={[styles.textInput, errors.unit_price && styles.errorInput]}
           value={formData.unit_price?.toString() || '0'}
-          onChangeText={(text) => setFormData(prev => ({ ...prev, unit_price: parseFloat(text) || 0 }))}
+          onChangeText={(text) => {
+            // Allow decimal input and handle empty string
+            const cleanText = text.replace(/[^0-9.]/g, '');
+            const price = cleanText === '' ? 0 : parseFloat(cleanText) || 0;
+            setFormData(prev => ({ ...prev, unit_price: price }));
+          }}
           placeholder="0.00"
-          keyboardType="numeric"
+          keyboardType="decimal-pad"
         />
         {errors.unit_price && <Text style={styles.errorText}>{errors.unit_price}</Text>}
       </View>

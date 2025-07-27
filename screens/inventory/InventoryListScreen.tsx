@@ -104,7 +104,7 @@ const InventoryListScreen: React.FC<InventoryListScreenProps> = ({ navigation })
   };
 
   const handleAddProduct = () => {
-    navigation.navigate('AddProduct');
+    navigation.navigate('AddProduct', { mode: 'add' });
   };
 
   const handleSortToggle = () => {
