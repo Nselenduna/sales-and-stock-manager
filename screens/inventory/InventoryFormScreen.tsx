@@ -86,10 +86,27 @@ const InventoryFormScreen: React.FC<InventoryFormScreenProps> = ({ navigation, r
 
   // Helper function for decimal input handling
   const handleDecimalInput = (text: string, defaultValue: number = 0): number => {
-    // Replace comma with period for parsing, then clean other characters
-    const normalizedText = text.replace(',', '.');
-    const cleanText = normalizedText.replace(/[^0-9.]/g, '');
-    return cleanText === '' ? defaultValue : parseFloat(cleanText) || defaultValue;
+    // Allow both comma and period as decimal separators
+    // First, replace comma with period
+    let normalizedText = text.replace(/,/g, '.');
+    
+    // Remove any characters that aren't numbers or periods
+    normalizedText = normalizedText.replace(/[^0-9.]/g, '');
+    
+    // Handle multiple periods (keep only the first one)
+    const parts = normalizedText.split('.');
+    if (parts.length > 2) {
+      normalizedText = parts[0] + '.' + parts.slice(1).join('');
+    }
+    
+    // If empty, return default value
+    if (normalizedText === '' || normalizedText === '.') {
+      return defaultValue;
+    }
+    
+    // Parse the number
+    const result = parseFloat(normalizedText);
+    return isNaN(result) ? defaultValue : result;
   };
 
   useEffect(() => {
@@ -495,13 +512,42 @@ const InventoryFormScreen: React.FC<InventoryFormScreenProps> = ({ navigation, r
           style={[styles.textInput, errors.unit_price && styles.errorInput]}
           value={formData.unit_price?.toString() || '0'}
           onChangeText={(text) => {
-            const price = handleDecimalInput(text, 0);
+            console.log('Unit price input:', text); // Debug log
+            
+            // Simple and direct approach
+            let cleanText = text;
+            
+            // Replace comma with period
+            cleanText = cleanText.replace(/,/g, '.');
+            
+            // Remove any non-numeric characters except period
+            cleanText = cleanText.replace(/[^0-9.]/g, '');
+            
+            // Handle multiple periods
+            const parts = cleanText.split('.');
+            if (parts.length > 2) {
+              cleanText = parts[0] + '.' + parts.slice(1).join('');
+            }
+            
+            // Parse the number
+            let price = 0;
+            if (cleanText && cleanText !== '.') {
+              price = parseFloat(cleanText);
+              if (isNaN(price)) price = 0;
+            }
+            
+            console.log('Clean text:', cleanText, 'Parsed price:', price); // Debug log
             setFormData(prev => ({ ...prev, unit_price: price }));
           }}
           placeholder="0,00 or 0.00"
-          keyboardType="decimal-pad"
+          keyboardType="default"
+          autoCapitalize="none"
+          autoCorrect={false}
         />
         {errors.unit_price && <Text style={styles.errorText}>{errors.unit_price}</Text>}
+        <Text style={styles.helperText}>
+          Current value: ${formData.unit_price?.toFixed(2) || '0.00'}
+        </Text>
       </View>
 
       <View style={styles.field}>
@@ -671,6 +717,12 @@ const styles = StyleSheet.create({
     color: '#34C759',
     fontSize: 12,
     marginTop: 4,
+  },
+  helperText: {
+    color: '#8E8E93',
+    fontSize: 12,
+    marginTop: 4,
+    fontStyle: 'italic',
   },
   skuContainer: {
     flexDirection: 'row',
