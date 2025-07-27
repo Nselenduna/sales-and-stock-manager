@@ -16,7 +16,8 @@ import ViewerDashboard from '../screens/dashboard/ViewerDashboard';
 
 // Inventory Screens
 import InventoryListScreen from '../screens/inventory/InventoryListScreen';
-import AddEditProductScreen from '../screens/inventory/AddEditProductScreen';
+import InventoryDetailScreen from '../screens/inventory/InventoryDetailScreen';
+import InventoryFormScreen from '../screens/inventory/InventoryFormScreen';
 
 // Other Screens
 import LoadingScreen from '../screens/LoadingScreen';
@@ -170,25 +171,34 @@ const AppNavigator = () => {
           <Stack.Screen name="ViewerMain" component={ViewerTabNavigator} />
         )}
         
-        {/* Add/Edit Product screens - accessible from any role */}
-        <Stack.Screen 
-          name="AddProduct" 
-          component={AddEditProductScreen}
-          options={{ 
-            headerShown: true,
-            title: 'Add Product',
-            headerBackTitle: 'Back'
-          }}
-        />
-        <Stack.Screen 
-          name="EditProduct" 
-          component={AddEditProductScreen}
-          options={{ 
-            headerShown: true,
-            title: 'Edit Product',
-            headerBackTitle: 'Back'
-          }}
-        />
+                    {/* Inventory screens - accessible from any role */}
+            <Stack.Screen 
+              name="AddProduct" 
+              component={InventoryFormScreen}
+              options={{ 
+                headerShown: true,
+                title: 'Add Product',
+                headerBackTitle: 'Back'
+              }}
+            />
+            <Stack.Screen 
+              name="EditProduct" 
+              component={InventoryFormScreen}
+              options={{ 
+                headerShown: true,
+                title: 'Edit Product',
+                headerBackTitle: 'Back'
+              }}
+            />
+            <Stack.Screen 
+              name="ProductDetail" 
+              component={InventoryDetailScreen}
+              options={{ 
+                headerShown: true,
+                title: 'Product Details',
+                headerBackTitle: 'Back'
+              }}
+            />
       </Stack.Navigator>
     </NavigationContainer>
   );
