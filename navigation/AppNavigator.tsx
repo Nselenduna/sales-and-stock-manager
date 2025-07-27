@@ -1,0 +1,197 @@
+import React from 'react';
+import { NavigationContainer } from '@react-navigation/native';
+import { createStackNavigator } from '@react-navigation/stack';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { Text } from 'react-native';
+import useAuthStore from '../store/authStore';
+
+// Auth Screens
+import LoginScreen from '../screens/auth/LoginScreen';
+import RegisterScreen from '../screens/auth/RegisterScreen';
+
+// Dashboard Screens
+import AdminDashboard from '../screens/dashboard/AdminDashboard';
+import StaffDashboard from '../screens/dashboard/StaffDashboard';
+import ViewerDashboard from '../screens/dashboard/ViewerDashboard';
+
+// Inventory Screens
+import InventoryListScreen from '../screens/inventory/InventoryListScreen';
+import AddEditProductScreen from '../screens/inventory/AddEditProductScreen';
+
+// Other Screens
+import LoadingScreen from '../screens/LoadingScreen';
+
+const Stack = createStackNavigator();
+const Tab = createBottomTabNavigator();
+
+// Simple Icon Component for React Native
+const TabIcon = ({ name, size, color }: { name: string; size: number; color: string }) => {
+  const getIconSymbol = (iconName: string) => {
+    const icons: { [key: string]: string } = {
+      'settings': '⚙️',
+      'cube': '📦',
+      'person': '👤',
+      'eye': '👁️',
+      'add': '➕',
+    };
+    return icons[iconName] || '❓';
+  };
+
+  return (
+    <Text style={{ fontSize: size, color }}>
+      {getIconSymbol(name)}
+    </Text>
+  );
+};
+
+// Admin Tab Navigator
+const AdminTabNavigator = () => {
+  return (
+    <Tab.Navigator
+      screenOptions={({ route }) => ({
+        tabBarIcon: ({ focused, color, size }) => {
+          let iconName = 'settings';
+          if (route.name === 'Inventory') {
+            iconName = 'cube';
+          }
+          return <TabIcon name={iconName} size={size} color={color} />;
+        },
+        tabBarActiveTintColor: '#007AFF',
+        tabBarInactiveTintColor: 'gray',
+        headerShown: false,
+      })}
+    >
+      <Tab.Screen 
+        name="Admin" 
+        component={AdminDashboard}
+        options={{ title: 'Admin' }}
+      />
+      <Tab.Screen 
+        name="Inventory" 
+        component={InventoryListScreen}
+        options={{ title: 'Inventory' }}
+      />
+    </Tab.Navigator>
+  );
+};
+
+// Staff Tab Navigator
+const StaffTabNavigator = () => {
+  return (
+    <Tab.Navigator
+      screenOptions={({ route }) => ({
+        tabBarIcon: ({ focused, color, size }) => {
+          let iconName = 'person';
+          if (route.name === 'Inventory') {
+            iconName = 'cube';
+          }
+          return <TabIcon name={iconName} size={size} color={color} />;
+        },
+        tabBarActiveTintColor: '#007AFF',
+        tabBarInactiveTintColor: 'gray',
+        headerShown: false,
+      })}
+    >
+      <Tab.Screen 
+        name="Staff" 
+        component={StaffDashboard}
+        options={{ title: 'Staff' }}
+      />
+      <Tab.Screen 
+        name="Inventory" 
+        component={InventoryListScreen}
+        options={{ title: 'Inventory' }}
+      />
+    </Tab.Navigator>
+  );
+};
+
+// Viewer Tab Navigator
+const ViewerTabNavigator = () => {
+  return (
+    <Tab.Navigator
+      screenOptions={({ route }) => ({
+        tabBarIcon: ({ focused, color, size }) => {
+          let iconName = 'eye';
+          if (route.name === 'Inventory') {
+            iconName = 'cube';
+          }
+          return <TabIcon name={iconName} size={size} color={color} />;
+        },
+        tabBarActiveTintColor: '#007AFF',
+        tabBarInactiveTintColor: 'gray',
+        headerShown: false,
+      })}
+    >
+      <Tab.Screen 
+        name="Viewer" 
+        component={ViewerDashboard}
+        options={{ title: 'Viewer' }}
+      />
+      <Tab.Screen 
+        name="Inventory" 
+        component={InventoryListScreen}
+        options={{ title: 'Inventory' }}
+      />
+    </Tab.Navigator>
+  );
+};
+
+// Main App Navigator
+const AppNavigator = () => {
+  const { user, loading, isAuthenticated, userRole } = useAuthStore();
+
+  if (loading) {
+    return <LoadingScreen />;
+  }
+
+  if (!isAuthenticated) {
+    return (
+      <NavigationContainer>
+        <Stack.Navigator screenOptions={{ headerShown: false }}>
+          <Stack.Screen name="Login" component={LoginScreen} />
+          <Stack.Screen name="Register" component={RegisterScreen} />
+        </Stack.Navigator>
+      </NavigationContainer>
+    );
+  }
+
+  return (
+    <NavigationContainer>
+      <Stack.Navigator screenOptions={{ headerShown: false }}>
+        {/* Main role-based screens */}
+        {userRole === 'admin' && (
+          <Stack.Screen name="AdminMain" component={AdminTabNavigator} />
+        )}
+        {userRole === 'staff' && (
+          <Stack.Screen name="StaffMain" component={StaffTabNavigator} />
+        )}
+        {userRole === 'viewer' && (
+          <Stack.Screen name="ViewerMain" component={ViewerTabNavigator} />
+        )}
+        
+        {/* Add/Edit Product screens - accessible from any role */}
+        <Stack.Screen 
+          name="AddProduct" 
+          component={AddEditProductScreen}
+          options={{ 
+            headerShown: true,
+            title: 'Add Product',
+            headerBackTitle: 'Back'
+          }}
+        />
+        <Stack.Screen 
+          name="EditProduct" 
+          component={AddEditProductScreen}
+          options={{ 
+            headerShown: true,
+            title: 'Edit Product',
+            headerBackTitle: 'Back'
+          }}
+        />
+      </Stack.Navigator>
+    </NavigationContainer>
+  );
+};
+
+export default AppNavigator;
