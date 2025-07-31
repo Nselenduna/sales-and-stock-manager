@@ -16,9 +16,10 @@ ORDER BY ordinal_position;
 -- STEP 2: Add missing columns safely
 -- ============================================================================
 
--- Add total column if it doesn't exist
+-- Add all potentially missing columns if they don't exist
 DO $$ 
 BEGIN
+    -- Add total column if it doesn't exist
     IF NOT EXISTS (
         SELECT 1 FROM information_schema.columns 
         WHERE table_name = 'sales' AND column_name = 'total'
@@ -28,6 +29,51 @@ BEGIN
     ELSE
         RAISE NOTICE 'total column already exists in sales table';
     END IF;
+
+    -- Add items column if it doesn't exist
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.columns 
+        WHERE table_name = 'sales' AND column_name = 'items'
+    ) THEN
+        ALTER TABLE sales ADD COLUMN items JSONB NOT NULL DEFAULT '[]'::jsonb;
+        RAISE NOTICE 'Added items column to sales table';
+    ELSE
+        RAISE NOTICE 'items column already exists in sales table';
+    END IF;
+
+    -- Add status column if it doesn't exist
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.columns 
+        WHERE table_name = 'sales' AND column_name = 'status'
+    ) THEN
+        ALTER TABLE sales ADD COLUMN status TEXT NOT NULL DEFAULT 'queued';
+        RAISE NOTICE 'Added status column to sales table';
+    ELSE
+        RAISE NOTICE 'status column already exists in sales table';
+    END IF;
+
+    -- Add store_id column if it doesn't exist
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.columns 
+        WHERE table_name = 'sales' AND column_name = 'store_id'
+    ) THEN
+        ALTER TABLE sales ADD COLUMN store_id UUID;
+        RAISE NOTICE 'Added store_id column to sales table';
+    ELSE
+        RAISE NOTICE 'store_id column already exists in sales table';
+    END IF;
+
+    -- Add updated_at column if it doesn't exist
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.columns 
+        WHERE table_name = 'sales' AND column_name = 'updated_at'
+    ) THEN
+        ALTER TABLE sales ADD COLUMN updated_at TIMESTAMPTZ DEFAULT NOW();
+        RAISE NOTICE 'Added updated_at column to sales table';
+    ELSE
+        RAISE NOTICE 'updated_at column already exists in sales table';
+    END IF;
+
 END $$;
 
 -- Add customer columns if they don't exist
@@ -54,6 +100,8 @@ WHERE customer_name IS NULL;
 CREATE INDEX IF NOT EXISTS idx_sales_customer_name ON sales(customer_name);
 CREATE INDEX IF NOT EXISTS idx_sales_payment_method ON sales(payment_method);
 CREATE INDEX IF NOT EXISTS idx_sales_created_at ON sales(created_at);
+CREATE INDEX IF NOT EXISTS idx_sales_status ON sales(status);
+CREATE INDEX IF NOT EXISTS idx_sales_store_id ON sales(store_id);
 
 -- ============================================================================
 -- STEP 5: Create simple function to get customers from sales
