@@ -23,9 +23,9 @@ const FloatingActionButton: React.FC<FloatingActionButtonProps> = ({
       onPress={onPress}
       accessible={true}
       accessibilityLabel={label}
-      accessibilityRole="button"
+      accessibilityRole='button'
     >
-      <Icon name={icon} size={24} color="white" />
+      <Icon name={icon} size={24} color='white' />
     </TouchableOpacity>
   );
 };

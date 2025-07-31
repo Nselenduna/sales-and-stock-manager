@@ -1,5 +1,11 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  ScrollView,
+} from 'react-native';
 import Icon from './Icon';
 
 interface FilterBarProps {
@@ -24,7 +30,7 @@ const FilterBar: React.FC<FilterBarProps> = ({
   return (
     <View style={styles.container}>
       <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-        {filters.map((filter) => (
+        {filters.map(filter => (
           <TouchableOpacity
             key={filter.key}
             style={[
@@ -34,7 +40,7 @@ const FilterBar: React.FC<FilterBarProps> = ({
             onPress={() => onFilterChange(filter.key)}
             accessible={true}
             accessibilityLabel={`Filter by ${filter.label}`}
-            accessibilityRole="button"
+            accessibilityRole='button'
             accessibilityState={{ selected: activeFilter === filter.key }}
           >
             <Text
@@ -54,12 +60,12 @@ const FilterBar: React.FC<FilterBarProps> = ({
         onPress={onSortToggle}
         accessible={true}
         accessibilityLabel={`Sort ${sortOrder === 'asc' ? 'ascending' : 'descending'}`}
-        accessibilityRole="button"
+        accessibilityRole='button'
       >
         <Icon
           name={sortOrder === 'asc' ? 'arrow-up' : 'arrow-down'}
           size={20}
-          color="#007AFF"
+          color='#007AFF'
         />
       </TouchableOpacity>
     </View>

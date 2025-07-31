@@ -36,17 +36,16 @@ const PrivacyStatement: React.FC<PrivacyStatementProps> = ({
 
   const handleVoiceNarration = () => {
     setIsNarrating(true);
-    
+
     // Voice narration script
-    const script = "Welcome to Sales and Stocks Manager. We care about your privacy. This app only saves what you type - your name, email, and business info. We keep it safe and never share it. You can see, change, or delete your data anytime. Questions? Just tap Contact Us.";
-    
+    const script =
+      'Welcome to Sales and Stocks Manager. We care about your privacy. This app only saves what you type - your name, email, and business info. We keep it safe and never share it. You can see, change, or delete your data anytime. Questions? Just tap Contact Us.';
+
     // In a real implementation, you would use a text-to-speech library
     // For now, we'll simulate it with an alert
-    Alert.alert(
-      'Voice Narration',
-      script,
-      [{ text: 'OK', onPress: () => setIsNarrating(false) }]
-    );
+    Alert.alert('Voice Narration', script, [
+      { text: 'OK', onPress: () => setIsNarrating(false) },
+    ]);
   };
 
   const handleAccept = () => {
@@ -69,30 +68,28 @@ const PrivacyStatement: React.FC<PrivacyStatementProps> = ({
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView 
+      <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.contentContainer}
         showsVerticalScrollIndicator={false}
       >
         {/* Header */}
         <View style={styles.header}>
-          <Icon name="shield" size={48} color="#007AFF" />
-          <Text style={styles.title} accessibilityRole="header">
+          <Icon name='shield' size={48} color='#007AFF' />
+          <Text style={styles.title} accessibilityRole='header'>
             Your Data, Your Rights
           </Text>
-          <Text style={styles.subtitle}>
-            Plain English Privacy Statement
-          </Text>
+          <Text style={styles.subtitle}>Plain English Privacy Statement</Text>
         </View>
 
         {/* Voice Narration Button */}
         <TouchableOpacity
           style={styles.narrationButton}
           onPress={handleVoiceNarration}
-          accessibilityLabel="Listen to privacy statement"
-          accessibilityHint="Plays voice narration of the privacy statement"
+          accessibilityLabel='Listen to privacy statement'
+          accessibilityHint='Plays voice narration of the privacy statement'
         >
-          <Icon name="volume" size={24} color="#007AFF" />
+          <Icon name='volume' size={24} color='#007AFF' />
           <Text style={styles.narrationText}>
             {isNarrating ? 'Playing...' : 'Listen to this'}
           </Text>
@@ -103,7 +100,7 @@ const PrivacyStatement: React.FC<PrivacyStatementProps> = ({
           {/* What We Save */}
           <View style={styles.section}>
             <View style={styles.sectionHeader}>
-              <Icon name="save" size={24} color="#34C759" />
+              <Icon name='save' size={24} color='#34C759' />
               <Text style={styles.sectionTitle}>What We Save</Text>
             </View>
             <Text style={styles.sectionText}>
@@ -116,7 +113,9 @@ const PrivacyStatement: React.FC<PrivacyStatementProps> = ({
               </View>
               <View style={styles.bulletItem}>
                 <Text style={styles.bullet}>•</Text>
-                <Text style={styles.bulletText}>Your product and sales info</Text>
+                <Text style={styles.bulletText}>
+                  Your product and sales info
+                </Text>
               </View>
             </View>
           </View>
@@ -124,7 +123,7 @@ const PrivacyStatement: React.FC<PrivacyStatementProps> = ({
           {/* How We Keep It Safe */}
           <View style={styles.section}>
             <View style={styles.sectionHeader}>
-              <Icon name="lock" size={24} color="#FF9500" />
+              <Icon name='lock' size={24} color='#FF9500' />
               <Text style={styles.sectionTitle}>How We Keep It Safe</Text>
             </View>
             <Text style={styles.sectionText}>
@@ -135,7 +134,7 @@ const PrivacyStatement: React.FC<PrivacyStatementProps> = ({
           {/* Your Rights */}
           <View style={styles.section}>
             <View style={styles.sectionHeader}>
-              <Icon name="checkmark" size={24} color="#34C759" />
+              <Icon name='checkmark' size={24} color='#34C759' />
               <Text style={styles.sectionTitle}>Your Rights</Text>
             </View>
             <Text style={styles.sectionText}>You can:</Text>
@@ -158,7 +157,7 @@ const PrivacyStatement: React.FC<PrivacyStatementProps> = ({
           {/* What We Don't Do */}
           <View style={styles.section}>
             <View style={styles.sectionHeader}>
-              <Icon name="close" size={24} color="#FF3B30" />
+              <Icon name='close' size={24} color='#FF3B30' />
               <Text style={styles.sectionTitle}>What We Don't Do</Text>
             </View>
             <Text style={styles.sectionText}>
@@ -169,7 +168,7 @@ const PrivacyStatement: React.FC<PrivacyStatementProps> = ({
           {/* Need Help */}
           <View style={styles.section}>
             <View style={styles.sectionHeader}>
-              <Icon name="help" size={24} color="#007AFF" />
+              <Icon name='help' size={24} color='#007AFF' />
               <Text style={styles.sectionTitle}>Need Help?</Text>
             </View>
             <Text style={styles.sectionText}>
@@ -183,8 +182,8 @@ const PrivacyStatement: React.FC<PrivacyStatementProps> = ({
           <TouchableOpacity
             style={[styles.button, styles.acceptButton]}
             onPress={handleAccept}
-            accessibilityLabel="Accept privacy statement"
-            accessibilityHint="Accepts the privacy statement and continues to the app"
+            accessibilityLabel='Accept privacy statement'
+            accessibilityHint='Accepts the privacy statement and continues to the app'
           >
             <Text style={styles.acceptButtonText}>Accept & Continue</Text>
           </TouchableOpacity>
@@ -192,8 +191,8 @@ const PrivacyStatement: React.FC<PrivacyStatementProps> = ({
           <TouchableOpacity
             style={[styles.button, styles.declineButton]}
             onPress={handleDecline}
-            accessibilityLabel="Decline privacy statement"
-            accessibilityHint="Declines the privacy statement"
+            accessibilityLabel='Decline privacy statement'
+            accessibilityHint='Declines the privacy statement'
           >
             <Text style={styles.declineButtonText}>Decline</Text>
           </TouchableOpacity>
@@ -202,8 +201,8 @@ const PrivacyStatement: React.FC<PrivacyStatementProps> = ({
             <TouchableOpacity
               style={[styles.button, styles.skipButton]}
               onPress={onSkip}
-              accessibilityLabel="Skip privacy statement"
-              accessibilityHint="Skips the privacy statement for now"
+              accessibilityLabel='Skip privacy statement'
+              accessibilityHint='Skips the privacy statement for now'
             >
               <Text style={styles.skipButtonText}>Skip for Now</Text>
             </TouchableOpacity>
@@ -342,4 +341,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default PrivacyStatement; 
+export default PrivacyStatement;

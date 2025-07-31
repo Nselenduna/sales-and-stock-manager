@@ -35,7 +35,10 @@ const RegisterScreen = ({ navigation }: any) => {
 
     const result = await signUp(email, password);
     if (result.success) {
-      Alert.alert('Success', 'Account created successfully! Please check your email to verify your account.');
+      Alert.alert(
+        'Success',
+        'Account created successfully! Please check your email to verify your account.'
+      );
       navigation.navigate('Login');
     } else {
       Alert.alert('Registration Failed', result.error);
@@ -43,7 +46,7 @@ const RegisterScreen = ({ navigation }: any) => {
   };
 
   return (
-    <KeyboardAvoidingView 
+    <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       style={styles.container}
     >
@@ -54,31 +57,31 @@ const RegisterScreen = ({ navigation }: any) => {
         <View style={styles.form}>
           <TextInput
             style={styles.input}
-            placeholder="Email"
+            placeholder='Email'
             value={email}
             onChangeText={setEmail}
-            keyboardType="email-address"
-            autoCapitalize="none"
+            keyboardType='email-address'
+            autoCapitalize='none'
             autoCorrect={false}
           />
 
           <TextInput
             style={styles.input}
-            placeholder="Password"
+            placeholder='Password'
             value={password}
             onChangeText={setPassword}
             secureTextEntry
-            autoCapitalize="none"
+            autoCapitalize='none'
             autoCorrect={false}
           />
 
           <TextInput
             style={styles.input}
-            placeholder="Confirm Password"
+            placeholder='Confirm Password'
             value={confirmPassword}
             onChangeText={setConfirmPassword}
             secureTextEntry
-            autoCapitalize="none"
+            autoCapitalize='none'
             autoCorrect={false}
           />
 

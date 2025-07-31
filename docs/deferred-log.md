@@ -4,7 +4,7 @@ _These are temporarily postponed items for the sake of progress. Update, resolve
 
 | 🔧 Item | Status | Rationale | Removal Criteria |
 |--------|--------|-----------|------------------|
-| Duplicate Screens (`AddEditProductScreen.tsx`, `InventoryFormScreen.tsx`) | 🚨 Pending | Redundant forms; prefer InventoryFormScreen | After merge and full migration |
+| Duplicate Screens (`AddEditProductScreen.tsx`, `InventoryFormScreen.tsx`) | ✅ **RESOLVED** | Legacy screen deprecated; functionality migrated to InventoryFormScreen | ✅ Complete |
 | Image Upload UX polish | ⏳ MVP Only | Picker working; lacks final styling | After cross-platform UI testing |
 | QR Scanner error handling | ⏳ Basic Impl | Needs animations & error toasts | Once robust UX added |
 | ESLint/Prettier config | ⚠️ Missing | Deferred during debug phases | When ready for codebase linting |

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -9,9 +9,11 @@ import {
 } from 'react-native';
 import useAuthStore from '../../store/authStore';
 import Icon from '../../components/Icon';
+import QuickActionsModal from '../../components/QuickActionsModal';
 
 const StaffDashboard: React.FC<{ navigation: any }> = ({ navigation }) => {
   const { user, signOut } = useAuthStore();
+  const [quickActionsVisible, setQuickActionsVisible] = useState(false);
 
   const handleSignOut = async () => {
     try {
@@ -29,59 +31,117 @@ const StaffDashboard: React.FC<{ navigation: any }> = ({ navigation }) => {
     navigation.navigate('AddProduct', { mode: 'add' });
   };
 
+  const handleStockAlerts = () => {
+    navigation.navigate('StockAlerts');
+  };
+
+  const handleQuickActions = () => {
+    setQuickActionsVisible(true);
+  };
+
+  const handleQuickAction = (actionId: string) => {
+    switch (actionId) {
+      case 'scan-product':
+        navigation.navigate('BarcodeScanner');
+        break;
+      case 'create-sale':
+        // TODO: Navigate to sales screen when implemented
+        Alert.alert('Coming Soon', 'Sales functionality will be available soon');
+        break;
+      case 'add-stock':
+        navigation.navigate('Inventory');
+        break;
+      case 'view-inventory':
+        navigation.navigate('Inventory');
+        break;
+      case 'stock-alerts':
+        navigation.navigate('StockAlerts');
+        break;
+      case 'search-products':
+        navigation.navigate('Inventory');
+        break;
+      default:
+        console.log('Unknown action:', actionId);
+    }
+  };
+
   return (
-    <ScrollView style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.title}>Staff Dashboard</Text>
-        <Text style={styles.subtitle}>Welcome, {user?.email || 'Staff Member'}</Text>
-      </View>
-
-      <View style={styles.content}>
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>Inventory Management</Text>
-          <Text style={styles.cardDescription}>
-            View and manage product inventory, check stock levels, and add new products.
+    <>
+      <ScrollView style={styles.container}>
+        <View style={styles.header}>
+          <Text style={styles.title}>Staff Dashboard</Text>
+          <Text style={styles.subtitle}>
+            Welcome, {user?.email || 'Staff Member'}
           </Text>
-          <TouchableOpacity style={styles.cardButton} onPress={handleNavigateToInventory}>
-            <Text style={styles.cardButtonText}>View Inventory</Text>
-          </TouchableOpacity>
         </View>
 
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>Add New Product</Text>
-          <Text style={styles.cardDescription}>
-            Add new products to the inventory with detailed information.
-          </Text>
-          <TouchableOpacity style={styles.cardButton} onPress={handleAddProduct}>
-            <Text style={styles.cardButtonText}>Add Product</Text>
-          </TouchableOpacity>
+        <View style={styles.content}>
+          <View style={styles.card}>
+            <Text style={styles.cardTitle}>Inventory Management</Text>
+            <Text style={styles.cardDescription}>
+              View and manage product inventory, check stock levels, and add new
+              products.
+            </Text>
+            <TouchableOpacity
+              style={styles.cardButton}
+              onPress={handleNavigateToInventory}
+            >
+              <Text style={styles.cardButtonText}>View Inventory</Text>
+            </TouchableOpacity>
+          </View>
+
+          <View style={styles.card}>
+            <Text style={styles.cardTitle}>Add New Product</Text>
+            <Text style={styles.cardDescription}>
+              Add new products to the inventory with detailed information.
+            </Text>
+            <TouchableOpacity
+              style={styles.cardButton}
+              onPress={handleAddProduct}
+            >
+              <Text style={styles.cardButtonText}>Add Product</Text>
+            </TouchableOpacity>
+          </View>
+
+          <View style={styles.card}>
+            <Text style={styles.cardTitle}>Stock Alerts</Text>
+            <Text style={styles.cardDescription}>
+              Monitor low stock items and receive alerts when products need
+              restocking.
+            </Text>
+            <TouchableOpacity 
+              style={styles.cardButton}
+              onPress={handleStockAlerts}
+            >
+              <Text style={styles.cardButtonText}>View Alerts</Text>
+            </TouchableOpacity>
+          </View>
+
+          <View style={styles.card}>
+            <Text style={styles.cardTitle}>Quick Actions</Text>
+            <Text style={styles.cardDescription}>
+              Quick access to common tasks and frequently used features.
+            </Text>
+            <TouchableOpacity 
+              style={styles.cardButton}
+              onPress={handleQuickActions}
+            >
+              <Text style={styles.cardButtonText}>Quick Actions</Text>
+            </TouchableOpacity>
+          </View>
         </View>
 
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>Stock Alerts</Text>
-          <Text style={styles.cardDescription}>
-            Monitor low stock items and receive alerts when products need restocking.
-          </Text>
-          <TouchableOpacity style={styles.cardButton}>
-            <Text style={styles.cardButtonText}>View Alerts</Text>
-          </TouchableOpacity>
-        </View>
+        <TouchableOpacity style={styles.signOutButton} onPress={handleSignOut}>
+          <Text style={styles.signOutButtonText}>Sign Out</Text>
+        </TouchableOpacity>
+      </ScrollView>
 
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>Quick Actions</Text>
-          <Text style={styles.cardDescription}>
-            Quick access to common tasks and frequently used features.
-          </Text>
-          <TouchableOpacity style={styles.cardButton}>
-            <Text style={styles.cardButtonText}>Quick Actions</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-
-      <TouchableOpacity style={styles.signOutButton} onPress={handleSignOut}>
-        <Text style={styles.signOutButtonText}>Sign Out</Text>
-      </TouchableOpacity>
-    </ScrollView>
+      <QuickActionsModal
+        visible={quickActionsVisible}
+        onClose={() => setQuickActionsVisible(false)}
+        onAction={handleQuickAction}
+      />
+    </>
   );
 };
 

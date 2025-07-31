@@ -1,73 +1,149 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   TouchableOpacity,
   ScrollView,
+  Alert,
 } from 'react-native';
 import useAuthStore from '../../store/authStore';
+import Icon from '../../components/Icon';
+import QuickActionsModal from '../../components/QuickActionsModal';
 
-const AdminDashboard = () => {
+const AdminDashboard = ({ navigation }: { navigation: any }) => {
   const { user, signOut } = useAuthStore();
+  const [quickActionsVisible, setQuickActionsVisible] = useState(false);
 
   const handleSignOut = async () => {
     await signOut();
   };
 
+  const handleStockAlerts = () => {
+    navigation.navigate('StockAlerts');
+  };
+
+  const handleQuickActions = () => {
+    setQuickActionsVisible(true);
+  };
+
+  const handleQuickAction = (actionId: string) => {
+    switch (actionId) {
+      case 'scan-product':
+        navigation.navigate('BarcodeScanner');
+        break;
+      case 'create-sale':
+        // TODO: Navigate to sales screen when implemented
+        Alert.alert('Coming Soon', 'Sales functionality will be available soon');
+        break;
+      case 'add-stock':
+        navigation.navigate('Inventory');
+        break;
+      case 'view-inventory':
+        navigation.navigate('Inventory');
+        break;
+      case 'stock-alerts':
+        navigation.navigate('StockAlerts');
+        break;
+      case 'search-products':
+        navigation.navigate('Inventory');
+        break;
+      default:
+        console.log('Unknown action:', actionId);
+    }
+  };
+
   return (
-    <ScrollView style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.title}>Admin Dashboard</Text>
-        <Text style={styles.subtitle}>Welcome, {user?.email || 'Admin'}</Text>
-      </View>
-
-      <View style={styles.content}>
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>User Management</Text>
-          <Text style={styles.cardDescription}>
-            Manage users, roles, and permissions
-          </Text>
-          <TouchableOpacity style={styles.cardButton}>
-            <Text style={styles.cardButtonText}>Manage Users</Text>
-          </TouchableOpacity>
+    <>
+      <ScrollView style={styles.container}>
+        <View style={styles.header}>
+          <Text style={styles.title}>Admin Dashboard</Text>
+          <Text style={styles.subtitle}>Welcome, {user?.email || 'Admin'}</Text>
         </View>
 
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>Sales Analytics</Text>
-          <Text style={styles.cardDescription}>
-            View comprehensive sales reports and analytics
-          </Text>
-          <TouchableOpacity style={styles.cardButton}>
-            <Text style={styles.cardButtonText}>View Analytics</Text>
-          </TouchableOpacity>
+        <View style={styles.content}>
+          <View style={styles.card}>
+            <Text style={styles.cardTitle}>User Management</Text>
+            <Text style={styles.cardDescription}>
+              Manage users, roles, and permissions
+            </Text>
+            <TouchableOpacity style={styles.cardButton}>
+              <Text style={styles.cardButtonText}>Manage Users</Text>
+            </TouchableOpacity>
+          </View>
+
+          <View style={styles.card}>
+            <Text style={styles.cardTitle}>Sales Analytics</Text>
+            <Text style={styles.cardDescription}>
+              View comprehensive sales reports and analytics
+            </Text>
+            <TouchableOpacity style={styles.cardButton}>
+              <Text style={styles.cardButtonText}>View Analytics</Text>
+            </TouchableOpacity>
+          </View>
+
+          <View style={styles.card}>
+            <Text style={styles.cardTitle}>Inventory Management</Text>
+            <Text style={styles.cardDescription}>
+              Manage stock levels and inventory
+            </Text>
+            <TouchableOpacity 
+              style={styles.cardButton}
+              onPress={() => navigation.navigate('Inventory')}
+            >
+              <Text style={styles.cardButtonText}>Manage Inventory</Text>
+            </TouchableOpacity>
+          </View>
+
+          <View style={styles.card}>
+            <Text style={styles.cardTitle}>Stock Alerts</Text>
+            <Text style={styles.cardDescription}>
+              Monitor low stock items and receive alerts when products need
+              restocking.
+            </Text>
+            <TouchableOpacity 
+              style={styles.cardButton}
+              onPress={handleStockAlerts}
+            >
+              <Text style={styles.cardButtonText}>View Alerts</Text>
+            </TouchableOpacity>
+          </View>
+
+          <View style={styles.card}>
+            <Text style={styles.cardTitle}>Quick Actions</Text>
+            <Text style={styles.cardDescription}>
+              Quick access to common tasks and frequently used features.
+            </Text>
+            <TouchableOpacity 
+              style={styles.cardButton}
+              onPress={handleQuickActions}
+            >
+              <Text style={styles.cardButtonText}>Quick Actions</Text>
+            </TouchableOpacity>
+          </View>
+
+          <View style={styles.card}>
+            <Text style={styles.cardTitle}>System Settings</Text>
+            <Text style={styles.cardDescription}>
+              Configure system-wide settings
+            </Text>
+            <TouchableOpacity style={styles.cardButton}>
+              <Text style={styles.cardButtonText}>Settings</Text>
+            </TouchableOpacity>
+          </View>
         </View>
 
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>Inventory Management</Text>
-          <Text style={styles.cardDescription}>
-            Manage stock levels and inventory
-          </Text>
-          <TouchableOpacity style={styles.cardButton}>
-            <Text style={styles.cardButtonText}>Manage Inventory</Text>
-          </TouchableOpacity>
-        </View>
+        <TouchableOpacity style={styles.signOutButton} onPress={handleSignOut}>
+          <Text style={styles.signOutButtonText}>Sign Out</Text>
+        </TouchableOpacity>
+      </ScrollView>
 
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>System Settings</Text>
-          <Text style={styles.cardDescription}>
-            Configure system-wide settings
-          </Text>
-          <TouchableOpacity style={styles.cardButton}>
-            <Text style={styles.cardButtonText}>Settings</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-
-      <TouchableOpacity style={styles.signOutButton} onPress={handleSignOut}>
-        <Text style={styles.signOutButtonText}>Sign Out</Text>
-      </TouchableOpacity>
-    </ScrollView>
+      <QuickActionsModal
+        visible={quickActionsVisible}
+        onClose={() => setQuickActionsVisible(false)}
+        onAction={handleQuickAction}
+      />
+    </>
   );
 };
 

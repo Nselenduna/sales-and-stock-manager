@@ -19,7 +19,7 @@ const EmptyState: React.FC<EmptyStateProps> = ({
 }) => {
   return (
     <View style={styles.container}>
-      <Icon name={icon} size={64} color="#ccc" />
+      <Icon name={icon} size={64} color='#ccc' />
       <Text style={styles.title}>{title}</Text>
       <Text style={styles.subtitle}>{subtitle}</Text>
       {actionLabel && onAction && (
@@ -28,7 +28,7 @@ const EmptyState: React.FC<EmptyStateProps> = ({
           onPress={onAction}
           accessible={true}
           accessibilityLabel={actionLabel}
-          accessibilityRole="button"
+          accessibilityRole='button'
         >
           <Text style={styles.actionButtonText}>{actionLabel}</Text>
         </TouchableOpacity>

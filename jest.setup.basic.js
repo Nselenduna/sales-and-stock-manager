@@ -3,6 +3,9 @@
 // Global fetch mock
 global.fetch = jest.fn();
 
+// React Native globals
+global.__DEV__ = false;
+
 // Mock Alert
 global.Alert = {
   alert: jest.fn(),
@@ -15,7 +18,7 @@ beforeAll(() => {
     if (
       typeof args[0] === 'string' &&
       (args[0].includes('Warning: ReactDOM.render is no longer supported') ||
-       args[0].includes('Warning: Animated: `useNativeDriver`'))
+        args[0].includes('Warning: Animated: `useNativeDriver`'))
     ) {
       return;
     }
@@ -25,4 +28,4 @@ beforeAll(() => {
 
 afterAll(() => {
   console.error = originalError;
-}); 
+});

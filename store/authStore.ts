@@ -15,8 +15,14 @@ interface AuthActions {
   setUser: (user: any | null) => void;
   setSession: (session: any | null) => void;
   setLoading: (loading: boolean) => void;
-  signIn: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
-  signUp: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
+  signIn: (
+    email: string,
+    password: string
+  ) => Promise<{ success: boolean; error?: string }>;
+  signUp: (
+    email: string,
+    password: string
+  ) => Promise<{ success: boolean; error?: string }>;
   signOut: () => Promise<void>;
   checkUser: () => Promise<void>;
 }
@@ -30,9 +36,9 @@ const useAuthStore = create<AuthState & AuthActions>()(
       isAuthenticated: false,
       userRole: null,
 
-      setUser: (user) => set({ user }),
-      setSession: (session) => set({ session }),
-      setLoading: (loading) => set({ loading }),
+      setUser: user => set({ user }),
+      setSession: session => set({ session }),
+      setLoading: loading => set({ loading }),
 
       signIn: async (email: string, password: string) => {
         try {
@@ -146,7 +152,10 @@ const useAuthStore = create<AuthState & AuthActions>()(
       checkUser: async () => {
         try {
           set({ loading: true });
-          const { data: { session }, error } = await supabase.auth.getSession();
+          const {
+            data: { session },
+            error,
+          } = await supabase.auth.getSession();
 
           if (error) throw error;
 

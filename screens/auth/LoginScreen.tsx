@@ -29,7 +29,7 @@ const LoginScreen = ({ navigation }: any) => {
   };
 
   return (
-    <KeyboardAvoidingView 
+    <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       style={styles.container}
     >
@@ -40,21 +40,21 @@ const LoginScreen = ({ navigation }: any) => {
         <View style={styles.form}>
           <TextInput
             style={styles.input}
-            placeholder="Email"
+            placeholder='Email'
             value={email}
             onChangeText={setEmail}
-            keyboardType="email-address"
-            autoCapitalize="none"
+            keyboardType='email-address'
+            autoCapitalize='none'
             autoCorrect={false}
           />
 
           <TextInput
             style={styles.input}
-            placeholder="Password"
+            placeholder='Password'
             value={password}
             onChangeText={setPassword}
             secureTextEntry
-            autoCapitalize="none"
+            autoCapitalize='none'
             autoCorrect={false}
           />
 
@@ -72,9 +72,7 @@ const LoginScreen = ({ navigation }: any) => {
             style={styles.linkButton}
             onPress={() => navigation.navigate('Register')}
           >
-            <Text style={styles.linkText}>
-              Don't have an account? Sign up
-            </Text>
+            <Text style={styles.linkText}>Don't have an account? Sign up</Text>
           </TouchableOpacity>
         </View>
       </View>

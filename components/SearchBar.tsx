@@ -1,41 +1,47 @@
 import React from 'react';
-import { View, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
 import Icon from './Icon';
 
 interface SearchBarProps {
   value: string;
   onChangeText: (text: string) => void;
   placeholder?: string;
+  isSearching?: boolean;
 }
 
 const SearchBar: React.FC<SearchBarProps> = ({
   value,
   onChangeText,
   placeholder = 'Search products, SKU, or barcode...',
+  isSearching = false,
 }) => {
   return (
     <View style={styles.container}>
       <View style={styles.searchBar}>
-        <Icon name="search" size={20} color="#666" style={styles.searchIcon} />
+        {isSearching ? (
+          <ActivityIndicator size='small' color='#007AFF' style={styles.searchIcon} />
+        ) : (
+          <Icon name='search' size={20} color='#666' style={styles.searchIcon} />
+        )}
         <TextInput
           style={styles.searchInput}
           placeholder={placeholder}
           value={value}
           onChangeText={onChangeText}
-          placeholderTextColor="#999"
+          placeholderTextColor='#999'
           accessible={true}
-          accessibilityLabel="Search inventory"
-          accessibilityRole="search"
+          accessibilityLabel='Search inventory'
+          accessibilityRole='search'
         />
         {value.length > 0 && (
           <TouchableOpacity
             onPress={() => onChangeText('')}
             style={styles.clearButton}
             accessible={true}
-            accessibilityLabel="Clear search"
-            accessibilityRole="button"
+            accessibilityLabel='Clear search'
+            accessibilityRole='button'
           >
-            <Icon name="close-circle" size={20} color="#666" />
+            <Icon name='close-circle' size={20} color='#666' />
           </TouchableOpacity>
         )}
       </View>

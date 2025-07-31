@@ -1,5 +1,5 @@
-import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import React, { useState, useCallback } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, Image, ActivityIndicator } from 'react-native';
 import Icon from './Icon';
 import { Product } from '../lib/supabase';
 
@@ -18,6 +18,18 @@ const ProductCard: React.FC<ProductCardProps> = ({
   onEditPress,
   canEdit = false,
 }) => {
+  const [imageLoaded, setImageLoaded] = useState(false);
+  const [imageError, setImageError] = useState(false);
+
+  const handleImageLoad = useCallback(() => {
+    setImageLoaded(true);
+    setImageError(false);
+  }, []);
+
+  const handleImageError = useCallback(() => {
+    setImageError(true);
+    setImageLoaded(false);
+  }, []);
   const getSyncStatusIcon = (syncStatus: string) => {
     switch (syncStatus) {
       case 'synced':
@@ -40,7 +52,10 @@ const ProductCard: React.FC<ProductCardProps> = ({
   };
 
   const syncIcon = getSyncStatusIcon(product.sync_status);
-  const stockColor = getStockStatusColor(product.quantity, product.low_stock_threshold);
+  const stockColor = getStockStatusColor(
+    product.quantity,
+    product.low_stock_threshold
+  );
 
   return (
     <TouchableOpacity
@@ -48,7 +63,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
       onPress={onPress}
       accessible={true}
       accessibilityLabel={`${product.name}, Quantity: ${product.quantity}, SKU: ${product.sku}`}
-      accessibilityRole="button"
+      accessibilityRole='button'
     >
       <View style={styles.cardHeader}>
         <View style={styles.productInfo}>
@@ -66,9 +81,9 @@ const ProductCard: React.FC<ProductCardProps> = ({
             onPress={onQRPress}
             accessible={true}
             accessibilityLabel={`Scan QR code for ${product.name}`}
-            accessibilityRole="button"
+            accessibilityRole='button'
           >
-            <Icon name="qr-code" size={20} color="#007AFF" />
+            <Icon name='qr-code' size={20} color='#007AFF' />
           </TouchableOpacity>
           <View style={styles.syncStatus}>
             <Icon name={syncIcon.name} size={16} color={syncIcon.color} />
@@ -77,16 +92,48 @@ const ProductCard: React.FC<ProductCardProps> = ({
       </View>
 
       <View style={styles.cardBody}>
+        {/* Lazy Image Loading */}
+        {product.image_url && (
+          <View style={styles.imageContainer}>
+            {!imageLoaded && !imageError && (
+              <View style={styles.imagePlaceholder}>
+                <ActivityIndicator size="small" color="#007AFF" />
+              </View>
+            )}
+            {!imageError && (
+              <Image
+                source={{ uri: product.image_url }}
+                style={[
+                  styles.productImage,
+                  { opacity: imageLoaded ? 1 : 0 }
+                ]}
+                onLoad={handleImageLoad}
+                onError={handleImageError}
+                accessible={true}
+                accessibilityLabel={`Product image for ${product.name}`}
+                resizeMode="cover"
+              />
+            )}
+            {imageError && (
+              <View style={styles.imagePlaceholder}>
+                <Icon name="image" size={24} color="#ccc" />
+                <Text style={styles.imageErrorText}>Image unavailable</Text>
+              </View>
+            )}
+          </View>
+        )}
+        
         <View style={styles.stockInfo}>
-          <View style={[styles.stockIndicator, { backgroundColor: stockColor }]} />
-          <Text style={styles.stockQuantity}>
-            {product.quantity} in stock
-          </Text>
-          {product.quantity <= product.low_stock_threshold && product.quantity > 0 && (
-            <Text style={styles.lowStockWarning}>
-              Low stock (≤{product.low_stock_threshold})
-            </Text>
-          )}
+          <View
+            style={[styles.stockIndicator, { backgroundColor: stockColor }]}
+          />
+          <Text style={styles.stockQuantity}>{product.quantity} in stock</Text>
+          {product.quantity <= product.low_stock_threshold &&
+            product.quantity > 0 && (
+              <Text style={styles.lowStockWarning}>
+                Low stock (≤{product.low_stock_threshold})
+              </Text>
+            )}
           {product.quantity === 0 && (
             <Text style={styles.outOfStockWarning}>Out of stock</Text>
           )}
@@ -100,9 +147,9 @@ const ProductCard: React.FC<ProductCardProps> = ({
             onPress={onEditPress}
             accessible={true}
             accessibilityLabel={`Edit ${product.name}`}
-            accessibilityRole="button"
+            accessibilityRole='button'
           >
-            <Icon name="edit" size={16} color="#007AFF" />
+            <Icon name='edit' size={16} color='#007AFF' />
             <Text style={styles.editButtonText}>Edit</Text>
           </TouchableOpacity>
         </View>
@@ -172,6 +219,30 @@ const styles = StyleSheet.create({
   },
   cardBody: {
     marginBottom: 12,
+  },
+  imageContainer: {
+    marginBottom: 12,
+    borderRadius: 8,
+    overflow: 'hidden',
+    backgroundColor: '#f8f8f8',
+  },
+  productImage: {
+    width: '100%',
+    height: 120,
+    borderRadius: 8,
+  },
+  imagePlaceholder: {
+    width: '100%',
+    height: 120,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#f8f8f8',
+    borderRadius: 8,
+  },
+  imageErrorText: {
+    fontSize: 12,
+    color: '#999',
+    marginTop: 4,
   },
   stockInfo: {
     flexDirection: 'row',

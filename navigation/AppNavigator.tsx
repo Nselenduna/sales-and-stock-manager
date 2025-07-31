@@ -19,6 +19,12 @@ import InventoryListScreen from '../screens/inventory/InventoryListScreen';
 import InventoryDetailScreen from '../screens/inventory/InventoryDetailScreen';
 import InventoryFormScreen from '../screens/inventory/InventoryFormScreen';
 
+// Scanner Screen
+import BarcodeScannerScreen from '../screens/BarcodeScannerScreen';
+
+// Dashboard Screens
+import StockAlertScreen from '../screens/StockAlertScreen';
+
 // Other Screens
 import LoadingScreen from '../screens/LoadingScreen';
 
@@ -26,23 +32,27 @@ const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
 
 // Simple Icon Component for React Native
-const TabIcon = ({ name, size, color }: { name: string; size: number; color: string }) => {
+const TabIcon = ({
+  name,
+  size,
+  color,
+}: {
+  name: string;
+  size: number;
+  color: string;
+}) => {
   const getIconSymbol = (iconName: string) => {
     const icons: { [key: string]: string } = {
-      'settings': '⚙️',
-      'cube': '📦',
-      'person': '👤',
-      'eye': '👁️',
-      'add': '➕',
+      settings: '⚙️',
+      cube: '📦',
+      person: '👤',
+      eye: '👁️',
+      add: '➕',
     };
     return icons[iconName] || '❓';
   };
 
-  return (
-    <Text style={{ fontSize: size, color }}>
-      {getIconSymbol(name)}
-    </Text>
-  );
+  return <Text style={{ fontSize: size, color }}>{getIconSymbol(name)}</Text>;
 };
 
 // Admin Tab Navigator
@@ -62,13 +72,13 @@ const AdminTabNavigator = () => {
         headerShown: false,
       })}
     >
-      <Tab.Screen 
-        name="Admin" 
+      <Tab.Screen
+        name='Admin'
         component={AdminDashboard}
         options={{ title: 'Admin' }}
       />
-      <Tab.Screen 
-        name="Inventory" 
+      <Tab.Screen
+        name='Inventory'
         component={InventoryListScreen}
         options={{ title: 'Inventory' }}
       />
@@ -93,13 +103,13 @@ const StaffTabNavigator = () => {
         headerShown: false,
       })}
     >
-      <Tab.Screen 
-        name="Staff" 
+      <Tab.Screen
+        name='Staff'
         component={StaffDashboard}
         options={{ title: 'Staff' }}
       />
-      <Tab.Screen 
-        name="Inventory" 
+      <Tab.Screen
+        name='Inventory'
         component={InventoryListScreen}
         options={{ title: 'Inventory' }}
       />
@@ -124,13 +134,13 @@ const ViewerTabNavigator = () => {
         headerShown: false,
       })}
     >
-      <Tab.Screen 
-        name="Viewer" 
+      <Tab.Screen
+        name='Viewer'
         component={ViewerDashboard}
         options={{ title: 'Viewer' }}
       />
-      <Tab.Screen 
-        name="Inventory" 
+      <Tab.Screen
+        name='Inventory'
         component={InventoryListScreen}
         options={{ title: 'Inventory' }}
       />
@@ -150,8 +160,8 @@ const AppNavigator = () => {
     return (
       <NavigationContainer>
         <Stack.Navigator screenOptions={{ headerShown: false }}>
-          <Stack.Screen name="Login" component={LoginScreen} />
-          <Stack.Screen name="Register" component={RegisterScreen} />
+          <Stack.Screen name='Login' component={LoginScreen} />
+          <Stack.Screen name='Register' component={RegisterScreen} />
         </Stack.Navigator>
       </NavigationContainer>
     );
@@ -162,43 +172,58 @@ const AppNavigator = () => {
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         {/* Main role-based screens */}
         {userRole === 'admin' && (
-          <Stack.Screen name="AdminMain" component={AdminTabNavigator} />
+          <Stack.Screen name='AdminMain' component={AdminTabNavigator} />
         )}
         {userRole === 'staff' && (
-          <Stack.Screen name="StaffMain" component={StaffTabNavigator} />
+          <Stack.Screen name='StaffMain' component={StaffTabNavigator} />
         )}
         {userRole === 'viewer' && (
-          <Stack.Screen name="ViewerMain" component={ViewerTabNavigator} />
+          <Stack.Screen name='ViewerMain' component={ViewerTabNavigator} />
         )}
-        
-                    {/* Inventory screens - accessible from any role */}
-            <Stack.Screen 
-              name="AddProduct" 
-              component={InventoryFormScreen}
-              options={{ 
-                headerShown: true,
-                title: 'Add Product',
-                headerBackTitle: 'Back'
-              }}
-            />
-            <Stack.Screen 
-              name="EditProduct" 
-              component={InventoryFormScreen}
-              options={{ 
-                headerShown: true,
-                title: 'Edit Product',
-                headerBackTitle: 'Back'
-              }}
-            />
-            <Stack.Screen 
-              name="ProductDetail" 
-              component={InventoryDetailScreen}
-              options={{ 
-                headerShown: true,
-                title: 'Product Details',
-                headerBackTitle: 'Back'
-              }}
-            />
+
+        {/* Inventory screens - accessible from any role */}
+        <Stack.Screen
+          name='AddProduct'
+          component={InventoryFormScreen}
+          options={{
+            headerShown: true,
+            title: 'Add Product',
+            headerBackTitle: 'Back',
+          }}
+        />
+        <Stack.Screen
+          name='EditProduct'
+          component={InventoryFormScreen}
+          options={{
+            headerShown: true,
+            title: 'Edit Product',
+            headerBackTitle: 'Back',
+          }}
+        />
+        <Stack.Screen
+          name='ProductDetail'
+          component={InventoryDetailScreen}
+          options={{
+            headerShown: true,
+            title: 'Product Details',
+            headerBackTitle: 'Back',
+          }}
+        />
+        <Stack.Screen
+          name='BarcodeScanner'
+          component={BarcodeScannerScreen}
+          options={{
+            headerShown: false,
+            presentation: 'modal',
+          }}
+        />
+        <Stack.Screen
+          name='StockAlerts'
+          component={StockAlertScreen}
+          options={{
+            headerShown: false,
+          }}
+        />
       </Stack.Navigator>
     </NavigationContainer>
   );

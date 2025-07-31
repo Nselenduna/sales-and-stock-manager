@@ -42,9 +42,15 @@ jest.mock('@supabase/supabase-js', () => ({
       delete: jest.fn(() => Promise.resolve({ data: null, error: null })),
     })),
     auth: {
-      getSession: jest.fn(() => Promise.resolve({ data: { session: null }, error: null })),
-      signInWithPassword: jest.fn(() => Promise.resolve({ data: { user: null }, error: null })),
-      signUp: jest.fn(() => Promise.resolve({ data: { user: null }, error: null })),
+      getSession: jest.fn(() =>
+        Promise.resolve({ data: { session: null }, error: null })
+      ),
+      signInWithPassword: jest.fn(() =>
+        Promise.resolve({ data: { user: null }, error: null })
+      ),
+      signUp: jest.fn(() =>
+        Promise.resolve({ data: { user: null }, error: null })
+      ),
       signOut: jest.fn(() => Promise.resolve({ error: null })),
     },
   })),
@@ -65,7 +71,7 @@ beforeAll(() => {
     if (
       typeof args[0] === 'string' &&
       (args[0].includes('Warning: ReactDOM.render is no longer supported') ||
-       args[0].includes('Warning: Animated: `useNativeDriver`'))
+        args[0].includes('Warning: Animated: `useNativeDriver`'))
     ) {
       return;
     }
@@ -75,4 +81,4 @@ beforeAll(() => {
 
 afterAll(() => {
   console.error = originalError;
-}); 
+});

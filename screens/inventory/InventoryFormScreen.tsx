@@ -23,6 +23,8 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import useAuthStore from '../../store/authStore';
 import { supabase, Product } from '../../lib/supabase';
+import { imageUploader, ImageUploadResult } from '../../lib/imageUploader';
+import { barcodeScanner, BarcodeScanResult } from '../../lib/barcodeScanner';
 import Icon from '../../components/Icon';
 
 interface InventoryFormScreenProps {
@@ -46,6 +48,7 @@ interface FormData {
   unit_price?: number;
   description?: string;
   category?: string;
+  image_url?: string;
 }
 
 interface ValidationErrors {
@@ -54,15 +57,20 @@ interface ValidationErrors {
   quantity?: string;
   low_stock_threshold?: string;
   unit_price?: string;
+  description?: string;
+  category?: string;
 }
 
-const InventoryFormScreen: React.FC<InventoryFormScreenProps> = ({ navigation, route }) => {
+const InventoryFormScreen: React.FC<InventoryFormScreenProps> = ({
+  navigation,
+  route,
+}) => {
   const { mode = 'add', productId, initialData } = route?.params || {};
   const { userRole } = useAuthStore();
-  
+
   // Add mounted ref to prevent state updates after unmount
   const isMounted = React.useRef(true);
-  
+
   const [formData, setFormData] = useState<FormData>({
     name: '',
     sku: '',
@@ -73,8 +81,9 @@ const InventoryFormScreen: React.FC<InventoryFormScreenProps> = ({ navigation, r
     unit_price: 0,
     description: '',
     category: '',
+    image_url: '',
   });
-  
+
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [errors, setErrors] = useState<ValidationErrors>({});
@@ -88,31 +97,39 @@ const InventoryFormScreen: React.FC<InventoryFormScreenProps> = ({ navigation, r
   const canDelete = userRole === 'admin';
 
   // Helper function for numeric input handling
-  const handleNumericInput = (text: string, defaultValue: number = 0): number => {
+  const handleNumericInput = (
+    text: string,
+    defaultValue: number = 0
+  ): number => {
     const cleanText = text.replace(/[^0-9]/g, '');
-    return cleanText === '' ? defaultValue : parseInt(cleanText) || defaultValue;
+    return cleanText === ''
+      ? defaultValue
+      : parseInt(cleanText) || defaultValue;
   };
 
   // Helper function for decimal input handling
-  const handleDecimalInput = (text: string, defaultValue: number = 0): number => {
+  const handleDecimalInput = (
+    text: string,
+    defaultValue: number = 0
+  ): number => {
     // Allow both comma and period as decimal separators
     // First, replace comma with period
     let normalizedText = text.replace(/,/g, '.');
-    
+
     // Remove any characters that aren't numbers or periods
     normalizedText = normalizedText.replace(/[^0-9.]/g, '');
-    
+
     // Handle multiple periods (keep only the first one)
     const parts = normalizedText.split('.');
     if (parts.length > 2) {
       normalizedText = parts[0] + '.' + parts.slice(1).join('');
     }
-    
+
     // If empty, return default value
     if (normalizedText === '' || normalizedText === '.') {
       return defaultValue;
     }
-    
+
     // Parse the number
     const result = parseFloat(normalizedText);
     return isNaN(result) ? defaultValue : result;
@@ -125,14 +142,19 @@ const InventoryFormScreen: React.FC<InventoryFormScreenProps> = ({ navigation, r
       } else if (initialData) {
         setFormData(prev => ({ ...prev, ...initialData }));
       }
-      
+
       // Check network status
       checkNetworkStatus();
+
+      // Process offline image queue if online
+      if (!isOffline) {
+        processOfflineImages();
+      }
     } catch (error) {
       console.error('Error in useEffect:', error);
       Alert.alert('Error', 'Failed to initialize form');
     }
-    
+
     // Cleanup function
     return () => {
       isMounted.current = false;
@@ -147,7 +169,7 @@ const InventoryFormScreen: React.FC<InventoryFormScreenProps> = ({ navigation, r
 
   const fetchProduct = async () => {
     if (!productId) return;
-    
+
     try {
       setLoading(true);
       const { data, error } = await supabase
@@ -157,7 +179,7 @@ const InventoryFormScreen: React.FC<InventoryFormScreenProps> = ({ navigation, r
         .single();
 
       if (error) throw error;
-      
+
       // Check if component is still mounted before updating state
       if (isMounted.current) {
         setFormData({
@@ -209,6 +231,14 @@ const InventoryFormScreen: React.FC<InventoryFormScreenProps> = ({ navigation, r
       newErrors.unit_price = 'Unit price cannot be negative';
     }
 
+    if (formData.description && formData.description.length > 500) {
+      newErrors.description = 'Description must be less than 500 characters';
+    }
+
+    if (formData.category && formData.category.length > 100) {
+      newErrors.category = 'Category must be less than 100 characters';
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -220,19 +250,91 @@ const InventoryFormScreen: React.FC<InventoryFormScreenProps> = ({ navigation, r
     setFormData(prev => ({ ...prev, sku: newSku }));
   };
 
-  const handleQRScan = () => {
-    // Simulate QR scan - in real app, this would open camera
+  const handleQRScan = async () => {
+    try {
+      // Check if barcode scanner is available
+      const status = await barcodeScanner.getScannerStatus();
+      if (!status.cameraAvailable) {
+        // Fallback to manual entry only
+        showManualEntryDialog();
+        return;
+      }
+
+      // Check camera permissions first
+      const hasPermission = await barcodeScanner.checkPermissions();
+      if (!hasPermission) {
+        const granted = await barcodeScanner.requestPermissions();
+        if (!granted) {
+          Alert.alert(
+            'Permission Required',
+            'Camera access is required to scan barcodes.'
+          );
+          return;
+        }
+      }
+
+      // Show options for scanning
+      Alert.alert('Scan Barcode', 'Choose scanning method:', [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Camera Scan',
+          onPress: () => openBarcodeScanner(),
+        },
+        {
+          text: 'Manual Entry',
+          onPress: () => showManualEntryDialog(),
+        },
+      ]);
+    } catch (error) {
+      console.error('Error initiating QR scan:', error);
+      // Fallback to manual entry
+      showManualEntryDialog();
+    }
+  };
+
+  const openBarcodeScanner = () => {
+    // Navigate to barcode scanner screen
+    navigation.navigate('BarcodeScanner', {
+      onBarcodeScanned: (result: BarcodeScanResult) => {
+        if (result.success && result.barcode) {
+          setFormData(prev => ({ ...prev, barcode: result.barcode }));
+          setQrScanned(true);
+          Alert.alert(
+            'Success',
+            `Barcode scanned: ${result.barcode} (${result.type})`
+          );
+        } else {
+          Alert.alert('Scan Error', result.error || 'Failed to scan barcode');
+        }
+      },
+    });
+  };
+
+  const showManualEntryDialog = () => {
     Alert.prompt(
-      'Scan Barcode',
-      'Enter barcode manually or scan:',
+      'Manual Barcode Entry',
+      'Enter barcode manually:',
       [
         { text: 'Cancel', style: 'cancel' },
         {
           text: 'Enter',
-          onPress: (barcode) => {
-            if (barcode) {
-              setFormData(prev => ({ ...prev, barcode }));
-              setQrScanned(true);
+          onPress: barcode => {
+            if (barcode && barcode.trim()) {
+              // Validate the manually entered barcode
+              const validation = barcodeScanner.validateBarcode(barcode.trim());
+              if (validation.isValid) {
+                setFormData(prev => ({ ...prev, barcode: barcode.trim() }));
+                setQrScanned(true);
+                Alert.alert(
+                  'Success',
+                  `Barcode entered: ${barcode.trim()} (${validation.type})`
+                );
+              } else {
+                Alert.alert(
+                  'Invalid Barcode',
+                  validation.error || 'Please enter a valid barcode'
+                );
+              }
             }
           },
         },
@@ -242,26 +344,70 @@ const InventoryFormScreen: React.FC<InventoryFormScreenProps> = ({ navigation, r
   };
 
   const handleImageUpload = () => {
-    // Simulate image upload - in real app, this would open image picker
-    Alert.alert(
-      'Upload Image',
-      'Choose image source:',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        { text: 'Camera', onPress: () => simulateImageUpload('camera') },
-        { text: 'Gallery', onPress: () => simulateImageUpload('gallery') },
-      ]
-    );
+    Alert.alert('Upload Image', 'Choose image source:', [
+      { text: 'Cancel', style: 'cancel' },
+      { text: 'Camera', onPress: () => uploadImage('camera') },
+      { text: 'Gallery', onPress: () => uploadImage('gallery') },
+    ]);
   };
 
-  const simulateImageUpload = (source: 'camera' | 'gallery') => {
-    // Simulate image upload process
-    setLoading(true);
-    setTimeout(() => {
-      setImageUri('https://via.placeholder.com/300x200?text=Product+Image');
+  const uploadImage = async (source: 'camera' | 'gallery') => {
+    try {
+      setLoading(true);
+
+      const result: ImageUploadResult = await imageUploader.uploadImage(
+        source,
+        {
+          quality: 0.8,
+          maxWidth: 1024,
+          maxHeight: 1024,
+          allowsEditing: true,
+          aspect: [4, 3],
+        }
+      );
+
+      if (result.success) {
+        if (result.url) {
+          // Image uploaded successfully to Supabase
+          setImageUri(result.url);
+          setFormData(prev => ({ ...prev, image_url: result.url }));
+          Alert.alert('Success', 'Image uploaded successfully!');
+        } else if (result.localUri) {
+          // Image cached for offline sync
+          setImageUri(result.localUri);
+          setFormData(prev => ({ ...prev, image_url: result.localUri }));
+          Alert.alert(
+            'Offline Mode',
+            'Image saved locally and will be uploaded when connection is restored.'
+          );
+        }
+      } else {
+        Alert.alert('Error', result.error || 'Failed to upload image');
+      }
+    } catch (error) {
+      console.error('Image upload error:', error);
+      Alert.alert('Error', 'Failed to upload image. Please try again.');
+    } finally {
       setLoading(false);
-      Alert.alert('Success', `Image uploaded from ${source}`);
-    }, 1000);
+    }
+  };
+
+  // Process offline image queue
+  const processOfflineImages = async () => {
+    try {
+      const results = await imageUploader.processOfflineQueue();
+      if (results.length > 0) {
+        const successCount = results.filter(r => r.success).length;
+        if (successCount > 0) {
+          Alert.alert(
+            'Offline Sync Complete',
+            `${successCount} image(s) uploaded successfully from offline queue.`
+          );
+        }
+      }
+    } catch (error) {
+      console.error('Error processing offline images:', error);
+    }
   };
 
   const saveDraft = () => {
@@ -273,11 +419,11 @@ const InventoryFormScreen: React.FC<InventoryFormScreenProps> = ({ navigation, r
         mode,
         productId,
       };
-      
+
       // In real app, save to AsyncStorage
       console.log('Draft saved:', draft);
       setDraftSaved(true);
-      
+
       setTimeout(() => setDraftSaved(false), 2000);
     } catch (error) {
       console.error('Error saving draft:', error);
@@ -286,7 +432,10 @@ const InventoryFormScreen: React.FC<InventoryFormScreenProps> = ({ navigation, r
 
   const handleSave = async () => {
     if (!canEdit) {
-      Alert.alert('Access Denied', 'You do not have permission to edit products');
+      Alert.alert(
+        'Access Denied',
+        'You do not have permission to edit products'
+      );
       return;
     }
 
@@ -309,7 +458,7 @@ const InventoryFormScreen: React.FC<InventoryFormScreenProps> = ({ navigation, r
 
     try {
       setSaving(true);
-      
+
       if (mode === 'add') {
         const { data, error } = await supabase
           .from('products')
@@ -318,9 +467,9 @@ const InventoryFormScreen: React.FC<InventoryFormScreenProps> = ({ navigation, r
           .single();
 
         if (error) throw error;
-        
+
         Alert.alert('Success', 'Product added successfully', [
-          { text: 'OK', onPress: () => navigation.goBack() }
+          { text: 'OK', onPress: () => navigation.goBack() },
         ]);
       } else {
         const { data, error } = await supabase
@@ -331,14 +480,14 @@ const InventoryFormScreen: React.FC<InventoryFormScreenProps> = ({ navigation, r
           .single();
 
         if (error) throw error;
-        
+
         Alert.alert('Success', 'Product updated successfully', [
-          { text: 'OK', onPress: () => navigation.goBack() }
+          { text: 'OK', onPress: () => navigation.goBack() },
         ]);
       }
     } catch (error: any) {
       console.error('Error saving product:', error);
-      
+
       if (error.code === '23505') {
         Alert.alert('Error', 'A product with this SKU already exists');
       } else {
@@ -359,10 +508,13 @@ const InventoryFormScreen: React.FC<InventoryFormScreenProps> = ({ navigation, r
         timestamp: new Date().toISOString(),
         syncStatus: 'pending',
       };
-      
+
       // In real app, save to AsyncStorage
       console.log('Saved offline:', offlineData);
-      Alert.alert('Saved Offline', 'Product will be synced when connection is restored');
+      Alert.alert(
+        'Saved Offline',
+        'Product will be synced when connection is restored'
+      );
       navigation.goBack();
     } catch (error) {
       console.error('Error saving offline:', error);
@@ -372,21 +524,23 @@ const InventoryFormScreen: React.FC<InventoryFormScreenProps> = ({ navigation, r
 
   const renderOfflineBanner = () => {
     if (!isOffline) return null;
-    
+
     return (
       <View style={styles.offlineBanner}>
-        <Icon name="wifi-off" size={16} color="white" />
-        <Text style={styles.offlineText}>You are offline. Changes will be saved locally.</Text>
+        <Icon name='wifi-off' size={16} color='white' />
+        <Text style={styles.offlineText}>
+          You are offline. Changes will be saved locally.
+        </Text>
       </View>
     );
   };
 
   const renderDraftSaved = () => {
     if (!draftSaved) return null;
-    
+
     return (
       <View style={styles.draftBanner}>
-        <Icon name="save" size={16} color="white" />
+        <Icon name='save' size={16} color='white' />
         <Text style={styles.draftText}>Draft saved</Text>
       </View>
     );
@@ -395,12 +549,15 @@ const InventoryFormScreen: React.FC<InventoryFormScreenProps> = ({ navigation, r
   const renderImageSection = () => (
     <View style={styles.section}>
       <Text style={styles.sectionTitle}>Product Image</Text>
-      <TouchableOpacity style={styles.imageContainer} onPress={handleImageUpload}>
+      <TouchableOpacity
+        style={styles.imageContainer}
+        onPress={handleImageUpload}
+      >
         {imageUri ? (
           <Image source={{ uri: imageUri }} style={styles.productImage} />
         ) : (
           <View style={styles.imagePlaceholder}>
-            <Icon name="camera" size={32} color="#8E8E93" />
+            <Icon name='camera' size={32} color='#8E8E93' />
             <Text style={styles.imagePlaceholderText}>Tap to add image</Text>
           </View>
         )}
@@ -411,14 +568,14 @@ const InventoryFormScreen: React.FC<InventoryFormScreenProps> = ({ navigation, r
   const renderBasicInfo = () => (
     <View style={styles.section}>
       <Text style={styles.sectionTitle}>Basic Information</Text>
-      
+
       <View style={styles.field}>
         <Text style={styles.fieldLabel}>Product Name *</Text>
         <TextInput
           style={[styles.textInput, errors.name && styles.errorInput]}
           value={formData.name}
-          onChangeText={(text) => setFormData(prev => ({ ...prev, name: text }))}
-          placeholder="Enter product name"
+          onChangeText={text => setFormData(prev => ({ ...prev, name: text }))}
+          placeholder='Enter product name'
         />
         {errors.name && <Text style={styles.errorText}>{errors.name}</Text>}
       </View>
@@ -433,9 +590,11 @@ const InventoryFormScreen: React.FC<InventoryFormScreenProps> = ({ navigation, r
         <TextInput
           style={[styles.textInput, errors.sku && styles.errorInput]}
           value={formData.sku}
-          onChangeText={(text) => setFormData(prev => ({ ...prev, sku: text.toUpperCase() }))}
-          placeholder="Enter SKU"
-          autoCapitalize="characters"
+          onChangeText={text =>
+            setFormData(prev => ({ ...prev, sku: text.toUpperCase() }))
+          }
+          placeholder='Enter SKU'
+          autoCapitalize='characters'
         />
         {errors.sku && <Text style={styles.errorText}>{errors.sku}</Text>}
       </View>
@@ -444,17 +603,21 @@ const InventoryFormScreen: React.FC<InventoryFormScreenProps> = ({ navigation, r
         <View style={styles.barcodeContainer}>
           <Text style={styles.fieldLabel}>Barcode</Text>
           <TouchableOpacity style={styles.scanButton} onPress={handleQRScan}>
-            <Icon name="qr-code" size={16} color="#007AFF" />
+            <Icon name='qr-code' size={16} color='#007AFF' />
             <Text style={styles.scanButtonText}>Scan</Text>
           </TouchableOpacity>
         </View>
         <TextInput
           style={styles.textInput}
           value={formData.barcode}
-          onChangeText={(text) => setFormData(prev => ({ ...prev, barcode: text }))}
-          placeholder="Enter barcode or scan"
+          onChangeText={text =>
+            setFormData(prev => ({ ...prev, barcode: text }))
+          }
+          placeholder='Enter barcode or scan'
         />
-        {qrScanned && <Text style={styles.successText}>✓ Barcode scanned successfully</Text>}
+        {qrScanned && (
+          <Text style={styles.successText}>✓ Barcode scanned successfully</Text>
+        )}
       </View>
 
       <View style={styles.field}>
@@ -462,8 +625,10 @@ const InventoryFormScreen: React.FC<InventoryFormScreenProps> = ({ navigation, r
         <TextInput
           style={styles.textInput}
           value={formData.category}
-          onChangeText={(text) => setFormData(prev => ({ ...prev, category: text }))}
-          placeholder="Enter category"
+          onChangeText={text =>
+            setFormData(prev => ({ ...prev, category: text }))
+          }
+          placeholder='Enter category'
         />
       </View>
 
@@ -472,8 +637,10 @@ const InventoryFormScreen: React.FC<InventoryFormScreenProps> = ({ navigation, r
         <TextInput
           style={[styles.textInput, styles.textArea]}
           value={formData.description}
-          onChangeText={(text) => setFormData(prev => ({ ...prev, description: text }))}
-          placeholder="Enter product description"
+          onChangeText={text =>
+            setFormData(prev => ({ ...prev, description: text }))
+          }
+          placeholder='Enter product description'
           multiline
           numberOfLines={3}
         />
@@ -484,94 +651,113 @@ const InventoryFormScreen: React.FC<InventoryFormScreenProps> = ({ navigation, r
   const renderStockInfo = () => (
     <View style={styles.section}>
       <Text style={styles.sectionTitle}>Stock Information</Text>
-      
+
       <View style={styles.field}>
         <Text style={styles.fieldLabel}>Quantity *</Text>
         <TextInput
           style={[styles.textInput, errors.quantity && styles.errorInput]}
           value={formData.quantity.toString()}
-          onChangeText={(text) => {
+          onChangeText={text => {
             const quantity = handleNumericInput(text, 0);
             setFormData(prev => ({ ...prev, quantity }));
           }}
-          placeholder="0"
-          keyboardType="numeric"
+          placeholder='0'
+          keyboardType='numeric'
         />
-        {errors.quantity && <Text style={styles.errorText}>{errors.quantity}</Text>}
+        {errors.quantity && (
+          <Text style={styles.errorText}>{errors.quantity}</Text>
+        )}
       </View>
 
       <View style={styles.field}>
         <Text style={styles.fieldLabel}>Low Stock Threshold *</Text>
         <TextInput
-          style={[styles.textInput, errors.low_stock_threshold && styles.errorInput]}
+          style={[
+            styles.textInput,
+            errors.low_stock_threshold && styles.errorInput,
+          ]}
           value={formData.low_stock_threshold.toString()}
-          onChangeText={(text) => {
+          onChangeText={text => {
             const threshold = handleNumericInput(text, 10);
             setFormData(prev => ({ ...prev, low_stock_threshold: threshold }));
           }}
-          placeholder="10"
-          keyboardType="numeric"
+          placeholder='10'
+          keyboardType='numeric'
         />
-        {errors.low_stock_threshold && <Text style={styles.errorText}>{errors.low_stock_threshold}</Text>}
+        {errors.low_stock_threshold && (
+          <Text style={styles.errorText}>{errors.low_stock_threshold}</Text>
+        )}
       </View>
 
       <View style={styles.field}>
         <Text style={styles.fieldLabel}>Unit Price</Text>
         <TextInput
           style={[styles.textInput, errors.unit_price && styles.errorInput]}
-          value={formData.unit_price === 0 ? '' : formData.unit_price?.toString() || ''}
-                  onChangeText={(text) => {
-          console.log('Unit price input:', text); // Debug log
-          
-          // Handle empty input
-          if (!text || text.trim() === '') {
-            setFormData(prev => ({ ...prev, unit_price: 0 }));
-            return;
+          value={
+            formData.unit_price === 0
+              ? ''
+              : formData.unit_price?.toString() || ''
           }
-          
-          // Replace comma with period
-          let cleanText = text.replace(/,/g, '.');
-          
-          // Remove any non-numeric characters except period
-          cleanText = cleanText.replace(/[^0-9.]/g, '');
-          
-          // Handle multiple periods - keep only first one
-          const parts = cleanText.split('.');
-          if (parts.length > 2) {
-            cleanText = parts[0] + '.' + parts.slice(1).join('');
-          }
-          
-          // Special handling for decimal points
-          if (cleanText === '.') {
-            // User just typed a decimal point, keep it as 0
-            setFormData(prev => ({ ...prev, unit_price: 0 }));
-            return;
-          }
-          
-          // Check if it ends with a decimal point (like "3." or "11.")
-          if (cleanText.endsWith('.')) {
-            // Remove the trailing decimal point for parsing
-            const numberPart = cleanText.slice(0, -1);
-            if (numberPart === '') {
+          onChangeText={text => {
+            console.log('Unit price input:', text); // Debug log
+
+            // Handle empty input
+            if (!text || text.trim() === '') {
               setFormData(prev => ({ ...prev, unit_price: 0 }));
-            } else {
-              const price = parseFloat(numberPart);
-              setFormData(prev => ({ ...prev, unit_price: isNaN(price) ? 0 : price }));
+              return;
             }
-            return;
-          }
-          
-          // Normal number parsing
-          const price = parseFloat(cleanText);
-          console.log('Clean text:', cleanText, 'Parsed price:', price); // Debug log
-          setFormData(prev => ({ ...prev, unit_price: isNaN(price) ? 0 : price }));
-        }}
-          placeholder="0,00 or 0.00"
-          keyboardType="default"
-          autoCapitalize="none"
+
+            // Replace comma with period
+            let cleanText = text.replace(/,/g, '.');
+
+            // Remove any non-numeric characters except period
+            cleanText = cleanText.replace(/[^0-9.]/g, '');
+
+            // Handle multiple periods - keep only first one
+            const parts = cleanText.split('.');
+            if (parts.length > 2) {
+              cleanText = parts[0] + '.' + parts.slice(1).join('');
+            }
+
+            // Special handling for decimal points
+            if (cleanText === '.') {
+              // User just typed a decimal point, keep it as 0
+              setFormData(prev => ({ ...prev, unit_price: 0 }));
+              return;
+            }
+
+            // Check if it ends with a decimal point (like "3." or "11.")
+            if (cleanText.endsWith('.')) {
+              // Remove the trailing decimal point for parsing
+              const numberPart = cleanText.slice(0, -1);
+              if (numberPart === '') {
+                setFormData(prev => ({ ...prev, unit_price: 0 }));
+              } else {
+                const price = parseFloat(numberPart);
+                setFormData(prev => ({
+                  ...prev,
+                  unit_price: isNaN(price) ? 0 : price,
+                }));
+              }
+              return;
+            }
+
+            // Normal number parsing
+            const price = parseFloat(cleanText);
+            console.log('Clean text:', cleanText, 'Parsed price:', price); // Debug log
+            setFormData(prev => ({
+              ...prev,
+              unit_price: isNaN(price) ? 0 : price,
+            }));
+          }}
+          placeholder='0,00 or 0.00'
+          keyboardType='default'
+          autoCapitalize='none'
           autoCorrect={false}
         />
-        {errors.unit_price && <Text style={styles.errorText}>{errors.unit_price}</Text>}
+        {errors.unit_price && (
+          <Text style={styles.errorText}>{errors.unit_price}</Text>
+        )}
         <Text style={styles.helperText}>
           Current value: ${formData.unit_price?.toFixed(2) || '0.00'}
         </Text>
@@ -582,8 +768,10 @@ const InventoryFormScreen: React.FC<InventoryFormScreenProps> = ({ navigation, r
         <TextInput
           style={styles.textInput}
           value={formData.location}
-          onChangeText={(text) => setFormData(prev => ({ ...prev, location: text }))}
-          placeholder="Enter storage location"
+          onChangeText={text =>
+            setFormData(prev => ({ ...prev, location: text }))
+          }
+          placeholder='Enter storage location'
         />
       </View>
     </View>
@@ -591,9 +779,9 @@ const InventoryFormScreen: React.FC<InventoryFormScreenProps> = ({ navigation, r
 
   if (loading) {
     return (
-      <SafeAreaView style={styles.container} testID="inventory-form-screen">
+      <SafeAreaView style={styles.container} testID='inventory-form-screen'>
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#007AFF" />
+          <ActivityIndicator size='large' color='#007AFF' />
           <Text style={styles.loadingText}>Loading product data...</Text>
         </View>
       </SafeAreaView>
@@ -601,17 +789,22 @@ const InventoryFormScreen: React.FC<InventoryFormScreenProps> = ({ navigation, r
   }
 
   return (
-    <SafeAreaView style={styles.container} testID="inventory-form-screen">
+    <SafeAreaView style={styles.container} testID='inventory-form-screen'>
       {renderOfflineBanner()}
       {renderDraftSaved()}
-      
-      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+
+      <ScrollView
+        style={styles.scrollView}
+        showsVerticalScrollIndicator={false}
+      >
         <View style={styles.header}>
           <Text style={styles.title}>
             {mode === 'add' ? 'Add New Product' : 'Edit Product'}
           </Text>
           <Text style={styles.subtitle}>
-            {mode === 'add' ? 'Create a new product entry' : 'Update product information'}
+            {mode === 'add'
+              ? 'Create a new product entry'
+              : 'Update product information'}
           </Text>
         </View>
 
@@ -624,7 +817,7 @@ const InventoryFormScreen: React.FC<InventoryFormScreenProps> = ({ navigation, r
             style={[styles.button, styles.draftButton]}
             onPress={saveDraft}
           >
-            <Icon name="save" size={16} color="#007AFF" />
+            <Icon name='save' size={16} color='#007AFF' />
             <Text style={styles.draftButtonText}>Save Draft</Text>
           </TouchableOpacity>
 
@@ -634,10 +827,10 @@ const InventoryFormScreen: React.FC<InventoryFormScreenProps> = ({ navigation, r
             disabled={saving}
           >
             {saving ? (
-              <ActivityIndicator size="small" color="white" />
+              <ActivityIndicator size='small' color='white' />
             ) : (
               <>
-                <Icon name="check" size={16} color="white" />
+                <Icon name='check' size={16} color='white' />
                 <Text style={styles.buttonText}>
                   {mode === 'add' ? 'Add Product' : 'Save Changes'}
                 </Text>
@@ -853,4 +1046,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default InventoryFormScreen; 
+export default InventoryFormScreen;

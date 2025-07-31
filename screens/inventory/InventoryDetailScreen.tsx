@@ -31,15 +31,20 @@ interface SyncStatus {
   error?: string;
 }
 
-const InventoryDetailScreen: React.FC<InventoryDetailScreenProps> = ({ navigation, route }) => {
+const InventoryDetailScreen: React.FC<InventoryDetailScreenProps> = ({
+  navigation,
+  route,
+}) => {
   const { productId, mode = 'view' } = route.params;
   const { userRole } = useAuthStore();
-  
+
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [isEditing, setIsEditing] = useState(mode === 'edit');
-  const [syncStatus, setSyncStatus] = useState<SyncStatus>({ status: 'synced' });
+  const [syncStatus, setSyncStatus] = useState<SyncStatus>({
+    status: 'synced',
+  });
   const [formData, setFormData] = useState<Partial<Product>>({});
 
   // Role-based access control
@@ -60,10 +65,10 @@ const InventoryDetailScreen: React.FC<InventoryDetailScreenProps> = ({ navigatio
         .single();
 
       if (error) throw error;
-      
+
       setProduct(data);
       setFormData(data);
-      
+
       // Simulate sync status check
       checkSyncStatus(data);
     } catch (error) {
@@ -86,13 +91,20 @@ const InventoryDetailScreen: React.FC<InventoryDetailScreenProps> = ({ navigatio
     } else if (hoursDiff < 24) {
       setSyncStatus({ status: 'stale', lastSync: productData.updated_at });
     } else {
-      setSyncStatus({ status: 'error', lastSync: productData.updated_at, error: 'Data may be outdated' });
+      setSyncStatus({
+        status: 'error',
+        lastSync: productData.updated_at,
+        error: 'Data may be outdated',
+      });
     }
   };
 
   const handleSave = async () => {
     if (!canEdit) {
-      Alert.alert('Access Denied', 'You do not have permission to edit products');
+      Alert.alert(
+        'Access Denied',
+        'You do not have permission to edit products'
+      );
       return;
     }
 
@@ -160,27 +172,37 @@ const InventoryDetailScreen: React.FC<InventoryDetailScreenProps> = ({ navigatio
   const renderSyncStatus = () => {
     const getStatusColor = () => {
       switch (syncStatus.status) {
-        case 'synced': return '#34C759';
-        case 'stale': return '#FF9500';
-        case 'error': return '#FF3B30';
-        case 'local': return '#007AFF';
-        default: return '#8E8E93';
+        case 'synced':
+          return '#34C759';
+        case 'stale':
+          return '#FF9500';
+        case 'error':
+          return '#FF3B30';
+        case 'local':
+          return '#007AFF';
+        default:
+          return '#8E8E93';
       }
     };
 
     const getStatusText = () => {
       switch (syncStatus.status) {
-        case 'synced': return 'Synced';
-        case 'stale': return 'Stale';
-        case 'error': return 'Sync Error';
-        case 'local': return 'Local Only';
-        default: return 'Unknown';
+        case 'synced':
+          return 'Synced';
+        case 'stale':
+          return 'Stale';
+        case 'error':
+          return 'Sync Error';
+        case 'local':
+          return 'Local Only';
+        default:
+          return 'Unknown';
       }
     };
 
     return (
       <View style={[styles.syncBanner, { backgroundColor: getStatusColor() }]}>
-        <Icon name="sync" size={16} color="white" />
+        <Icon name='sync' size={16} color='white' />
         <Text style={styles.syncText}>{getStatusText()}</Text>
         {syncStatus.lastSync && (
           <Text style={styles.syncTime}>
@@ -197,13 +219,17 @@ const InventoryDetailScreen: React.FC<InventoryDetailScreenProps> = ({ navigatio
       <View style={styles.metadataItem}>
         <Text style={styles.metadataLabel}>Created:</Text>
         <Text style={styles.metadataValue}>
-          {product?.created_at ? new Date(product.created_at).toLocaleDateString() : 'N/A'}
+          {product?.created_at
+            ? new Date(product.created_at).toLocaleDateString()
+            : 'N/A'}
         </Text>
       </View>
       <View style={styles.metadataItem}>
         <Text style={styles.metadataLabel}>Last Updated:</Text>
         <Text style={styles.metadataValue}>
-          {product?.updated_at ? new Date(product.updated_at).toLocaleDateString() : 'N/A'}
+          {product?.updated_at
+            ? new Date(product.updated_at).toLocaleDateString()
+            : 'N/A'}
         </Text>
       </View>
       <View style={styles.metadataItem}>
@@ -216,15 +242,15 @@ const InventoryDetailScreen: React.FC<InventoryDetailScreenProps> = ({ navigatio
   const renderProductInfo = () => (
     <View style={styles.productSection}>
       <Text style={styles.sectionTitle}>Product Information</Text>
-      
+
       <View style={styles.field}>
         <Text style={styles.fieldLabel}>Name</Text>
         {isEditing ? (
           <TextInput
             style={styles.textInput}
             value={formData.name || ''}
-            onChangeText={(text) => setFormData({ ...formData, name: text })}
-            placeholder="Product name"
+            onChangeText={text => setFormData({ ...formData, name: text })}
+            placeholder='Product name'
           />
         ) : (
           <Text style={styles.fieldValue}>{product?.name}</Text>
@@ -247,11 +273,13 @@ const InventoryDetailScreen: React.FC<InventoryDetailScreenProps> = ({ navigatio
           <TextInput
             style={styles.textInput}
             value={formData.category || ''}
-            onChangeText={(text) => setFormData({ ...formData, category: text })}
-            placeholder="Category"
+            onChangeText={text => setFormData({ ...formData, category: text })}
+            placeholder='Category'
           />
         ) : (
-          <Text style={styles.fieldValue}>{product?.category || 'Uncategorized'}</Text>
+          <Text style={styles.fieldValue}>
+            {product?.category || 'Uncategorized'}
+          </Text>
         )}
       </View>
 
@@ -261,13 +289,17 @@ const InventoryDetailScreen: React.FC<InventoryDetailScreenProps> = ({ navigatio
           <TextInput
             style={[styles.textInput, styles.textArea]}
             value={formData.description || ''}
-            onChangeText={(text) => setFormData({ ...formData, description: text })}
-            placeholder="Product description"
+            onChangeText={text =>
+              setFormData({ ...formData, description: text })
+            }
+            placeholder='Product description'
             multiline
             numberOfLines={3}
           />
         ) : (
-          <Text style={styles.fieldValue}>{product?.description || 'No description'}</Text>
+          <Text style={styles.fieldValue}>
+            {product?.description || 'No description'}
+          </Text>
         )}
       </View>
     </View>
@@ -276,19 +308,26 @@ const InventoryDetailScreen: React.FC<InventoryDetailScreenProps> = ({ navigatio
   const renderStockInfo = () => (
     <View style={styles.stockSection}>
       <Text style={styles.sectionTitle}>Stock Information</Text>
-      
+
       <View style={styles.field}>
         <Text style={styles.fieldLabel}>Quantity</Text>
         {isEditing ? (
           <TextInput
             style={styles.textInput}
             value={formData.quantity?.toString() || '0'}
-            onChangeText={(text) => setFormData({ ...formData, quantity: parseInt(text) || 0 })}
-            placeholder="0"
-            keyboardType="numeric"
+            onChangeText={text =>
+              setFormData({ ...formData, quantity: parseInt(text) || 0 })
+            }
+            placeholder='0'
+            keyboardType='numeric'
           />
         ) : (
-          <Text style={[styles.fieldValue, { color: product?.quantity === 0 ? '#FF3B30' : '#34C759' }]}>
+          <Text
+            style={[
+              styles.fieldValue,
+              { color: product?.quantity === 0 ? '#FF3B30' : '#34C759' },
+            ]}
+          >
             {product?.quantity}
           </Text>
         )}
@@ -300,9 +339,14 @@ const InventoryDetailScreen: React.FC<InventoryDetailScreenProps> = ({ navigatio
           <TextInput
             style={styles.textInput}
             value={formData.low_stock_threshold?.toString() || '10'}
-            onChangeText={(text) => setFormData({ ...formData, low_stock_threshold: parseInt(text) || 10 })}
-            placeholder="10"
-            keyboardType="numeric"
+            onChangeText={text =>
+              setFormData({
+                ...formData,
+                low_stock_threshold: parseInt(text) || 10,
+              })
+            }
+            placeholder='10'
+            keyboardType='numeric'
           />
         ) : (
           <Text style={styles.fieldValue}>{product?.low_stock_threshold}</Text>
@@ -315,12 +359,16 @@ const InventoryDetailScreen: React.FC<InventoryDetailScreenProps> = ({ navigatio
           <TextInput
             style={styles.textInput}
             value={formData.unit_price?.toString() || '0'}
-            onChangeText={(text) => setFormData({ ...formData, unit_price: parseFloat(text) || 0 })}
-            placeholder="0.00"
-            keyboardType="numeric"
+            onChangeText={text =>
+              setFormData({ ...formData, unit_price: parseFloat(text) || 0 })
+            }
+            placeholder='0.00'
+            keyboardType='numeric'
           />
         ) : (
-          <Text style={styles.fieldValue}>${product?.unit_price?.toFixed(2) || '0.00'}</Text>
+          <Text style={styles.fieldValue}>
+            ${product?.unit_price?.toFixed(2) || '0.00'}
+          </Text>
         )}
       </View>
 
@@ -330,11 +378,13 @@ const InventoryDetailScreen: React.FC<InventoryDetailScreenProps> = ({ navigatio
           <TextInput
             style={styles.textInput}
             value={formData.location || ''}
-            onChangeText={(text) => setFormData({ ...formData, location: text })}
-            placeholder="Storage location"
+            onChangeText={text => setFormData({ ...formData, location: text })}
+            placeholder='Storage location'
           />
         ) : (
-          <Text style={styles.fieldValue}>{product?.location || 'Not specified'}</Text>
+          <Text style={styles.fieldValue}>
+            {product?.location || 'Not specified'}
+          </Text>
         )}
       </View>
     </View>
@@ -344,7 +394,7 @@ const InventoryDetailScreen: React.FC<InventoryDetailScreenProps> = ({ navigatio
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#007AFF" />
+          <ActivityIndicator size='large' color='#007AFF' />
           <Text style={styles.loadingText}>Loading product details...</Text>
         </View>
       </SafeAreaView>
@@ -355,9 +405,12 @@ const InventoryDetailScreen: React.FC<InventoryDetailScreenProps> = ({ navigatio
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.errorContainer}>
-          <Icon name="error" size={48} color="#FF3B30" />
+          <Icon name='error' size={48} color='#FF3B30' />
           <Text style={styles.errorText}>Product not found</Text>
-          <TouchableOpacity style={styles.button} onPress={() => navigation.goBack()}>
+          <TouchableOpacity
+            style={styles.button}
+            onPress={() => navigation.goBack()}
+          >
             <Text style={styles.buttonText}>Go Back</Text>
           </TouchableOpacity>
         </View>
@@ -368,21 +421,28 @@ const InventoryDetailScreen: React.FC<InventoryDetailScreenProps> = ({ navigatio
   return (
     <SafeAreaView style={styles.container}>
       {renderSyncStatus()}
-      
-      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+
+      <ScrollView
+        style={styles.scrollView}
+        showsVerticalScrollIndicator={false}
+      >
         <View style={styles.header}>
           <View style={styles.headerContent}>
             <Text style={styles.title}>{product.name}</Text>
             <Text style={styles.subtitle}>SKU: {product.sku}</Text>
           </View>
-          
+
           {canEdit && (
             <TouchableOpacity
               style={styles.editButton}
               onPress={() => setIsEditing(!isEditing)}
               disabled={saving}
             >
-              <Icon name={isEditing ? "close" : "edit"} size={20} color="#007AFF" />
+              <Icon
+                name={isEditing ? 'close' : 'edit'}
+                size={20}
+                color='#007AFF'
+              />
             </TouchableOpacity>
           )}
         </View>
@@ -399,7 +459,7 @@ const InventoryDetailScreen: React.FC<InventoryDetailScreenProps> = ({ navigatio
               disabled={saving}
             >
               {saving ? (
-                <ActivityIndicator size="small" color="white" />
+                <ActivityIndicator size='small' color='white' />
               ) : (
                 <Text style={styles.buttonText}>Save Changes</Text>
               )}
@@ -414,7 +474,9 @@ const InventoryDetailScreen: React.FC<InventoryDetailScreenProps> = ({ navigatio
               onPress={handleDelete}
               disabled={saving}
             >
-              <Text style={[styles.buttonText, styles.deleteButtonText]}>Delete Product</Text>
+              <Text style={[styles.buttonText, styles.deleteButtonText]}>
+                Delete Product
+              </Text>
             </TouchableOpacity>
           </View>
         )}
@@ -584,4 +646,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default InventoryDetailScreen; 
+export default InventoryDetailScreen;
