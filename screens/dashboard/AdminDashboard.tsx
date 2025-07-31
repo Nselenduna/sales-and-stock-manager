@@ -243,6 +243,19 @@ const AdminDashboard = ({ navigation }: { navigation: any }) => {
            </View>
 
            <View style={styles.card}>
+             <Text style={styles.cardTitle}>Advanced Analytics</Text>
+             <Text style={styles.cardDescription}>
+               Real-time business intelligence, predictive analytics, and performance insights
+             </Text>
+             <TouchableOpacity 
+               style={styles.cardButton}
+               onPress={() => navigation.navigate('AdvancedAnalytics')}
+             >
+               <Text style={styles.cardButtonText}>View Analytics</Text>
+             </TouchableOpacity>
+           </View>
+
+           <View style={styles.card}>
              <Text style={styles.cardTitle}>System Settings</Text>
              <Text style={styles.cardDescription}>
                Configure system-wide settings

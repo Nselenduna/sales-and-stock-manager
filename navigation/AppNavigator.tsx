@@ -42,6 +42,10 @@ import PermissionManagementScreen from '../screens/user/PermissionManagementScre
 // Security Screens
 import SecuritySettingsScreen from '../screens/security/SecuritySettingsScreen';
 
+// Analytics Screens
+import AdvancedAnalyticsScreen from '../screens/analytics/AdvancedAnalyticsScreen';
+import RealTimeDashboardScreen from '../screens/analytics/RealTimeDashboardScreen';
+
 // Other Screens
 import LoadingScreen from '../screens/LoadingScreen';
 
@@ -314,6 +318,20 @@ const AppNavigator = () => {
         <Stack.Screen
           name='SecuritySettings'
           component={SecuritySettingsScreen}
+          options={{
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name='AdvancedAnalytics'
+          component={AdvancedAnalyticsScreen}
+          options={{
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name='RealTimeDashboard'
+          component={RealTimeDashboardScreen}
           options={{
             headerShown: false,
           }}
