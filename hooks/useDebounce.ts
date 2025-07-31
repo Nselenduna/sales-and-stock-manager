@@ -6,7 +6,7 @@ import { useState, useEffect } from 'react';
  * @param delay - The delay in milliseconds (default: 300ms)
  * @returns The debounced value
  */
-export function useDebounce<T>(value: T, delay: number = 300): T {
+function useDebounce<T>(value: T, delay: number = 300): T {
   const [debouncedValue, setDebouncedValue] = useState<T>(value);
 
   useEffect(() => {
@@ -30,7 +30,7 @@ export function useDebounce<T>(value: T, delay: number = 300): T {
  * @param delay - The delay in milliseconds (default: 300ms)
  * @returns Object containing debounced value and loading state
  */
-export function useDebouncedSearch(value: string, delay: number = 300) {
+function useDebouncedSearch(value: string, delay: number = 300) {
   const [isSearching, setIsSearching] = useState(false);
   const debouncedValue = useDebounce(value, delay);
 
@@ -48,3 +48,6 @@ export function useDebouncedSearch(value: string, delay: number = 300) {
     isSearching,
   };
 }
+
+export default useDebounce;
+export { useDebouncedSearch };
