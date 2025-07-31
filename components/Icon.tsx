@@ -77,6 +77,14 @@ const Icon: React.FC<IconProps> = ({
       'close-circle': '❌',
       'x-circle': '❌',
       'help-circle': '❓',
+      'receipt': '🧾',
+      'price': '💰',
+      'clock': '🕐',
+      'camera-off': '📷',
+      'flash-off': '⚡',
+      'flash-on': '⚡',
+      'flash-auto': '⚡',
+      'camera-switch': '🔄',
     };
     return icons[iconName] || '❓';
   };

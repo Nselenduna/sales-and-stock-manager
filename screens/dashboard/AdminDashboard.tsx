@@ -73,12 +73,15 @@ const AdminDashboard = ({ navigation }: { navigation: any }) => {
 
         <View style={styles.content}>
           <View style={styles.card}>
-            <Text style={styles.cardTitle}>User Management</Text>
+            <Text style={styles.cardTitle}>Customer Management</Text>
             <Text style={styles.cardDescription}>
-              Manage users, roles, and permissions
+              Manage customers, view purchase history, and track customer data
             </Text>
-            <TouchableOpacity style={styles.cardButton}>
-              <Text style={styles.cardButtonText}>Manage Users</Text>
+            <TouchableOpacity 
+              style={styles.cardButton}
+              onPress={() => navigation.navigate('CustomerManagement')}
+            >
+              <Text style={styles.cardButtonText}>Manage Customers</Text>
             </TouchableOpacity>
           </View>
 
@@ -100,7 +103,10 @@ const AdminDashboard = ({ navigation }: { navigation: any }) => {
             <Text style={styles.cardDescription}>
               View comprehensive sales reports and analytics
             </Text>
-            <TouchableOpacity style={styles.cardButton}>
+            <TouchableOpacity 
+              style={styles.cardButton}
+              onPress={() => navigation.navigate('SalesAnalytics')}
+            >
               <Text style={styles.cardButtonText}>View Analytics</Text>
             </TouchableOpacity>
           </View>
