@@ -25,6 +25,10 @@ import BarcodeScannerScreen from '../screens/BarcodeScannerScreen';
 // Dashboard Screens
 import StockAlertScreen from '../screens/StockAlertScreen';
 
+// Sales Screens
+import SalesScreen from '../screens/sales/SalesScreen';
+import SalesHistoryScreen from '../screens/sales/SalesHistoryScreen';
+
 // Other Screens
 import LoadingScreen from '../screens/LoadingScreen';
 
@@ -220,6 +224,20 @@ const AppNavigator = () => {
         <Stack.Screen
           name='StockAlerts'
           component={StockAlertScreen}
+          options={{
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name='Sales'
+          component={SalesScreen}
+          options={{
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name='SalesHistory'
+          component={SalesHistoryScreen}
           options={{
             headerShown: false,
           }}

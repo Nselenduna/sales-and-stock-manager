@@ -30,11 +30,21 @@ const AdminDashboard = ({ navigation }: { navigation: any }) => {
   const handleQuickAction = (actionId: string) => {
     switch (actionId) {
       case 'scan-product':
-        navigation.navigate('BarcodeScanner');
+        navigation.navigate('BarcodeScanner', {
+          onBarcodeScanned: (result: any) => {
+            // Handle the scanned barcode result
+            console.log('Barcode scanned:', result);
+            // You can navigate to inventory or product detail based on the result
+            if (result.product) {
+              navigation.navigate('ProductDetail', { productId: result.product.id });
+            } else {
+              navigation.navigate('Inventory');
+            }
+          }
+        });
         break;
       case 'create-sale':
-        // TODO: Navigate to sales screen when implemented
-        Alert.alert('Coming Soon', 'Sales functionality will be available soon');
+        navigation.navigate('Sales');
         break;
       case 'add-stock':
         navigation.navigate('Inventory');
@@ -69,6 +79,19 @@ const AdminDashboard = ({ navigation }: { navigation: any }) => {
             </Text>
             <TouchableOpacity style={styles.cardButton}>
               <Text style={styles.cardButtonText}>Manage Users</Text>
+            </TouchableOpacity>
+          </View>
+
+          <View style={styles.card}>
+            <Text style={styles.cardTitle}>Sales</Text>
+            <Text style={styles.cardDescription}>
+              Process sales transactions, scan barcodes, and manage customer purchases.
+            </Text>
+            <TouchableOpacity 
+              style={styles.cardButton}
+              onPress={() => navigation.navigate('Sales')}
+            >
+              <Text style={styles.cardButtonText}>Start Sale</Text>
             </TouchableOpacity>
           </View>
 

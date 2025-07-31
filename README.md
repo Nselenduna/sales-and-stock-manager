@@ -74,6 +74,7 @@ A comprehensive React Native mobile application for inventory management, sales 
 
 ### Core Functionality
 - **Inventory Management**: CRUD operations for products with images and barcodes
+- **Sales Processing**: Complete POS system with cart management and checkout
 - **Stock Monitoring**: Real-time alerts for low stock items
 - **Barcode Scanning**: Product lookup and inventory updates
 - **Role-Based Access**: Admin, Staff, and Viewer permissions
@@ -88,6 +89,7 @@ A comprehensive React Native mobile application for inventory management, sales 
 ### User Experience
 - **Quick Actions**: One-tap access to common tasks
 - **Stock Alerts**: Visual indicators for inventory issues
+- **Sales Interface**: Intuitive cart management and checkout process
 - **Sync Feedback**: Real-time status updates
 - **Accessibility**: WCAG 2.1 AA compliant interface
 
@@ -138,13 +140,19 @@ A comprehensive React Native mobile application for inventory management, sales 
 ```
 ├── components/          # Reusable UI components
 ├── screens/            # Screen components
+│   ├── sales/         # Sales module screens
+│   ├── inventory/     # Inventory management screens
+│   ├── dashboard/     # Role-based dashboards
+│   └── auth/          # Authentication screens
 ├── navigation/         # Navigation configuration
 ├── lib/               # Utility libraries and Supabase config
 ├── hooks/             # Custom React hooks
 ├── store/             # Zustand state management
 ├── __tests__/         # Test files
+│   └── sales/         # Sales module tests
 ├── modules/           # Feature documentation and specs
 └── docs/              # Project documentation
+│   └── sales/         # Sales module documentation
 ```
 
 ## 🤝 Contributing

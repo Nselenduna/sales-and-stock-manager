@@ -9,6 +9,7 @@ import {
   Alert,
   RefreshControl,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { supabase } from '../lib/supabase';
 import { LowStockProduct } from '../lib/supabase';
 import Icon from '../components/Icon';
@@ -72,6 +73,15 @@ const StockAlertScreen: React.FC<StockAlertScreenProps> = ({ navigation }) => {
       productId: product.id,
       focusOnQuantity: true 
     });
+  };
+
+  const handleBackPress = () => {
+    if (navigation.canGoBack()) {
+      navigation.goBack();
+    } else {
+      // Fallback navigation
+      navigation.navigate('AdminMain');
+    }
   };
 
   const renderProductItem = ({ item }: { item: LowStockProduct }) => {
@@ -178,12 +188,12 @@ const StockAlertScreen: React.FC<StockAlertScreenProps> = ({ navigation }) => {
       </View>
       <TouchableOpacity
         style={styles.backButton}
-        onPress={() => navigation.goBack()}
+        onPress={handleBackPress}
         accessible={true}
         accessibilityLabel="Go back to dashboard"
         accessibilityRole="button"
       >
-        <Icon name="arrow-back" size={24} color="#007AFF" />
+        <Icon name="arrow-back" size={24} color="white" />
       </TouchableOpacity>
     </View>
   );
@@ -198,7 +208,7 @@ const StockAlertScreen: React.FC<StockAlertScreenProps> = ({ navigation }) => {
   }
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       {renderHeader()}
       
       <FlatList
@@ -233,7 +243,7 @@ const StockAlertScreen: React.FC<StockAlertScreenProps> = ({ navigation }) => {
           ) : null
         }
       />
-    </View>
+    </SafeAreaView>
   );
 };
 
@@ -266,6 +276,12 @@ const styles = StyleSheet.create({
   },
   backButton: {
     padding: 8,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    borderRadius: 20,
+    width: 40,
+    height: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   loadingContainer: {
     flex: 1,

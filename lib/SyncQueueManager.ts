@@ -2,7 +2,14 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { supabase } from './supabase';
 import { Platform } from 'react-native';
 import * as SQLite from 'expo-sqlite';
-import { v4 as uuid } from 'uuid';
+// Simple UUID generator that doesn't rely on crypto
+const generateUUID = (): string => {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    const r = Math.random() * 16 | 0;
+    const v = c === 'x' ? r : (r & 0x3 | 0x8);
+    return v.toString(16);
+  });
+};
 import NetInfo from '@react-native-community/netinfo';
 
 /**
@@ -194,7 +201,7 @@ export class SyncQueueManager {
    */
   public async addToQueue(options: AddToQueueOptions): Promise<SyncQueueItem> {
     const item: SyncQueueItem = {
-      id: uuid(),
+      id: generateUUID(),
       operation: options.operation,
       entity: options.entity,
       data: options.data,

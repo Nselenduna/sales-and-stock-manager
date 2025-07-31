@@ -58,7 +58,7 @@ const BarcodeScannerScreen: React.FC<BarcodeScannerScreenProps> = ({
   navigation,
   route,
 }) => {
-  const { onBarcodeScanned } = route.params;
+  const { onBarcodeScanned } = route.params || {};
   const [hasPermission, setHasPermission] = useState<boolean | null>(null);
   const [scanned, setScanned] = useState(false);
   const [scanning, setScanning] = useState(false);
@@ -94,8 +94,10 @@ const BarcodeScannerScreen: React.FC<BarcodeScannerScreenProps> = ({
         autoFocus: true,
       });
 
-      // Call the callback with the result
-      onBarcodeScanned(result);
+      // Call the callback with the result if provided
+      if (onBarcodeScanned) {
+        onBarcodeScanned(result);
+      }
 
       // Navigate back after a short delay to show the result
       setTimeout(() => {

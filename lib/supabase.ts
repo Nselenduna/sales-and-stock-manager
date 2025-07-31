@@ -80,3 +80,37 @@ export interface SalesSummary {
   total_revenue: number;
   avg_price: number;
 }
+
+// Sales Transaction types
+export interface SalesTransaction {
+  id: string;
+  store_id?: string;
+  items: SalesTransactionItem[];
+  total: number; // in pence
+  status: 'queued' | 'synced' | 'failed';
+  created_at: string;
+  updated_at: string;
+}
+
+export interface SalesTransactionItem {
+  product_id: string;
+  quantity: number;
+  unit_price: number; // in pence
+  total_price: number; // in pence
+  product_name?: string; // denormalized for offline display
+}
+
+export interface CartItem {
+  product: Product;
+  quantity: number;
+  unit_price: number;
+  total_price: number;
+}
+
+export interface SalesHistoryFilters {
+  start_date?: string;
+  end_date?: string;
+  status?: 'queued' | 'synced' | 'failed';
+  limit?: number;
+  offset?: number;
+}
