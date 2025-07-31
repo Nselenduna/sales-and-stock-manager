@@ -98,31 +98,57 @@ const AdminDashboard = ({ navigation }: { navigation: any }) => {
             </TouchableOpacity>
           </View>
 
-          <View style={styles.card}>
-            <Text style={styles.cardTitle}>Sales Analytics</Text>
-            <Text style={styles.cardDescription}>
-              View comprehensive sales reports and analytics
-            </Text>
-            <TouchableOpacity 
-              style={styles.cardButton}
-              onPress={() => navigation.navigate('SalesAnalytics')}
-            >
-              <Text style={styles.cardButtonText}>View Analytics</Text>
-            </TouchableOpacity>
-          </View>
+                     <View style={styles.card}>
+             <Text style={styles.cardTitle}>Sales Analytics</Text>
+             <Text style={styles.cardDescription}>
+               View comprehensive sales reports and analytics
+             </Text>
+             <TouchableOpacity 
+               style={styles.cardButton}
+               onPress={() => navigation.navigate('SalesAnalytics')}
+             >
+               <Text style={styles.cardButtonText}>View Analytics</Text>
+             </TouchableOpacity>
+           </View>
 
-          <View style={styles.card}>
-            <Text style={styles.cardTitle}>Inventory Management</Text>
-            <Text style={styles.cardDescription}>
-              Manage stock levels and inventory
-            </Text>
-            <TouchableOpacity 
-              style={styles.cardButton}
-              onPress={() => navigation.navigate('Inventory')}
-            >
-              <Text style={styles.cardButtonText}>Manage Inventory</Text>
-            </TouchableOpacity>
-          </View>
+           <View style={styles.card}>
+             <Text style={styles.cardTitle}>Sales Forecasting</Text>
+             <Text style={styles.cardDescription}>
+               Predictive analytics for inventory planning and demand forecasting
+             </Text>
+             <TouchableOpacity 
+               style={styles.cardButton}
+               onPress={() => navigation.navigate('SalesForecasting')}
+             >
+               <Text style={styles.cardButtonText}>View Forecast</Text>
+             </TouchableOpacity>
+           </View>
+
+                     <View style={styles.card}>
+             <Text style={styles.cardTitle}>Inventory Management</Text>
+             <Text style={styles.cardDescription}>
+               Manage stock levels and inventory
+             </Text>
+             <TouchableOpacity 
+               style={styles.cardButton}
+               onPress={() => navigation.navigate('Inventory')}
+             >
+               <Text style={styles.cardButtonText}>Manage Inventory</Text>
+             </TouchableOpacity>
+           </View>
+
+           <View style={styles.card}>
+             <Text style={styles.cardTitle}>Inventory Analytics</Text>
+             <Text style={styles.cardDescription}>
+               Advanced analytics, turnover analysis, and performance insights
+             </Text>
+             <TouchableOpacity 
+               style={styles.cardButton}
+               onPress={() => navigation.navigate('InventoryAnalytics')}
+             >
+               <Text style={styles.cardButtonText}>View Analytics</Text>
+             </TouchableOpacity>
+           </View>
 
           <View style={styles.card}>
             <Text style={styles.cardTitle}>Stock Alerts</Text>

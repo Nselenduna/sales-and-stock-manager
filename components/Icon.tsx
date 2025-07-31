@@ -85,6 +85,15 @@ const Icon: React.FC<IconProps> = ({
       'flash-on': '⚡',
       'flash-auto': '⚡',
       'camera-switch': '🔄',
+      'list': '📋',
+      'trending-up': '📈',
+      'trending-down': '📉',
+      'bar-chart': '📊',
+      'pie-chart': '🥧',
+      'calendar': '📅',
+      'clock': '🕐',
+      'target': '🎯',
+      'lightbulb': '💡',
     };
     return icons[iconName] || '❓';
   };
