@@ -63,7 +63,7 @@ const SalesAnalyticsScreen: React.FC<SalesAnalyticsScreenProps> = ({ navigation 
       const salesData = transactions || [];
       
       // Calculate metrics
-      const totalRevenue = salesData.reduce((sum, sale) => sum + (sale.total_amount || 0), 0);
+      const totalRevenue = salesData.reduce((sum, sale) => sum + (sale.total || 0), 0);
       const totalSales = salesData.length;
       const averageOrderValue = totalSales > 0 ? totalRevenue / totalSales : 0;
       
@@ -79,7 +79,7 @@ const SalesAnalyticsScreen: React.FC<SalesAnalyticsScreenProps> = ({ navigation 
               revenue: 0 
             };
             existing.quantity += item.quantity || 0;
-            existing.revenue += (item.price || 0) * (item.quantity || 0);
+            existing.revenue += (item.unit_price || 0) * (item.quantity || 0);
             productSales.set(item.product_id, existing);
           });
         }

@@ -98,15 +98,15 @@ const InventoryAnalyticsScreen: React.FC<InventoryAnalyticsScreenProps> = ({ nav
       ).length;
       const outOfStockItems = productsData.filter(p => p.quantity === 0).length;
 
-      // Calculate product turnover
+      // Calculate product turnover using the database function
+      const { data: turnoverData, error: turnoverError } = await supabase
+        .rpc('get_inventory_turnover', { start_date: startDate.toISOString() });
+
+      if (turnoverError) throw turnoverError;
+
       const productTurnover = new Map<string, number>();
-      salesData.forEach(sale => {
-        if (sale.items && Array.isArray(sale.items)) {
-          sale.items.forEach((item: any) => {
-            const current = productTurnover.get(item.product_id) || 0;
-            productTurnover.set(item.product_id, current + (item.quantity || 0));
-          });
-        }
+      (turnoverData || []).forEach(item => {
+        productTurnover.set(item.product_id, item.quantity_sold || 0);
       });
 
       // Calculate average turnover

@@ -86,7 +86,7 @@ const CustomerManagementScreen: React.FC<CustomerManagementScreenProps> = ({ nav
         }
         
         const customer = customerMap.get(customerName)!;
-        customer.total_spent += sale.total_amount || 0;
+        customer.total_spent += sale.total || 0;
         customer.total_orders += 1;
         
         if (new Date(sale.created_at) > new Date(customer.last_order_date)) {

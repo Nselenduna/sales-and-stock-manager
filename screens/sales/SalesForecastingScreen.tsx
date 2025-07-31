@@ -66,35 +66,18 @@ const SalesForecastingScreen: React.FC<SalesForecastingScreenProps> = ({ navigat
       const productsData = products || [];
       const salesData = sales || [];
 
-      // Calculate product sales frequency
+      // Calculate product sales frequency using the database function
+      const { data: turnoverData, error: turnoverError } = await supabase
+        .rpc('get_inventory_turnover', { start_date: startDate.toISOString() });
+
+      if (turnoverError) throw turnoverError;
+
       const productSales = new Map<string, { totalQuantity: number; daysWithSales: number }>();
-      const salesByDate = new Map<string, Set<string>>();
-
-      salesData.forEach(sale => {
-        const saleDate = new Date(sale.created_at).toDateString();
-        if (!salesByDate.has(saleDate)) {
-          salesByDate.set(saleDate, new Set());
-        }
-        
-        if (sale.items && Array.isArray(sale.items)) {
-          sale.items.forEach((item: any) => {
-            const current = productSales.get(item.product_id) || { totalQuantity: 0, daysWithSales: 0 };
-            current.totalQuantity += item.quantity || 0;
-            salesByDate.get(saleDate)!.add(item.product_id);
-            productSales.set(item.product_id, current);
-          });
-        }
-      });
-
-      // Calculate days with sales for each product
-      productSales.forEach((data, productId) => {
-        let daysWithSales = 0;
-        salesByDate.forEach(dateSet => {
-          if (dateSet.has(productId)) {
-            daysWithSales++;
-          }
+      (turnoverData || []).forEach(item => {
+        productSales.set(item.product_id, {
+          totalQuantity: item.quantity_sold || 0,
+          daysWithSales: item.days_with_sales || 0,
         });
-        data.daysWithSales = daysWithSales;
       });
 
       // Generate forecast data
