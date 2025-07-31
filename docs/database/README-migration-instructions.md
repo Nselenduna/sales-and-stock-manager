@@ -13,8 +13,13 @@
 
 1. Go to your **Supabase Dashboard**
 2. Navigate to **SQL Editor**
-3. Copy and paste the entire content of `docs/database/quick-fix-migration.sql`
+3. Copy and paste the entire content of `docs/database/simple-migration.sql`
 4. Click **Run** to execute the migration
+
+**Note**: If you encounter any syntax errors, try running the migration in smaller chunks:
+- First run sections 1-3 (table alterations and indexes)
+- Then run sections 4-7 (database functions)
+- Finally run sections 8-15 (tables and sample data)
 
 ### Step 2: Verify the Migration
 
