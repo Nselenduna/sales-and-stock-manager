@@ -13,13 +13,20 @@
 
 1. Go to your **Supabase Dashboard**
 2. Navigate to **SQL Editor**
-3. Copy and paste the entire content of `docs/database/simple-migration.sql`
+3. Copy and paste the entire content of `docs/database/check-and-fix-migration.sql`
 4. Click **Run** to execute the migration
 
-**Note**: If you encounter any syntax errors, try running the migration in smaller chunks:
-- First run sections 1-3 (table alterations and indexes)
-- Then run sections 4-7 (database functions)
-- Finally run sections 8-15 (tables and sample data)
+**This migration will:**
+- ✅ Check your existing table structure first
+- ✅ Safely add missing columns (including the `total` column)
+- ✅ Create all necessary database functions
+- ✅ Set up security tables and permissions
+- ✅ Insert sample data only if the table is empty
+
+**Alternative**: If you still encounter issues, try running the migration in smaller chunks:
+- First run sections 1-3 (table structure check and column additions)
+- Then run sections 4-8 (indexes and database functions)
+- Finally run sections 9-17 (tables, permissions, and sample data)
 
 ### Step 2: Verify the Migration
 
