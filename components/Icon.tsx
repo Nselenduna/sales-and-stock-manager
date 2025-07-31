@@ -94,6 +94,11 @@ const Icon: React.FC<IconProps> = ({
       'clock': '🕐',
       'target': '🎯',
       'lightbulb': '💡',
+      'download': '📥',
+      'credit-card': '💳',
+      'users': '👥',
+      'heart': '❤️',
+      'activity': '📊',
     };
     return icons[iconName] || '❓';
   };

@@ -32,6 +32,7 @@ import SalesAnalyticsScreen from '../screens/sales/SalesAnalyticsScreen';
 import CustomerManagementScreen from '../screens/sales/CustomerManagementScreen';
 import InventoryAnalyticsScreen from '../screens/inventory/InventoryAnalyticsScreen';
 import SalesForecastingScreen from '../screens/sales/SalesForecastingScreen';
+import ReportsDashboardScreen from '../screens/reports/ReportsDashboardScreen';
 
 // Other Screens
 import LoadingScreen from '../screens/LoadingScreen';
@@ -270,6 +271,13 @@ const AppNavigator = () => {
         <Stack.Screen
           name='SalesForecasting'
           component={SalesForecastingScreen}
+          options={{
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name='ReportsDashboard'
+          component={ReportsDashboardScreen}
           options={{
             headerShown: false,
           }}

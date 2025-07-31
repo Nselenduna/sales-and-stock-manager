@@ -177,15 +177,28 @@ const AdminDashboard = ({ navigation }: { navigation: any }) => {
             </TouchableOpacity>
           </View>
 
-          <View style={styles.card}>
-            <Text style={styles.cardTitle}>System Settings</Text>
-            <Text style={styles.cardDescription}>
-              Configure system-wide settings
-            </Text>
-            <TouchableOpacity style={styles.cardButton}>
-              <Text style={styles.cardButtonText}>Settings</Text>
-            </TouchableOpacity>
-          </View>
+                     <View style={styles.card}>
+             <Text style={styles.cardTitle}>Reports & Analytics</Text>
+             <Text style={styles.cardDescription}>
+               Generate comprehensive business reports and export data
+             </Text>
+             <TouchableOpacity 
+               style={styles.cardButton}
+               onPress={() => navigation.navigate('ReportsDashboard')}
+             >
+               <Text style={styles.cardButtonText}>View Reports</Text>
+             </TouchableOpacity>
+           </View>
+
+           <View style={styles.card}>
+             <Text style={styles.cardTitle}>System Settings</Text>
+             <Text style={styles.cardDescription}>
+               Configure system-wide settings
+             </Text>
+             <TouchableOpacity style={styles.cardButton}>
+               <Text style={styles.cardButtonText}>Settings</Text>
+             </TouchableOpacity>
+           </View>
         </View>
 
         <TouchableOpacity style={styles.signOutButton} onPress={handleSignOut}>
