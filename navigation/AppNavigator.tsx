@@ -34,6 +34,11 @@ import InventoryAnalyticsScreen from '../screens/inventory/InventoryAnalyticsScr
 import SalesForecastingScreen from '../screens/sales/SalesForecastingScreen';
 import ReportsDashboardScreen from '../screens/reports/ReportsDashboardScreen';
 
+// User Management Screens
+import UserManagementScreen from '../screens/user/UserManagementScreen';
+import UserActivityScreen from '../screens/user/UserActivityScreen';
+import PermissionManagementScreen from '../screens/user/PermissionManagementScreen';
+
 // Other Screens
 import LoadingScreen from '../screens/LoadingScreen';
 
@@ -278,6 +283,27 @@ const AppNavigator = () => {
         <Stack.Screen
           name='ReportsDashboard'
           component={ReportsDashboardScreen}
+          options={{
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name='UserManagement'
+          component={UserManagementScreen}
+          options={{
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name='UserActivity'
+          component={UserActivityScreen}
+          options={{
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name='PermissionManagement'
+          component={PermissionManagementScreen}
           options={{
             headerShown: false,
           }}

@@ -191,6 +191,45 @@ const AdminDashboard = ({ navigation }: { navigation: any }) => {
            </View>
 
            <View style={styles.card}>
+             <Text style={styles.cardTitle}>User Management</Text>
+             <Text style={styles.cardDescription}>
+               Manage users, roles, and permissions
+             </Text>
+             <TouchableOpacity 
+               style={styles.cardButton}
+               onPress={() => navigation.navigate('UserManagement')}
+             >
+               <Text style={styles.cardButtonText}>Manage Users</Text>
+             </TouchableOpacity>
+           </View>
+
+           <View style={styles.card}>
+             <Text style={styles.cardTitle}>User Activity Log</Text>
+             <Text style={styles.cardDescription}>
+               Monitor user activities and system events
+             </Text>
+             <TouchableOpacity 
+               style={styles.cardButton}
+               onPress={() => navigation.navigate('UserActivity')}
+             >
+               <Text style={styles.cardButtonText}>View Activity</Text>
+             </TouchableOpacity>
+           </View>
+
+           <View style={styles.card}>
+             <Text style={styles.cardTitle}>Permission Management</Text>
+             <Text style={styles.cardDescription}>
+               Configure role-based access controls and permissions
+             </Text>
+             <TouchableOpacity 
+               style={styles.cardButton}
+               onPress={() => navigation.navigate('PermissionManagement')}
+             >
+               <Text style={styles.cardButtonText}>Manage Permissions</Text>
+             </TouchableOpacity>
+           </View>
+
+           <View style={styles.card}>
              <Text style={styles.cardTitle}>System Settings</Text>
              <Text style={styles.cardDescription}>
                Configure system-wide settings

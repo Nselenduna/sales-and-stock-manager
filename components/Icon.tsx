@@ -99,6 +99,16 @@ const Icon: React.FC<IconProps> = ({
       'users': '👥',
       'heart': '❤️',
       'activity': '📊',
+      'person-add': '👤➕',
+      'login': '🔐',
+      'logout': '🚪',
+      'inventory': '📦',
+      'backup': '💾',
+      'shield': '🛡️',
+      'lock': '🔒',
+      'unlock': '🔓',
+      'key': '🔑',
+      'security': '🔐',
     };
     return icons[iconName] || '❓';
   };
