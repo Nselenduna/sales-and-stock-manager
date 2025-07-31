@@ -39,6 +39,9 @@ import UserManagementScreen from '../screens/user/UserManagementScreen';
 import UserActivityScreen from '../screens/user/UserActivityScreen';
 import PermissionManagementScreen from '../screens/user/PermissionManagementScreen';
 
+// Security Screens
+import SecuritySettingsScreen from '../screens/security/SecuritySettingsScreen';
+
 // Other Screens
 import LoadingScreen from '../screens/LoadingScreen';
 
@@ -304,6 +307,13 @@ const AppNavigator = () => {
         <Stack.Screen
           name='PermissionManagement'
           component={PermissionManagementScreen}
+          options={{
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name='SecuritySettings'
+          component={SecuritySettingsScreen}
           options={{
             headerShown: false,
           }}

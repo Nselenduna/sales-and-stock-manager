@@ -230,6 +230,19 @@ const AdminDashboard = ({ navigation }: { navigation: any }) => {
            </View>
 
            <View style={styles.card}>
+             <Text style={styles.cardTitle}>Security Settings</Text>
+             <Text style={styles.cardDescription}>
+               Configure security policies, password requirements, and access controls
+             </Text>
+             <TouchableOpacity 
+               style={styles.cardButton}
+               onPress={() => navigation.navigate('SecuritySettings')}
+             >
+               <Text style={styles.cardButtonText}>Security Settings</Text>
+             </TouchableOpacity>
+           </View>
+
+           <View style={styles.card}>
              <Text style={styles.cardTitle}>System Settings</Text>
              <Text style={styles.cardDescription}>
                Configure system-wide settings
