@@ -201,10 +201,10 @@ const StockAlertScreen: React.FC<StockAlertScreenProps> = ({ navigation }) => {
 
   const renderHeader = () => (
     <View
-      style={[
-        styles.header,
-        isUIPolishEnabled('safeAreaInsets') && { paddingTop: insets.top + 20 },
-      ]}
+              style={[
+          styles.header,
+          isUIPolishEnabled('safeAreaInsets') && { paddingTop: insets.top + 10 },
+        ]}
       testID='header-container'
     >
       <View style={styles.headerContent}>
@@ -311,7 +311,7 @@ const styles = StyleSheet.create({
   },
   header: {
     backgroundColor: '#007AFF',
-    paddingTop: 60,
+    paddingTop: 50,
     paddingBottom: 20,
     paddingHorizontal: 20,
     flexDirection: 'row',

@@ -7,12 +7,13 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Alert,
-  SafeAreaView,
   RefreshControl,
 } from 'react-native';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { supabase } from '../../lib/supabase';
 import Icon from '../../components/Icon';
-import { formatCurrency, formatDate } from '../../lib/utils';
+import { formatCurrency } from '../../lib/utils';
+import { isUIPolishEnabled } from '../../feature_flags/ui-polish';
 
 interface SalesMetrics {
   totalRevenue: number;
@@ -41,6 +42,7 @@ const SalesAnalyticsScreen: React.FC<SalesAnalyticsScreenProps> = ({ navigation 
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [timeRange, setTimeRange] = useState<'today' | 'week' | 'month'>('today');
+  const insets = useSafeAreaInsets();
 
   useEffect(() => {
     loadAnalytics();
@@ -155,7 +157,12 @@ const SalesAnalyticsScreen: React.FC<SalesAnalyticsScreenProps> = ({ navigation 
   );
 
   const renderHeader = () => (
-    <View style={styles.header}>
+    <View 
+      style={[
+        styles.header,
+        isUIPolishEnabled('safeAreaInsets') && { paddingTop: insets.top + 10 }
+      ]}
+    >
       <View style={styles.headerContent}>
         <Text style={styles.headerTitle}>Sales Analytics</Text>
         <Text style={styles.headerSubtitle}>
@@ -308,7 +315,7 @@ const styles = StyleSheet.create({
   },
   header: {
     backgroundColor: '#007AFF',
-    paddingTop: 60,
+    paddingTop: 50,
     paddingBottom: 20,
     paddingHorizontal: 20,
     flexDirection: 'row',

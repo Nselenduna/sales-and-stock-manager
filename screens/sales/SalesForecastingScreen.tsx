@@ -7,12 +7,13 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Alert,
-  SafeAreaView,
   RefreshControl,
 } from 'react-native';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { supabase } from '../../lib/supabase';
 import Icon from '../../components/Icon';
-import { formatCurrency, formatDate } from '../../lib/utils';
+import { formatCurrency } from '../../lib/utils'; // eslint-disable-line no-unused-vars
+import { isUIPolishEnabled } from '../../feature_flags/ui-polish';
 
 interface ForecastData {
   productId: string;
@@ -35,6 +36,7 @@ const SalesForecastingScreen: React.FC<SalesForecastingScreenProps> = ({ navigat
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [forecastPeriod, setForecastPeriod] = useState<'week' | 'month' | 'quarter'>('month');
   const [filterRisk, setFilterRisk] = useState<'all' | 'high' | 'medium' | 'low'>('all');
+  const insets = useSafeAreaInsets();
 
   useEffect(() => {
     loadForecastData();
@@ -164,7 +166,12 @@ const SalesForecastingScreen: React.FC<SalesForecastingScreenProps> = ({ navigat
   );
 
   const renderHeader = () => (
-    <View style={styles.header}>
+    <View 
+      style={[
+        styles.header,
+        isUIPolishEnabled('safeAreaInsets') && { paddingTop: insets.top + 10 }
+      ]}
+    >
       <View style={styles.headerContent}>
         <Text style={styles.headerTitle}>Sales Forecasting</Text>
         <Text style={styles.headerSubtitle}>
@@ -443,7 +450,7 @@ const styles = StyleSheet.create({
   },
   header: {
     backgroundColor: '#007AFF',
-    paddingTop: 60,
+    paddingTop: 50,
     paddingBottom: 20,
     paddingHorizontal: 20,
     flexDirection: 'row',

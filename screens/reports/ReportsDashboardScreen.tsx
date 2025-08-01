@@ -1,18 +1,18 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  ActivityIndicator,
   Alert,
-  SafeAreaView,
   RefreshControl,
 } from 'react-native';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { supabase } from '../../lib/supabase';
 import Icon from '../../components/Icon';
-import { formatCurrency, formatDate } from '../../lib/utils';
+import { formatCurrency } from '../../lib/utils';
+import { isUIPolishEnabled } from '../../feature_flags/ui-polish';
 
 interface ReportType {
   id: string;
@@ -32,6 +32,7 @@ const ReportsDashboardScreen: React.FC<ReportsDashboardScreenProps> = ({ navigat
   const [isLoading, setIsLoading] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<'all' | 'sales' | 'inventory' | 'analytics' | 'customers'>('all');
+  const insets = useSafeAreaInsets();
 
   const reportTypes: ReportType[] = [
     // Sales Reports
@@ -246,7 +247,12 @@ const ReportsDashboardScreen: React.FC<ReportsDashboardScreenProps> = ({ navigat
   };
 
   const renderHeader = () => (
-    <View style={styles.header}>
+    <View 
+      style={[
+        styles.header,
+        isUIPolishEnabled('safeAreaInsets') && { paddingTop: insets.top + 10 }
+      ]}
+    >
       <View style={styles.headerContent}>
         <Text style={styles.headerTitle}>Reports Dashboard</Text>
         <Text style={styles.headerSubtitle}>
@@ -411,7 +417,7 @@ const styles = StyleSheet.create({
   },
   header: {
     backgroundColor: '#007AFF',
-    paddingTop: 60,
+    paddingTop: 50,
     paddingBottom: 20,
     paddingHorizontal: 20,
     flexDirection: 'row',
