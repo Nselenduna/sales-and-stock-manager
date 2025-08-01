@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef, useEffect } from 'react';
 import {
   View,
   Text,
@@ -6,13 +6,15 @@ import {
   StyleSheet,
   TouchableOpacity,
   ScrollView,
+  Animated,
 } from 'react-native';
 import Icon from './Icon';
+import { isUIPolishEnabled } from '../feature_flags/ui-polish';
 
 interface QuickActionsModalProps {
   visible: boolean;
   onClose: () => void;
-  onAction: (action: string) => void;
+  onAction: (action: string) => void; // eslint-disable-line no-unused-vars
 }
 
 interface QuickAction {
@@ -29,6 +31,19 @@ const QuickActionsModal: React.FC<QuickActionsModalProps> = ({
   onClose,
   onAction,
 }) => {
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    if (visible && isUIPolishEnabled('smoothAnimations')) {
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 300,
+        useNativeDriver: true,
+      }).start();
+    } else if (!visible) {
+      fadeAnim.setValue(0);
+    }
+  }, [visible, fadeAnim]);
   const quickActions: QuickAction[] = [
     {
       id: 'scan-product',
@@ -92,79 +107,83 @@ const QuickActionsModal: React.FC<QuickActionsModalProps> = ({
   const renderActionItem = (action: QuickAction) => (
     <TouchableOpacity
       key={action.id}
-      style={[
-        styles.actionCard,
-        { backgroundColor: action.backgroundColor },
-      ]}
+      style={[styles.actionCard, { backgroundColor: action.backgroundColor }]}
       onPress={() => handleActionPress(action.id)}
       accessible={true}
       accessibilityLabel={action.title}
       accessibilityHint={action.description}
-      accessibilityRole="button"
+      accessibilityRole='button'
     >
       <View style={styles.actionIconContainer}>
-        <View style={[styles.iconBackground, { backgroundColor: action.color }]}>
-          <Icon name={action.icon} size={24} color="white" />
+        <View
+          style={[styles.iconBackground, { backgroundColor: action.color }]}
+        >
+          <Icon name={action.icon} size={24} color='white' />
         </View>
       </View>
-      
+
       <View style={styles.actionContent}>
         <Text style={styles.actionTitle}>{action.title}</Text>
         <Text style={styles.actionDescription}>{action.description}</Text>
       </View>
-      
-      <Icon name="chevron-right" size={20} color="#666" />
+
+      <Icon name='chevron-right' size={20} color='#666' />
     </TouchableOpacity>
   );
 
   return (
     <Modal
       visible={visible}
-      animationType="slide"
+      animationType='slide'
       transparent={true}
       onRequestClose={onClose}
     >
-      <TouchableOpacity 
-        style={styles.overlay} 
-        activeOpacity={1} 
+      <TouchableOpacity
+        style={styles.overlay}
+        activeOpacity={1}
         onPress={handleBackdropPress}
       >
-        <TouchableOpacity 
-          style={styles.modalContainer} 
-          activeOpacity={1}
-          onPress={(e) => e.stopPropagation()}
+        <Animated.View
+          style={[
+            styles.modalContainer,
+            isUIPolishEnabled('smoothAnimations') && { opacity: fadeAnim },
+          ]}
         >
-          <View style={styles.header}>
-            <Text style={styles.title}>Quick Actions</Text>
-            <Text style={styles.subtitle}>
-              Access common tasks and features
-            </Text>
-            <TouchableOpacity
-              style={styles.closeButton}
-              onPress={onClose}
-              accessible={true}
-              accessibilityLabel="Close quick actions"
-              accessibilityRole="button"
-            >
-              <Icon name="x" size={24} color="#666" />
-            </TouchableOpacity>
-          </View>
-
-          <ScrollView 
-            style={styles.content}
-            showsVerticalScrollIndicator={false}
+          <TouchableOpacity
+            activeOpacity={1}
+            onPress={e => e.stopPropagation()}
+            testID='quick-modal'
           >
-            <View style={styles.actionsGrid}>
-              {quickActions.map(renderActionItem)}
+            <View style={styles.header}>
+              <Text style={styles.title}>Quick Actions</Text>
+              <Text style={styles.subtitle}>
+                Access common tasks and features
+              </Text>
+              <TouchableOpacity
+                style={styles.closeButton}
+                onPress={onClose}
+                accessible={true}
+                accessibilityLabel='Close quick actions'
+                accessibilityRole='button'
+              >
+                <Icon name='x' size={24} color='#666' />
+              </TouchableOpacity>
             </View>
-          </ScrollView>
-        </TouchableOpacity>
+
+            <ScrollView
+              style={styles.content}
+              showsVerticalScrollIndicator={false}
+            >
+              <View style={styles.actionsGrid}>
+                {quickActions.map(renderActionItem)}
+              </View>
+            </ScrollView>
+          </TouchableOpacity>
+        </Animated.View>
       </TouchableOpacity>
     </Modal>
   );
 };
-
-
 
 const styles = StyleSheet.create({
   overlay: {
@@ -245,4 +264,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default QuickActionsModal; 
+export default QuickActionsModal;

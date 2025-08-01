@@ -9,24 +9,32 @@ import {
   Alert,
   RefreshControl,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from 'react-native-safe-area-context';
 import { supabase } from '../lib/supabase';
 import { LowStockProduct } from '../lib/supabase';
 import Icon from '../components/Icon';
+import SkeletonLoader from '../components/SkeletonLoader';
+import { isUIPolishEnabled } from '../feature_flags/ui-polish';
 
 interface StockAlertScreenProps {
-  navigation: any;
+  navigation: any; // eslint-disable-line @typescript-eslint/no-explicit-any
 }
 
 const StockAlertScreen: React.FC<StockAlertScreenProps> = ({ navigation }) => {
-  const [lowStockProducts, setLowStockProducts] = useState<LowStockProduct[]>([]);
+  const [lowStockProducts, setLowStockProducts] = useState<LowStockProduct[]>(
+    []
+  );
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const insets = useSafeAreaInsets();
 
   const fetchLowStockProducts = async () => {
     try {
       setLoading(true);
-      
+
       // First get all products, then filter in JavaScript
       const { data: allProducts, error } = await supabase
         .from('products')
@@ -40,9 +48,10 @@ const StockAlertScreen: React.FC<StockAlertScreenProps> = ({ navigation }) => {
       }
 
       // Filter products where quantity <= low_stock_threshold
-      const lowStockProducts = allProducts?.filter(
-        product => product.quantity <= product.low_stock_threshold
-      ) || [];
+      const lowStockProducts =
+        allProducts?.filter(
+          product => product.quantity <= product.low_stock_threshold
+        ) || [];
 
       setLowStockProducts(lowStockProducts);
     } catch (error) {
@@ -68,10 +77,10 @@ const StockAlertScreen: React.FC<StockAlertScreenProps> = ({ navigation }) => {
   };
 
   const handleAddStock = (product: LowStockProduct) => {
-    navigation.navigate('EditProduct', { 
-      mode: 'edit', 
+    navigation.navigate('EditProduct', {
+      mode: 'edit',
       productId: product.id,
-      focusOnQuantity: true 
+      focusOnQuantity: true,
     });
   };
 
@@ -85,9 +94,12 @@ const StockAlertScreen: React.FC<StockAlertScreenProps> = ({ navigation }) => {
   };
 
   const renderProductItem = ({ item }: { item: LowStockProduct }) => {
-    const stockPercentage = Math.round((item.quantity / item.low_stock_threshold) * 100);
+    const stockPercentage = Math.round(
+      (item.quantity / item.low_stock_threshold) * 100
+    );
     const isCritical = item.quantity === 0;
-    const isLow = item.quantity > 0 && item.quantity <= item.low_stock_threshold;
+    const isLow =
+      item.quantity > 0 && item.quantity <= item.low_stock_threshold;
 
     return (
       <TouchableOpacity
@@ -99,21 +111,23 @@ const StockAlertScreen: React.FC<StockAlertScreenProps> = ({ navigation }) => {
         onPress={() => handleProductPress(item)}
         accessible={true}
         accessibilityLabel={`${item.name}, Quantity: ${item.quantity}, Threshold: ${item.low_stock_threshold}`}
-        accessibilityRole="button"
+        accessibilityRole='button'
       >
         <View style={styles.productHeader}>
           <Text style={styles.productName} numberOfLines={2}>
             {item.name}
           </Text>
-          <View style={[
-            styles.stockIndicator,
-            isCritical && styles.criticalIndicator,
-            isLow && styles.lowStockIndicator,
-          ]}>
-            <Icon 
-              name={isCritical ? 'alert-circle' : 'alert-triangle'} 
-              size={16} 
-              color="white" 
+          <View
+            style={[
+              styles.stockIndicator,
+              isCritical && styles.criticalIndicator,
+              isLow && styles.lowStockIndicator,
+            ]}
+          >
+            <Icon
+              name={isCritical ? 'alert-circle' : 'alert-triangle'}
+              size={16}
+              color='white'
             />
           </View>
         </View>
@@ -128,27 +142,33 @@ const StockAlertScreen: React.FC<StockAlertScreenProps> = ({ navigation }) => {
         <View style={styles.stockInfo}>
           <View style={styles.stockRow}>
             <Text style={styles.stockLabel}>Current Stock:</Text>
-            <Text style={[
-              styles.stockValue,
-              isCritical && styles.criticalText,
-              isLow && styles.lowStockText,
-            ]}>
+            <Text
+              style={[
+                styles.stockValue,
+                isCritical && styles.criticalText,
+                isLow && styles.lowStockText,
+              ]}
+            >
               {item.quantity}
             </Text>
           </View>
-          
+
           <View style={styles.stockRow}>
             <Text style={styles.stockLabel}>Threshold:</Text>
-            <Text style={styles.thresholdValue}>{item.low_stock_threshold}</Text>
+            <Text style={styles.thresholdValue}>
+              {item.low_stock_threshold}
+            </Text>
           </View>
 
           <View style={styles.stockRow}>
             <Text style={styles.stockLabel}>Status:</Text>
-            <Text style={[
-              styles.statusText,
-              isCritical && styles.criticalText,
-              isLow && styles.lowStockText,
-            ]}>
+            <Text
+              style={[
+                styles.statusText,
+                isCritical && styles.criticalText,
+                isLow && styles.lowStockText,
+              ]}
+            >
               {isCritical ? 'Out of Stock' : `${stockPercentage}% of threshold`}
             </Text>
           </View>
@@ -159,9 +179,9 @@ const StockAlertScreen: React.FC<StockAlertScreenProps> = ({ navigation }) => {
           onPress={() => handleAddStock(item)}
           accessible={true}
           accessibilityLabel={`Add stock for ${item.name}`}
-          accessibilityRole="button"
+          accessibilityRole='button'
         >
-          <Icon name="plus" size={16} color="white" />
+          <Icon name='plus' size={16} color='white' />
           <Text style={styles.addStockButtonText}>Add Stock</Text>
         </TouchableOpacity>
       </TouchableOpacity>
@@ -170,51 +190,88 @@ const StockAlertScreen: React.FC<StockAlertScreenProps> = ({ navigation }) => {
 
   const renderEmptyState = () => (
     <View style={styles.emptyState}>
-      <Icon name="checkmark-circle" size={64} color="#34C759" />
+      <Icon name='checkmark-circle' size={64} color='#34C759' />
       <Text style={styles.emptyStateTitle}>No Stock Alerts</Text>
       <Text style={styles.emptyStateDescription}>
-        All products are above their low stock thresholds. Great job managing inventory!
+        All products are above their low stock thresholds. Great job managing
+        inventory!
       </Text>
     </View>
   );
 
   const renderHeader = () => (
-    <View style={styles.header}>
+    <View
+      style={[
+        styles.header,
+        isUIPolishEnabled('safeAreaInsets') && { paddingTop: insets.top + 20 },
+      ]}
+      testID='header-container'
+    >
       <View style={styles.headerContent}>
         <Text style={styles.headerTitle}>Stock Alerts</Text>
         <Text style={styles.headerSubtitle}>
-          {lowStockProducts.length} item{lowStockProducts.length !== 1 ? 's' : ''} need attention
+          {lowStockProducts.length} item
+          {lowStockProducts.length !== 1 ? 's' : ''} need attention
         </Text>
       </View>
       <TouchableOpacity
         style={styles.backButton}
         onPress={handleBackPress}
         accessible={true}
-        accessibilityLabel="Go back to dashboard"
-        accessibilityRole="button"
+        accessibilityLabel='Go back to dashboard'
+        accessibilityRole='button'
       >
-        <Icon name="arrow-back" size={24} color="white" />
+        <Icon name='arrow-back' size={24} color='white' />
       </TouchableOpacity>
+    </View>
+  );
+
+  const renderSkeletonLoader = () => (
+    <View style={styles.skeletonContainer}>
+      <SkeletonLoader height={24} style={styles.skeletonTitle} />
+      <SkeletonLoader height={16} style={styles.skeletonSubtitle} />
+      {[1, 2, 3].map(index => (
+        <View key={index} style={styles.skeletonCard}>
+          <SkeletonLoader height={20} style={styles.skeletonLine} />
+          <SkeletonLoader
+            height={16}
+            width='60%'
+            style={styles.skeletonLineShort}
+          />
+          <SkeletonLoader
+            height={16}
+            width='40%'
+            style={styles.skeletonLineShort}
+          />
+        </View>
+      ))}
     </View>
   );
 
   if (loading) {
     return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#007AFF" />
-        <Text style={styles.loadingText}>Loading stock alerts...</Text>
-      </View>
+      <SafeAreaView style={styles.container}>
+        {renderHeader()}
+        {isUIPolishEnabled('skeletonLoaders') ? (
+          renderSkeletonLoader()
+        ) : (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size='large' color='#007AFF' />
+            <Text style={styles.loadingText}>Loading stock alerts...</Text>
+          </View>
+        )}
+      </SafeAreaView>
     );
   }
 
   return (
     <SafeAreaView style={styles.container}>
       {renderHeader()}
-      
+
       <FlatList
         data={lowStockProducts}
         renderItem={renderProductItem}
-        keyExtractor={(item) => item.id}
+        keyExtractor={item => item.id}
         contentContainerStyle={styles.listContainer}
         showsVerticalScrollIndicator={false}
         refreshControl={
@@ -458,6 +515,34 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     lineHeight: 24,
   },
+  skeletonContainer: {
+    flex: 1,
+    paddingHorizontal: 20,
+    paddingTop: 20,
+  },
+  skeletonTitle: {
+    marginBottom: 8,
+  },
+  skeletonSubtitle: {
+    marginBottom: 20,
+  },
+  skeletonCard: {
+    backgroundColor: 'white',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  skeletonLine: {
+    marginBottom: 8,
+  },
+  skeletonLineShort: {
+    marginBottom: 4,
+  },
 });
 
-export default StockAlertScreen; 
+export default StockAlertScreen;
