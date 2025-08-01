@@ -41,7 +41,6 @@ const SalesScreen: React.FC<SalesScreenProps> = ({ navigation }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [products, setProducts] = useState<Product[]>([]);
   const [isLoadingProducts, setIsLoadingProducts] = useState(false);
-  const [showScanner, setShowScanner] = useState(false);
   
   const debouncedSearch = useDebounce(searchQuery, 300);
 

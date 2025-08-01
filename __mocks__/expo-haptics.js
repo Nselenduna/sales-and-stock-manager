@@ -1,15 +1,14 @@
-module.exports = {
+/* global jest */
+
+const mockHaptics = {
   ImpactFeedbackStyle: {
     Light: 'light',
     Medium: 'medium',
     Heavy: 'heavy',
   },
-  NotificationFeedbackType: {
-    Success: 'success',
-    Warning: 'warning',
-    Error: 'error',
-  },
-  impactAsync: jest.fn(),
-  notificationAsync: jest.fn(),
-  selectionAsync: jest.fn(),
-}; 
+  notificationAsync: jest.fn(() => Promise.resolve()),
+  impactAsync: jest.fn(() => Promise.resolve()),
+  selectionAsync: jest.fn(() => Promise.resolve()),
+};
+
+export default mockHaptics; 

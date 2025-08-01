@@ -1,17 +1,19 @@
-module.exports = {
-  launchImageLibraryAsync: jest.fn(() => Promise.resolve({ cancelled: false, assets: [] })),
-  launchCameraAsync: jest.fn(() => Promise.resolve({ cancelled: false, assets: [] })),
-  requestMediaLibraryPermissionsAsync: jest.fn(() => Promise.resolve({ granted: true })),
-  requestCameraPermissionsAsync: jest.fn(() => Promise.resolve({ granted: true })),
-  getMediaLibraryPermissionsAsync: jest.fn(() => Promise.resolve({ granted: true })),
-  getCameraPermissionsAsync: jest.fn(() => Promise.resolve({ granted: true })),
+/* global jest */
+
+const mockImagePicker = {
   MediaTypeOptions: {
     All: 'All',
     Videos: 'Videos',
     Images: 'Images',
   },
   ImagePickerResult: {
-    cancelled: false,
-    assets: [],
+    canceled: false,
+    assets: [{ uri: 'test-image.jpg' }],
   },
-}; 
+  launchImageLibraryAsync: jest.fn(() => Promise.resolve({ canceled: false, assets: [{ uri: 'test-image.jpg' }] })),
+  launchCameraAsync: jest.fn(() => Promise.resolve({ canceled: false, assets: [{ uri: 'test-image.jpg' }] })),
+  requestMediaLibraryPermissionsAsync: jest.fn(() => Promise.resolve({ status: 'granted' })),
+  requestCameraPermissionsAsync: jest.fn(() => Promise.resolve({ status: 'granted' })),
+};
+
+export default mockImagePicker; 

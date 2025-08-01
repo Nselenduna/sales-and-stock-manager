@@ -17,7 +17,7 @@ import SearchBar from '../../components/SearchBar';
 import FilterBar from '../../components/FilterBar';
 import FloatingActionButton from '../../components/FloatingActionButton';
 import EmptyState from '../../components/EmptyState';
-import useDebounce, { useDebouncedSearch } from '../../hooks/useDebounce';
+import { useDebouncedSearch } from '../../hooks/useDebounce';
 import Icon from '../../components/Icon';
 import { useSyncFeedback } from '../../hooks/useSyncFeedback';
 import SyncStatusBanner from '../../components/SyncStatusBanner';
@@ -55,7 +55,6 @@ const InventoryListScreen: React.FC<InventoryListScreenProps> = ({
   const {
     syncState,
     setSyncing,
-    setQueued,
     setFailed,
     setSuccess,
     retry,

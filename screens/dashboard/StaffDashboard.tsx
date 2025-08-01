@@ -8,7 +8,6 @@ import {
   Alert,
 } from 'react-native';
 import { useAuthStore } from '../../store/authStore';
-import Icon from '../../components/Icon';
 import QuickActionsModal from '../../components/QuickActionsModal';
 
 const StaffDashboard: React.FC<{ navigation: any }> = ({ navigation }) => {
@@ -45,7 +44,6 @@ const StaffDashboard: React.FC<{ navigation: any }> = ({ navigation }) => {
         navigation.navigate('BarcodeScanner', {
           onBarcodeScanned: (result: any) => {
             // Handle the scanned barcode result
-            console.log('Barcode scanned:', result);
             // You can navigate to inventory or product detail based on the result
             if (result.product) {
               navigation.navigate('ProductDetail', { productId: result.product.id });
@@ -71,7 +69,8 @@ const StaffDashboard: React.FC<{ navigation: any }> = ({ navigation }) => {
         navigation.navigate('Inventory');
         break;
       default:
-        console.log('Unknown action:', actionId);
+        // Unknown action
+        break;
     }
   };
 

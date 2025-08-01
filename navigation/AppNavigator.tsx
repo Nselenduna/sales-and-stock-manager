@@ -84,7 +84,7 @@ const AdminTabNavigator = () => {
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
-        tabBarIcon: ({ focused, color, size }) => {
+        tabBarIcon: ({ focused: _focused, color, size }) => {
           let iconName = 'settings';
           if (route.name === 'Inventory') {
             iconName = 'cube';
@@ -115,7 +115,7 @@ const StaffTabNavigator = () => {
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
-        tabBarIcon: ({ focused, color, size }) => {
+        tabBarIcon: ({ focused: _focused, color, size }) => {
           let iconName = 'person';
           if (route.name === 'Inventory') {
             iconName = 'cube';
@@ -146,7 +146,7 @@ const ViewerTabNavigator = () => {
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
-        tabBarIcon: ({ focused, color, size }) => {
+        tabBarIcon: ({ focused: _focused, color, size }) => {
           let iconName = 'eye';
           if (route.name === 'Inventory') {
             iconName = 'cube';
@@ -174,7 +174,7 @@ const ViewerTabNavigator = () => {
 
 // Main App Navigator
 const AppNavigator = () => {
-  const { user, loading, isAuthenticated, userRole } = useAuthStore();
+  const { user: _user, loading, isAuthenticated, userRole } = useAuthStore();
 
   if (loading) {
     return <LoadingScreen />;

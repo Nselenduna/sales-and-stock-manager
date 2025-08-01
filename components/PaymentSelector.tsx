@@ -100,38 +100,38 @@ const PaymentSelector: React.FC<PaymentSelectorProps> = ({
             </View>
 
             <ScrollView style={styles.methodsList}>
-              {PAYMENT_METHODS.map((method) => (
+              {PAYMENT_METHODS.map((_method) => (
                 <TouchableOpacity
-                  key={method.id}
+                  key={_method.id}
                   style={[
                     styles.methodOption,
-                    selectedMethod === method.id && styles.selectedMethod,
+                    selectedMethod === _method.id && styles.selectedMethod,
                   ]}
-                  onPress={() => handleSelectMethod(method.id)}
+                  onPress={() => handleSelectMethod(_method.id)}
                   accessible={true}
-                  accessibilityLabel={`${method.label} payment method`}
+                  accessibilityLabel={`${_method.label} payment method`}
                   accessibilityRole="button"
-                  accessibilityState={{ selected: selectedMethod === method.id }}
+                  accessibilityState={{ selected: selectedMethod === _method.id }}
                 >
                   <View style={styles.methodContent}>
                     <Icon 
-                      name={method.icon} 
+                      name={_method.icon} 
                       size={24} 
-                      color={selectedMethod === method.id ? '#007AFF' : '#666'} 
+                      color={selectedMethod === _method.id ? '#007AFF' : '#666'} 
                     />
                     <View style={styles.methodText}>
                       <Text style={[
                         styles.methodLabel,
-                        selectedMethod === method.id && styles.selectedMethodText,
+                        selectedMethod === _method.id && styles.selectedMethodText,
                       ]}>
-                        {method.label}
+                        {_method.label}
                       </Text>
                       <Text style={styles.methodDescription}>
-                        {method.description}
+                        {_method.description}
                       </Text>
                     </View>
                   </View>
-                  {selectedMethod === method.id && (
+                  {selectedMethod === _method.id && (
                     <Icon name="check" size={20} color="#007AFF" />
                   )}
                 </TouchableOpacity>

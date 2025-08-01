@@ -1,3 +1,5 @@
+/* global jest */
+
 // Mock for react-native/Libraries/Animated/NativeAnimatedHelper
 module.exports = {
   addListener: jest.fn(),
