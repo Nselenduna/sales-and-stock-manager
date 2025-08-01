@@ -3,7 +3,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Text } from 'react-native';
-import useAuthStore from '../store/authStore';
+import { useAuthStore } from '../store/authStore';
 
 // Auth Screens
 import LoginScreen from '../screens/auth/LoginScreen';
@@ -41,6 +41,9 @@ import PermissionManagementScreen from '../screens/user/PermissionManagementScre
 
 // Security Screens
 import SecuritySettingsScreen from '../screens/security/SecuritySettingsScreen';
+
+// Settings Screens
+import SystemSettingsScreen from '../screens/settings/SystemSettingsScreen';
 
 // Analytics Screens
 import AdvancedAnalyticsScreen from '../screens/analytics/AdvancedAnalyticsScreen';
@@ -323,6 +326,13 @@ const AppNavigator = () => {
           }}
         />
         <Stack.Screen
+          name='SystemSettings'
+          component={SystemSettingsScreen}
+          options={{
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
           name='AdvancedAnalytics'
           component={AdvancedAnalyticsScreen}
           options={{
@@ -332,6 +342,20 @@ const AppNavigator = () => {
         <Stack.Screen
           name='RealTimeDashboard'
           component={RealTimeDashboardScreen}
+          options={{
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name='Reports'
+          component={ReportsDashboardScreen}
+          options={{
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name='Settings'
+          component={SecuritySettingsScreen}
           options={{
             headerShown: false,
           }}

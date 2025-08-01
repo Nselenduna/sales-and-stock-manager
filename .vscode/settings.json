@@ -1,6 +1,8 @@
 {
     "cSpell.words": [
         "codebar",
-        "supabase"
+        "plpgsql",
+        "supabase",
+        "TIMESTAMPTZ"
     ]
 }

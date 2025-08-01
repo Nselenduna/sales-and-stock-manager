@@ -6,7 +6,7 @@ import {
   TouchableOpacity,
   ScrollView,
 } from 'react-native';
-import useAuthStore from '../../store/authStore';
+import { useAuthStore } from '../../store/authStore';
 
 const ViewerDashboard = () => {
   const { user, signOut } = useAuthStore();

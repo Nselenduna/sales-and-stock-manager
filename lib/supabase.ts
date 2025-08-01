@@ -87,7 +87,12 @@ export interface SalesTransaction {
   store_id?: string;
   items: SalesTransactionItem[];
   total: number; // in pence
-  status: 'queued' | 'synced' | 'failed';
+  status: 'queued' | 'synced' | 'failed' | 'completed';
+  customer_name?: string;
+  customer_email?: string;
+  customer_phone?: string;
+  payment_method?: string;
+  notes?: string;
   created_at: string;
   updated_at: string;
 }

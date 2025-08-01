@@ -3,7 +3,7 @@ import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import AppNavigator from './navigation/AppNavigator';
-import useAuthStore from './store/authStore';
+import { useAuthStore } from './store/authStore';
 
 export default function App() {
   const { checkUser } = useAuthStore();

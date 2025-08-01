@@ -7,16 +7,18 @@ import {
   RefreshControl,
   Alert,
   Platform,
+  TouchableOpacity,
 } from 'react-native';
 import { FlashList } from '@shopify/flash-list';
-import useAuthStore from '../../store/authStore';
+import { useAuthStore } from '../../store/authStore';
 import { supabase, Product } from '../../lib/supabase';
 import ProductCard from '../../components/ProductCard';
 import SearchBar from '../../components/SearchBar';
 import FilterBar from '../../components/FilterBar';
 import FloatingActionButton from '../../components/FloatingActionButton';
 import EmptyState from '../../components/EmptyState';
-import { useDebouncedSearch } from '../../hooks/useDebounce';
+import useDebounce, { useDebouncedSearch } from '../../hooks/useDebounce';
+import Icon from '../../components/Icon';
 import { useSyncFeedback } from '../../hooks/useSyncFeedback';
 import SyncStatusBanner from '../../components/SyncStatusBanner';
 
@@ -227,11 +229,22 @@ const InventoryListScreen: React.FC<InventoryListScreenProps> = ({
   const renderHeader = useCallback(
     () => (
       <View style={styles.header}>
-        <Text style={styles.title}>Inventory</Text>
-        <Text style={styles.subtitle}>{productCountText}</Text>
+        <View style={styles.headerContent}>
+          <Text style={styles.title}>Inventory</Text>
+          <Text style={styles.subtitle}>{productCountText}</Text>
+        </View>
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => navigation.goBack()}
+          accessible={true}
+          accessibilityLabel="Go back to dashboard"
+          accessibilityRole="button"
+        >
+          <Icon name="arrow-back" size={24} color="white" />
+        </TouchableOpacity>
       </View>
     ),
-    [productCountText]
+    [productCountText, navigation]
   );
 
   const renderEmptyComponent = useCallback(
@@ -352,6 +365,12 @@ const styles = StyleSheet.create({
     paddingTop: 60,
     paddingBottom: 20,
     paddingHorizontal: 20,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+  },
+  headerContent: {
+    flex: 1,
   },
   title: {
     fontSize: 28,
@@ -362,6 +381,15 @@ const styles = StyleSheet.create({
   subtitle: {
     fontSize: 16,
     color: 'rgba(255, 255, 255, 0.8)',
+  },
+  backButton: {
+    padding: 8,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    borderRadius: 20,
+    width: 40,
+    height: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   listContainer: {
     padding: 20,

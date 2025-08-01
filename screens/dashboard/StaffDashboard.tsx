@@ -7,7 +7,7 @@ import {
   TouchableOpacity,
   Alert,
 } from 'react-native';
-import useAuthStore from '../../store/authStore';
+import { useAuthStore } from '../../store/authStore';
 import Icon from '../../components/Icon';
 import QuickActionsModal from '../../components/QuickActionsModal';
 

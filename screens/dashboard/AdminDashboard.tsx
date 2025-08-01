@@ -7,7 +7,7 @@ import {
   ScrollView,
   Alert,
 } from 'react-native';
-import useAuthStore from '../../store/authStore';
+import { useAuthStore } from '../../store/authStore';
 import Icon from '../../components/Icon';
 import QuickActionsModal from '../../components/QuickActionsModal';
 
@@ -260,7 +260,10 @@ const AdminDashboard = ({ navigation }: { navigation: any }) => {
              <Text style={styles.cardDescription}>
                Configure system-wide settings
              </Text>
-             <TouchableOpacity style={styles.cardButton}>
+             <TouchableOpacity 
+               style={styles.cardButton}
+               onPress={() => navigation.navigate('SystemSettings')}
+             >
                <Text style={styles.cardButtonText}>Settings</Text>
              </TouchableOpacity>
            </View>

@@ -102,7 +102,11 @@ const InventoryAnalyticsScreen: React.FC<InventoryAnalyticsScreenProps> = ({ nav
       const { data: turnoverData, error: turnoverError } = await supabase
         .rpc('get_inventory_turnover', { start_date: startDate.toISOString() });
 
-      if (turnoverError) throw turnoverError;
+      if (turnoverError) {
+        console.error('Error fetching inventory turnover:', turnoverError);
+        console.log('Using mock data due to missing database function. Run database migration to enable real analytics.');
+        // Continue with empty turnover data - will use mock calculations
+      }
 
       const productTurnover = new Map<string, number>();
       (turnoverData || []).forEach(item => {

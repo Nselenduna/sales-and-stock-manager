@@ -1,8 +1,5 @@
 // Jest setup file for React Native testing
 
-// Mock React Native components
-jest.mock('react-native/Libraries/Animated/NativeAnimatedHelper');
-
 // Mock AsyncStorage
 jest.mock('@react-native-async-storage/async-storage', () =>
   require('@react-native-async-storage/async-storage/jest/async-storage-mock')
@@ -54,6 +51,13 @@ jest.mock('@supabase/supabase-js', () => ({
       signOut: jest.fn(() => Promise.resolve({ error: null })),
     },
   })),
+}));
+
+// Mock NetInfo
+jest.mock('@react-native-community/netinfo', () => ({
+  fetch: jest.fn(() => Promise.resolve({ isConnected: true, isInternetReachable: true })),
+  addEventListener: jest.fn(),
+  removeEventListener: jest.fn(),
 }));
 
 // Global fetch mock

@@ -16,99 +16,224 @@ const Icon: React.FC<IconProps> = ({
 }) => {
   const getIconSymbol = (iconName: string) => {
     const icons: { [key: string]: string } = {
+      // Navigation and UI
       search: '🔍',
       add: '➕',
       edit: '✏️',
-      'qr-code': '📱',
-      'checkmark-circle': '✅',
-      'check-circle': '✅',
-      time: '⏰',
-      'alert-circle': '⚠️',
-      'cloud-upload': '☁️',
-      'arrow-up': '⬆️',
-      'arrow-down': '⬇️',
-      'close-circle': '❌',
-      'cube-outline': '📦',
-      settings: '⚙️',
-      person: '👤',
-      eye: '👁️',
-      cube: '📦',
-      camera: '📷',
       save: '💾',
       cancel: '❌',
       delete: '🗑️',
-      sync: '🔄',
-      location: '📍',
-      price: '💰',
-      barcode: '📱',
-      history: '📜',
-      info: 'ℹ️',
-      warning: '⚠️',
+      close: '✕',
+      menu: '☰',
+      home: '🏠',
+      back: '←',
+      forward: '→',
+      next: '▶️',
+      previous: '◀️',
+      
+      // Arrows and chevrons
+      'arrow-back': '←',
+      'arrow-left': '←',
+      'arrow-right': '→',
+      'arrow-up': '⬆️',
+      'arrow-down': '⬇️',
+      'chevron-left': '〈',
+      'chevron-right': '〉',
+      'chevron-up': '⌃',
+      'chevron-down': '⌄',
+      
+      // Status and feedback
+      check: '✅',
+      'checkmark-circle': '✅',
+      'check-circle': '✅',
       success: '✅',
       error: '❌',
-      'chevron-down': '⌄',
-      'chevron-up': '⌃',
-      calendar: '📅',
-      user: '👤',
-      filter: '🔧',
-      sort: '📊',
-      'shopping-cart': '🛒',
-      list: '📋',
-      plus: '➕',
-      'chevron-right': '〉',
-      x: '✕',
-      'alert-triangle': '⚠️',
-      'arrow-back': '←',
-      'plus-circle': '➕',
-      'minus': '➖',
-      'trash': '🗑️',
-      'clock': '🕐',
-      'link': '🔗',
-      'help-circle': '❓',
-      'chevron-left': '〈',
-      'home': '🏠',
-      'menu': '☰',
-      'download': '⬇️',
-      'receipt': '🧾',
-      'arrow-left': '←',
-      'check-circle': '✅',
-      'clock-outline': '🕐',
+      warning: '⚠️',
+      info: 'ℹ️',
       'alert-circle': '⚠️',
+      'alert-triangle': '⚠️',
       'close-circle': '❌',
       'x-circle': '❌',
-      'help-circle': '❓',
-      'receipt': '🧾',
-      'price': '💰',
-      'clock': '🕐',
+      x: '✕',
+      
+      // Common actions
+      plus: '➕',
+      'plus-circle': '➕',
+      minus: '➖',
+      trash: '🗑️',
+      sync: '🔄',
+      refresh: '🔄',
+      download: '⬇️',
+      upload: '⬆️',
+      share: '📤',
+      
+      // Time and date
+      time: '⏰',
+      clock: '🕐',
+      'clock-outline': '🕐',
+      calendar: '📅',
+      
+      // People and users
+      person: '👤',
+      user: '👤',
+      users: '👥',
+      
+      // Products and inventory
+      cube: '📦',
+      'cube-outline': '📦',
+      package: '📦',
+      box: '📦',
+      inventory: '📦',
+      
+      // Sales and commerce
+      'shopping-cart': '🛒',
+      receipt: '🧾',
+      price: '💰',
+      'credit-card': '💳',
+      
+      // Technology
+      camera: '📷',
       'camera-off': '📷',
+      'qr-code': '📱',
+      barcode: '📱',
+      'barcode-info': '📱',
+      
+      // Location and navigation
+      location: '📍',
+      'location-info': '📍',
+      
+      // Settings and configuration
+      settings: '⚙️',
+      filter: '🔧',
+      sort: '📊',
+      
+      // Information and help
+      help: '❓',
+      'help-circle': '❓',
+      question: '❓',
+      
+      // Lists and data
+      list: '📋',
+      history: '📜',
+      
+      // Links and connections
+      link: '🔗',
+      
+      // Flash and camera controls
       'flash-off': '⚡',
       'flash-on': '⚡',
       'flash-auto': '⚡',
       'camera-switch': '🔄',
-      'list': '📋',
+      
+      // Product management
+      'add-product': '➕',
+      'save-product': '💾',
+      'product-info': 'ℹ️',
+      'stock-info': '📦',
+      'price-info': '💰',
+      'category-info': '📂',
+      'description-info': '📝',
+      
+      // Analytics and trends
       'trending-up': '📈',
-      'trending-down': '📉',
+      'trending-down': '��',
       'bar-chart': '📊',
       'pie-chart': '🥧',
-      'calendar': '📅',
-      'clock': '🕐',
-      'target': '🎯',
-      'lightbulb': '💡',
-      'download': '📥',
-      'credit-card': '💳',
-      'users': '👥',
-      'heart': '❤️',
-      'activity': '📊',
+      
+      // Targets and goals
+      target: '🎯',
+      kpi: '🎯',
+      
+      // Ideas and insights
+      lightbulb: '💡',
+      insights: '💡',
+      
+      // User management
       'person-add': '👤➕',
-      'login': '🔐',
-      'logout': '🚪',
-      'inventory': '📦',
-      'backup': '💾',
-      'shield': '🛡️',
-      'lock': '🔒',
-      'unlock': '🔓',
-      'key': '🔑',
-      'security': '🔐',
+      login: '🔐',
+      logout: '🚪',
+      
+      // Security
+      backup: '💾',
+      shield: '🛡️',
+      lock: '🔒',
+      unlock: '🔓',
+      key: '🔑',
+      security: '🔐',
+      
+      // Notifications
+      notifications: '🔔',
+      bell: '🔔',
+      
+      // System status
+      'sync-status': '🔄',
+      offline: '📴',
+      online: '🟢',
+      'error-status': '🔴',
+      'warning-status': '🟡',
+      'success-status': '🟢',
+      'info-status': '🔵',
+      
+      // Analytics and dashboard
+      dashboard: '📊',
+      analytics: '📈',
+      reports: '📋',
+      performance: '📊',
+      turnover: '🔄',
+      retention: '👥',
+      growth: '📈',
+      forecast: '🔮',
+      trends: '📈',
+      metrics: '📊',
+      monitoring: '👁️',
+      'real-time': '⚡',
+      live: '🟢',
+      status: '📊',
+      overview: '👁️',
+      summary: '📋',
+      details: '🔍',
+      'drill-down': '🔽',
+      expand: '⏷',
+      collapse: '⏶',
+      navigate: '🧭',
+      breadcrumb: '🏠',
+      'menu-toggle': '☰',
+      minimize: '➖',
+      maximize: '➕',
+      fullscreen: '⛶',
+      window: '⊞',
+      tab: '📑',
+      
+      // Files and documents
+      folder: '📁',
+      file: '📄',
+      document: '📄',
+      spreadsheet: '📊',
+      chart: '📈',
+      graph: '📊',
+      
+      // Data and storage
+      data: '💾',
+      database: '🗄️',
+      server: '🖥️',
+      cloud: '☁️',
+      
+      // Network and connectivity
+      network: '🌐',
+      wifi: '📶',
+      signal: '📡',
+      connection: '🔗',
+      
+      // Activity and monitoring
+      activity: '📊',
+      'online-users': '👥',
+      'low-stock': '⚠️',
+      
+      // Export and sharing
+      export: '📤',
+      
+      // Eye and visibility
+      eye: '👁️',
     };
     return icons[iconName] || '❓';
   };

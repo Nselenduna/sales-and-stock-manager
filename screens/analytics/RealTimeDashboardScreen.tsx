@@ -9,6 +9,7 @@ import {
   Animated,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useNavigation } from '@react-navigation/native';
 import { supabase } from '../../lib/supabase';
 import Icon from '../../components/Icon';
 
@@ -31,6 +32,7 @@ interface Notification {
 }
 
 const RealTimeDashboardScreen: React.FC = () => {
+  const navigation = useNavigation();
   const [liveMetrics, setLiveMetrics] = useState<LiveMetric[]>([]);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [isConnected, setIsConnected] = useState(true);
@@ -249,11 +251,70 @@ const RealTimeDashboardScreen: React.FC = () => {
     return `${diffDays}d ago`;
   };
 
+  // Navigation functions
+  const handleBackPress = () => {
+    navigation.goBack();
+  };
+
+  const navigateToAdvancedAnalytics = () => {
+    navigation.navigate('AdvancedAnalytics' as never);
+  };
+
+  const navigateToReports = () => {
+    navigation.navigate('Reports' as never);
+  };
+
+  const handleMetricPress = (metricId: string) => {
+    // Navigate to detailed view based on metric type
+    switch (metricId) {
+      case '1': // Live Sales
+        navigation.navigate('SalesAnalytics' as never);
+        break;
+      case '2': // Active Orders
+        navigation.navigate('SalesHistory' as never);
+        break;
+      case '3': // Low Stock Items
+        navigation.navigate('StockAlerts' as never);
+        break;
+      case '4': // Online Users
+        navigation.navigate('UserActivity' as never);
+        break;
+      default:
+        Alert.alert('Details', 'Detailed view coming soon!');
+    }
+  };
+
+  const handleQuickAction = (action: string) => {
+    switch (action) {
+      case 'refresh':
+        updateLiveMetrics();
+        setLastUpdate(new Date());
+        Alert.alert('Success', 'Data refreshed!');
+        break;
+      case 'settings':
+        navigation.navigate('Settings' as never);
+        break;
+      case 'export':
+        Alert.alert('Export', 'Export functionality coming soon!');
+        break;
+      case 'help':
+        Alert.alert('Help', 'Help documentation coming soon!');
+        break;
+      default:
+        Alert.alert('Action', `${action} functionality coming soon!`);
+    }
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <View style={styles.headerTop}>
-          <Text style={styles.headerTitle}>Real-Time Dashboard</Text>
+          <View style={styles.headerLeft}>
+            <TouchableOpacity style={styles.backButton} onPress={handleBackPress}>
+              <Icon name="arrow-back" size={24} color="#007AFF" />
+            </TouchableOpacity>
+            <Text style={styles.headerTitle}>Real-Time Dashboard</Text>
+          </View>
           <View style={styles.statusIndicator}>
             <Animated.View 
               style={[
@@ -272,6 +333,20 @@ const RealTimeDashboardScreen: React.FC = () => {
         <Text style={styles.lastUpdate}>
           Last updated: {lastUpdate.toLocaleTimeString()}
         </Text>
+        
+        {/* Navigation to other analytics screens */}
+        <View style={styles.navigationRow}>
+          <TouchableOpacity style={styles.navButton} onPress={navigateToAdvancedAnalytics}>
+            <Icon name="analytics" size={20} color="#007AFF" />
+            <Text style={styles.navButtonText}>Advanced Analytics</Text>
+            <Icon name="chevron-right" size={16} color="#007AFF" />
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.navButton} onPress={navigateToReports}>
+            <Icon name="reports" size={20} color="#007AFF" />
+            <Text style={styles.navButtonText}>Reports</Text>
+            <Icon name="chevron-right" size={16} color="#007AFF" />
+          </TouchableOpacity>
+        </View>
       </View>
 
       <ScrollView style={styles.content}>
@@ -280,7 +355,11 @@ const RealTimeDashboardScreen: React.FC = () => {
           <Text style={styles.sectionTitle}>Live Metrics</Text>
           <View style={styles.metricsGrid}>
             {liveMetrics.map((metric) => (
-              <View key={metric.id} style={styles.metricCard}>
+              <TouchableOpacity 
+                key={metric.id} 
+                style={styles.metricCard}
+                onPress={() => handleMetricPress(metric.id)}
+              >
                 <View style={styles.metricHeader}>
                   <Text style={styles.metricTitle}>{metric.title}</Text>
                   <Icon 
@@ -296,7 +375,10 @@ const RealTimeDashboardScreen: React.FC = () => {
                 ]}>
                   {metric.change > 0 ? '+' : ''}{metric.change.toFixed(1)}%
                 </Text>
-              </View>
+                <View style={styles.metricNavigation}>
+                  <Icon name="chevron-right" size={16} color="#007AFF" />
+                </View>
+              </TouchableOpacity>
             ))}
           </View>
         </View>
@@ -345,19 +427,19 @@ const RealTimeDashboardScreen: React.FC = () => {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Quick Actions</Text>
           <View style={styles.quickActionsGrid}>
-            <TouchableOpacity style={styles.quickActionButton}>
+            <TouchableOpacity style={styles.quickActionButton} onPress={() => handleQuickAction('refresh')}>
               <Icon name="refresh" size={24} color="#007AFF" />
               <Text style={styles.quickActionText}>Refresh Data</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.quickActionButton}>
+            <TouchableOpacity style={styles.quickActionButton} onPress={() => handleQuickAction('settings')}>
               <Icon name="settings" size={24} color="#007AFF" />
               <Text style={styles.quickActionText}>Settings</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.quickActionButton}>
+            <TouchableOpacity style={styles.quickActionButton} onPress={() => handleQuickAction('export')}>
               <Icon name="download" size={24} color="#007AFF" />
               <Text style={styles.quickActionText}>Export</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.quickActionButton}>
+            <TouchableOpacity style={styles.quickActionButton} onPress={() => handleQuickAction('help')}>
               <Icon name="help" size={24} color="#007AFF" />
               <Text style={styles.quickActionText}>Help</Text>
             </TouchableOpacity>
@@ -385,6 +467,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 8,
   },
+  headerLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  backButton: {
+    padding: 8,
+    marginRight: 12,
+  },
   headerTitle: {
     fontSize: 24,
     fontWeight: 'bold',
@@ -408,6 +498,27 @@ const styles = StyleSheet.create({
   lastUpdate: {
     fontSize: 12,
     color: '#999',
+  },
+  navigationRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    marginTop: 16,
+    paddingHorizontal: 10,
+  },
+  navButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#e0e0e0',
+    paddingVertical: 10,
+    paddingHorizontal: 15,
+    borderRadius: 10,
+    width: '45%',
+  },
+  navButtonText: {
+    marginLeft: 10,
+    fontSize: 14,
+    color: '#333',
+    fontWeight: '500',
   },
   content: {
     flex: 1,
@@ -470,6 +581,10 @@ const styles = StyleSheet.create({
   metricChange: {
     fontSize: 12,
     fontWeight: '500',
+  },
+  metricNavigation: {
+    marginTop: 8,
+    alignSelf: 'flex-end',
   },
   notificationsContainer: {
     gap: 8,

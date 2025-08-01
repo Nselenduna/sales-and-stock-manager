@@ -13,7 +13,7 @@ import {
 } from 'react-native';
 import * as Camera from 'expo-camera';
 import { useSales } from '../../hooks/useSales';
-import { useDebounce } from '../../hooks/useDebounce';
+import useDebounce from '../../hooks/useDebounce';
 import { supabase, Product } from '../../lib/supabase';
 import Icon from '../../components/Icon';
 import SearchBar from '../../components/SearchBar';
@@ -123,11 +123,11 @@ const SalesScreen: React.FC<SalesScreenProps> = ({ navigation }) => {
     }
   };
 
-  const handleCheckout = async () => {
-    if (cart.length === 0) {
-      Alert.alert('Empty Cart', 'Please add items to cart before checkout');
-      return;
-    }
+     const handleCheckout = async () => {
+     if (!cart || cart.length === 0) {
+       Alert.alert('Empty Cart', 'Please add items to cart before checkout');
+       return;
+     }
 
     Alert.alert(
       'Confirm Checkout',
@@ -173,8 +173,13 @@ const SalesScreen: React.FC<SalesScreenProps> = ({ navigation }) => {
     );
   };
 
-  const renderCartItem = (item: any) => (
-    <View key={item.product.id} style={styles.cartItem}>
+     const renderCartItem = (item: any) => {
+     if (!item || !item.product) {
+       return null;
+     }
+     
+     return (
+       <View key={item.product.id} style={styles.cartItem}>
       <View style={styles.cartItemInfo}>
         <Text style={styles.cartItemName}>{item.product.name}</Text>
         <Text style={styles.cartItemPrice}>
@@ -210,11 +215,12 @@ const SalesScreen: React.FC<SalesScreenProps> = ({ navigation }) => {
         </TouchableOpacity>
       </View>
       
-      <Text style={styles.cartItemTotal}>
-        {formatCurrency(item.total_price)}
-      </Text>
-    </View>
-  );
+             <Text style={styles.cartItemTotal}>
+         {formatCurrency(item.total_price)}
+       </Text>
+     </View>
+     );
+   };
 
   const renderProductItem = (product: Product) => (
     <TouchableOpacity
@@ -309,34 +315,34 @@ const SalesScreen: React.FC<SalesScreenProps> = ({ navigation }) => {
           <View style={styles.cartSection}>
             <View style={styles.cartHeader}>
               <Text style={styles.sectionTitle}>Cart</Text>
-              {cart.length > 0 && (
-                <TouchableOpacity
-                  style={styles.clearButton}
-                  onPress={handleClearCart}
-                  accessibilityLabel="Clear cart"
-                >
-                  <Text style={styles.clearButtonText}>Clear</Text>
-                </TouchableOpacity>
-              )}
+                             {cart && cart.length > 0 && (
+                 <TouchableOpacity
+                   style={styles.clearButton}
+                   onPress={handleClearCart}
+                   accessibilityLabel="Clear cart"
+                 >
+                   <Text style={styles.clearButtonText}>Clear</Text>
+                 </TouchableOpacity>
+               )}
             </View>
 
-            {cart.length === 0 ? (
-              <View style={styles.emptyCart}>
-                <Icon name="shopping-cart" size={48} color="#C7C7CC" />
-                <Text style={styles.emptyCartText}>Your cart is empty</Text>
-                <Text style={styles.emptyCartSubtext}>
-                  Search for products or scan barcodes to add items
-                </Text>
-              </View>
-            ) : (
-              <ScrollView style={styles.cartList}>
-                {cart.map(renderCartItem)}
-              </ScrollView>
-            )}
+                         {!cart || cart.length === 0 ? (
+               <View style={styles.emptyCart}>
+                 <Icon name="shopping-cart" size={48} color="#C7C7CC" />
+                 <Text style={styles.emptyCartText}>Your cart is empty</Text>
+                 <Text style={styles.emptyCartSubtext}>
+                   Search for products or scan barcodes to add items
+                 </Text>
+               </View>
+             ) : (
+               <ScrollView style={styles.cartList}>
+                 {cart.map(renderCartItem)}
+               </ScrollView>
+             )}
           </View>
 
-          {/* Checkout Section */}
-          {cart.length > 0 && (
+                     {/* Checkout Section */}
+           {cart && cart.length > 0 && (
             <View style={styles.checkoutSection}>
               <View style={styles.totalRow}>
                 <Text style={styles.totalLabel}>Total:</Text>

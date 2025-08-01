@@ -11,7 +11,7 @@ import {
   TextInput,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import useAuthStore from '../../store/authStore';
+import { useAuthStore } from '../../store/authStore';
 import { supabase, Product } from '../../lib/supabase';
 import Icon from '../../components/Icon';
 

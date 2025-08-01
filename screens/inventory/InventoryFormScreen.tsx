@@ -21,7 +21,7 @@ import {
   Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import useAuthStore from '../../store/authStore';
+import { useAuthStore } from '../../store/authStore';
 import { supabase, Product } from '../../lib/supabase';
 import { imageUploader, ImageUploadResult } from '../../lib/imageUploader';
 import { barcodeScanner, BarcodeScanResult } from '../../lib/barcodeScanner';

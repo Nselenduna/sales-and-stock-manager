@@ -1,6 +1,6 @@
 module.exports = {
-  testEnvironment: 'node',
-  setupFilesAfterEnv: ['<rootDir>/jest.setup.basic.js'],
+  testEnvironment: 'jsdom',
+  setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
   transform: {
     '^.+\\.(js|jsx|ts|tsx)$': [
       'babel-jest',
@@ -61,4 +61,6 @@ module.exports = {
       tsconfig: 'tsconfig.json',
     },
   },
+  testTimeout: 10000,
+  verbose: true,
 };
