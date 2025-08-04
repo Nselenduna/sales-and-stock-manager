@@ -39,6 +39,15 @@ export {
   type SecurityHeadersConfig,
 } from './httpsEnforcer';
 
+// Security Initialization
+export {
+  securityInitializer,
+  initializeAppSecurity,
+  showSecurityStatus,
+  quickSecurityCheck,
+  type SecurityInitConfig,
+} from './securityInit';
+
 // Security utilities and constants
 export const SECURITY_CONSTANTS = {
   MIN_PASSWORD_LENGTH: 8,
