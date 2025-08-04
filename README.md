@@ -69,6 +69,7 @@ A comprehensive React Native mobile application for inventory management, sales 
 - **Testing**: Jest + React Native Testing Library
 - **Performance**: FlashList for virtualization
 - **Offline**: SQLite with sync queue management
+- **Documentation**: OpenAPI 3.0 with Swagger UI
 
 ## 📱 Key Features
 
@@ -107,6 +108,40 @@ A comprehensive React Native mobile application for inventory management, sales 
 - **Image Loading**: 40%+ reduction in memory usage
 - **Sync Performance**: Exponential backoff with retry logic
 
+## 📖 API Documentation
+
+The application includes comprehensive API documentation that covers all Supabase operations:
+
+- **Interactive Documentation**: OpenAPI 3.0 specification with Swagger UI
+- **Complete Coverage**: All endpoints, request/response models, and error cases
+- **Role-based Permissions**: Detailed permission requirements for each operation
+- **Local Development**: Easy setup for viewing documentation locally
+
+### Viewing API Documentation
+
+1. **Start the documentation server**:
+   ```bash
+   npm run docs:serve
+   ```
+
+2. **Open in browser**: Navigate to `http://localhost:8080`
+
+3. **Alternative methods**:
+   - Open `docs/api/index.html` directly in browser
+   - Use VS Code OpenAPI extension with `docs/api/openapi.yaml`
+   - Upload to [Swagger Editor](https://editor.swagger.io/)
+
+### API Overview
+
+The API covers these main areas:
+- **Authentication**: User sign-in, sign-up, and session management
+- **Products**: Inventory CRUD operations with search and filtering
+- **Sales**: Transaction processing, cart management, and sales history
+- **Users & Roles**: Role-based access control (Admin, Staff, Viewer)
+- **Stock Alerts**: Low stock monitoring and notifications
+
+For detailed documentation, see [`docs/api/README.md`](docs/api/README.md).
+
 ## 🔐 Security & Compliance
 
 - **Input Sanitization**: XSS protection and SQL injection prevention
@@ -135,6 +170,12 @@ A comprehensive React Native mobile application for inventory management, sales 
    npm test
    ```
 
+5. **View API Documentation**:
+   ```bash
+   npm run docs:serve
+   ```
+   Then open `http://localhost:8080` in your browser to view the interactive API documentation.
+
 ## 📁 Project Structure
 
 ```
@@ -152,6 +193,7 @@ A comprehensive React Native mobile application for inventory management, sales 
 │   └── sales/         # Sales module tests
 ├── modules/           # Feature documentation and specs
 └── docs/              # Project documentation
+│   ├── api/           # API documentation (OpenAPI/Swagger)
 │   └── sales/         # Sales module documentation
 ```
 

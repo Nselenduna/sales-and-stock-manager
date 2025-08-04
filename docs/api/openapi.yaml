@@ -1,0 +1,1062 @@
+openapi: 3.0.3
+info:
+  title: Sales and Stock Manager API
+  description: |
+    API documentation for the Sales and Stock Manager application.
+    This is a React Native mobile application that uses Supabase as the backend.
+    The API operations represent the Supabase database interactions performed by the mobile app.
+    
+    ## Authentication
+    The application uses Supabase Auth for user authentication with role-based access control.
+    
+    ## Roles
+    - **Admin**: Full access to all operations
+    - **Staff**: Can manage inventory and process sales
+    - **Viewer**: Read-only access to data
+    
+    ## Offline Support
+    The mobile app supports offline operations with automatic synchronization when connection is restored.
+  version: 1.0.0
+  contact:
+    name: Sales and Stock Manager
+    email: contact@example.com
+    url: https://github.com/Nselenduna/sales-and-stock-manager
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: https://your-supabase-project.supabase.co
+    description: Production Supabase instance
+  - url: https://localhost:54321
+    description: Local Supabase development instance
+
+security:
+  - bearerAuth: []
+
+paths:
+  # Authentication endpoints
+  /auth/v1/token:
+    post:
+      tags:
+        - Authentication
+      summary: Sign in user
+      description: Authenticate user with email and password
+      operationId: signIn
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: user@example.com
+                password:
+                  type: string
+                  format: password
+                  example: securepassword123
+      responses:
+        '200':
+          description: Successful authentication
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  access_token:
+                    type: string
+                  token_type:
+                    type: string
+                    example: bearer
+                  expires_in:
+                    type: integer
+                    example: 3600
+                  user:
+                    $ref: '#/components/schemas/User'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /auth/v1/signup:
+    post:
+      tags:
+        - Authentication
+      summary: Sign up new user
+      description: Register a new user account
+      operationId: signUp
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: newuser@example.com
+                password:
+                  type: string
+                  format: password
+                  example: securepassword123
+      responses:
+        '200':
+          description: User created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                    $ref: '#/components/schemas/User'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /auth/v1/logout:
+    post:
+      tags:
+        - Authentication
+      summary: Sign out user
+      description: Invalidate user session
+      operationId: signOut
+      responses:
+        '204':
+          description: Successfully signed out
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  # Products endpoints
+  /rest/v1/products:
+    get:
+      tags:
+        - Products
+      summary: List products
+      description: Retrieve list of products with optional filtering and pagination
+      operationId: listProducts
+      parameters:
+        - name: select
+          in: query
+          description: Fields to select
+          schema:
+            type: string
+            example: "*"
+        - name: name
+          in: query
+          description: Filter by product name (case-insensitive)
+          schema:
+            type: string
+        - name: sku
+          in: query
+          description: Filter by SKU
+          schema:
+            type: string
+        - name: barcode
+          in: query
+          description: Filter by barcode
+          schema:
+            type: string
+        - name: category
+          in: query
+          description: Filter by category
+          schema:
+            type: string
+        - name: quantity
+          in: query
+          description: Filter by quantity (supports operators like gt.0)
+          schema:
+            type: string
+        - name: order
+          in: query
+          description: Order results
+          schema:
+            type: string
+            example: "name.asc"
+        - name: limit
+          in: query
+          description: Limit number of results
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 1000
+            default: 50
+        - name: offset
+          in: query
+          description: Offset for pagination
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+      responses:
+        '200':
+          description: List of products
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Product'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+    post:
+      tags:
+        - Products
+      summary: Create product
+      description: Add a new product to inventory
+      operationId: createProduct
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateProductRequest'
+      responses:
+        '201':
+          description: Product created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /rest/v1/products/{productId}:
+    get:
+      tags:
+        - Products
+      summary: Get product by ID
+      description: Retrieve a specific product by its ID
+      operationId: getProduct
+      parameters:
+        - name: productId
+          in: path
+          required: true
+          description: Product ID
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Product details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    patch:
+      tags:
+        - Products
+      summary: Update product
+      description: Update an existing product
+      operationId: updateProduct
+      parameters:
+        - name: productId
+          in: path
+          required: true
+          description: Product ID
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateProductRequest'
+      responses:
+        '200':
+          description: Product updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+    delete:
+      tags:
+        - Products
+      summary: Delete product
+      description: Remove a product from inventory
+      operationId: deleteProduct
+      parameters:
+        - name: productId
+          in: path
+          required: true
+          description: Product ID
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Product deleted successfully
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # Sales endpoints
+  /rest/v1/sales:
+    get:
+      tags:
+        - Sales
+      summary: List sales
+      description: Retrieve list of sales transactions with optional filtering
+      operationId: listSales
+      parameters:
+        - name: select
+          in: query
+          description: Fields to select
+          schema:
+            type: string
+            example: "*"
+        - name: status
+          in: query
+          description: Filter by transaction status
+          schema:
+            type: string
+            enum: [queued, synced, failed, completed]
+        - name: sold_by
+          in: query
+          description: Filter by user who made the sale
+          schema:
+            type: string
+        - name: created_at
+          in: query
+          description: Filter by creation date (supports operators like gte.2023-01-01)
+          schema:
+            type: string
+        - name: order
+          in: query
+          description: Order results
+          schema:
+            type: string
+            example: "created_at.desc"
+        - name: limit
+          in: query
+          description: Limit number of results
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 1000
+            default: 50
+      responses:
+        '200':
+          description: List of sales transactions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SalesTransaction'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+    post:
+      tags:
+        - Sales
+      summary: Create sale
+      description: Process a new sales transaction
+      operationId: createSale
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateSaleRequest'
+      responses:
+        '201':
+          description: Sale created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SalesTransaction'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /rest/v1/sales/{saleId}:
+    get:
+      tags:
+        - Sales
+      summary: Get sale by ID
+      description: Retrieve a specific sales transaction by its ID
+      operationId: getSale
+      parameters:
+        - name: saleId
+          in: path
+          required: true
+          description: Sale ID
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Sales transaction details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SalesTransaction'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # Users and Roles endpoints
+  /rest/v1/roles:
+    get:
+      tags:
+        - Users & Roles
+      summary: List user roles
+      description: Retrieve list of user roles (Admin only)
+      operationId: listRoles
+      parameters:
+        - name: user_id
+          in: query
+          description: Filter by user ID
+          schema:
+            type: string
+            format: uuid
+        - name: role_type
+          in: query
+          description: Filter by role type
+          schema:
+            type: string
+            enum: [admin, staff, viewer]
+      responses:
+        '200':
+          description: List of user roles
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Role'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+    post:
+      tags:
+        - Users & Roles
+      summary: Create user role
+      description: Assign a role to a user (Admin only)
+      operationId: createRole
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateRoleRequest'
+      responses:
+        '201':
+          description: Role created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Role'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /rest/v1/roles/{roleId}:
+    patch:
+      tags:
+        - Users & Roles
+      summary: Update user role
+      description: Update a user's role (Admin only)
+      operationId: updateRole
+      parameters:
+        - name: roleId
+          in: path
+          required: true
+          description: Role ID
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateRoleRequest'
+      responses:
+        '200':
+          description: Role updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Role'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # Stock Alerts endpoints
+  /rest/v1/low-stock:
+    get:
+      tags:
+        - Stock Alerts
+      summary: Get low stock products
+      description: Retrieve products that are at or below their low stock threshold
+      operationId: getLowStockProducts
+      parameters:
+        - name: threshold
+          in: query
+          description: Override threshold for low stock detection
+          schema:
+            type: integer
+            minimum: 0
+      responses:
+        '200':
+          description: List of low stock products
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/LowStockProduct'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: User ID
+        email:
+          type: string
+          format: email
+          description: User email address
+        created_at:
+          type: string
+          format: date-time
+          description: Account creation timestamp
+        updated_at:
+          type: string
+          format: date-time
+          description: Last update timestamp
+      required:
+        - id
+        - email
+        - created_at
+        - updated_at
+
+    Role:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Role ID
+        user_id:
+          type: string
+          format: uuid
+          description: Associated user ID
+        role_type:
+          type: string
+          enum: [admin, staff, viewer]
+          description: Role type
+        created_at:
+          type: string
+          format: date-time
+          description: Role creation timestamp
+        updated_at:
+          type: string
+          format: date-time
+          description: Last update timestamp
+      required:
+        - id
+        - user_id
+        - role_type
+        - created_at
+        - updated_at
+
+    Product:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Product ID
+        name:
+          type: string
+          description: Product name
+          example: "iPhone 14 Pro"
+        sku:
+          type: string
+          description: Stock Keeping Unit
+          example: "IPH14P-256-BLK"
+        barcode:
+          type: string
+          description: Product barcode
+          example: "1234567890123"
+        quantity:
+          type: integer
+          minimum: 0
+          description: Current stock quantity
+          example: 25
+        low_stock_threshold:
+          type: integer
+          minimum: 0
+          description: Threshold for low stock alerts
+          example: 5
+        location:
+          type: string
+          description: Storage location
+          example: "Shelf A-3"
+        unit_price:
+          type: number
+          format: float
+          minimum: 0
+          description: Unit price in currency units
+          example: 999.99
+        description:
+          type: string
+          description: Product description
+          example: "Latest iPhone model with advanced camera system"
+        category:
+          type: string
+          description: Product category
+          example: "Electronics"
+        image_url:
+          type: string
+          format: uri
+          description: Product image URL
+        created_at:
+          type: string
+          format: date-time
+          description: Product creation timestamp
+        updated_at:
+          type: string
+          format: date-time
+          description: Last update timestamp
+      required:
+        - id
+        - name
+        - sku
+        - quantity
+        - low_stock_threshold
+        - created_at
+        - updated_at
+
+    CreateProductRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Product name
+          example: "iPhone 14 Pro"
+        sku:
+          type: string
+          description: Stock Keeping Unit
+          example: "IPH14P-256-BLK"
+        barcode:
+          type: string
+          description: Product barcode
+          example: "1234567890123"
+        quantity:
+          type: integer
+          minimum: 0
+          description: Initial stock quantity
+          example: 25
+        low_stock_threshold:
+          type: integer
+          minimum: 0
+          description: Threshold for low stock alerts
+          example: 5
+        location:
+          type: string
+          description: Storage location
+          example: "Shelf A-3"
+        unit_price:
+          type: number
+          format: float
+          minimum: 0
+          description: Unit price in currency units
+          example: 999.99
+        description:
+          type: string
+          description: Product description
+          example: "Latest iPhone model with advanced camera system"
+        category:
+          type: string
+          description: Product category
+          example: "Electronics"
+        image_url:
+          type: string
+          format: uri
+          description: Product image URL
+      required:
+        - name
+        - sku
+        - quantity
+        - low_stock_threshold
+
+    UpdateProductRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Product name
+        sku:
+          type: string
+          description: Stock Keeping Unit
+        barcode:
+          type: string
+          description: Product barcode
+        quantity:
+          type: integer
+          minimum: 0
+          description: Stock quantity
+        low_stock_threshold:
+          type: integer
+          minimum: 0
+          description: Threshold for low stock alerts
+        location:
+          type: string
+          description: Storage location
+        unit_price:
+          type: number
+          format: float
+          minimum: 0
+          description: Unit price in currency units
+        description:
+          type: string
+          description: Product description
+        category:
+          type: string
+          description: Product category
+        image_url:
+          type: string
+          format: uri
+          description: Product image URL
+
+    SalesTransaction:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Transaction ID
+        store_id:
+          type: string
+          format: uuid
+          description: Store ID (if multi-store setup)
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/SalesTransactionItem'
+          description: List of items in the transaction
+        total:
+          type: integer
+          description: Total amount in pence/cents
+          example: 99999
+        status:
+          type: string
+          enum: [queued, synced, failed, completed]
+          description: Transaction status
+        customer_name:
+          type: string
+          description: Customer name
+          example: "John Doe"
+        customer_email:
+          type: string
+          format: email
+          description: Customer email
+          example: "john.doe@example.com"
+        customer_phone:
+          type: string
+          description: Customer phone number
+          example: "+1234567890"
+        payment_method:
+          type: string
+          description: Payment method used
+          example: "credit_card"
+        notes:
+          type: string
+          description: Additional notes
+        created_at:
+          type: string
+          format: date-time
+          description: Transaction creation timestamp
+        updated_at:
+          type: string
+          format: date-time
+          description: Last update timestamp
+      required:
+        - id
+        - items
+        - total
+        - status
+        - created_at
+        - updated_at
+
+    SalesTransactionItem:
+      type: object
+      properties:
+        product_id:
+          type: string
+          format: uuid
+          description: Product ID
+        quantity:
+          type: integer
+          minimum: 1
+          description: Quantity sold
+        unit_price:
+          type: integer
+          description: Unit price in pence/cents
+          example: 99999
+        total_price:
+          type: integer
+          description: Total price for this item in pence/cents
+          example: 199998
+        product_name:
+          type: string
+          description: Product name (denormalized for offline display)
+          example: "iPhone 14 Pro"
+      required:
+        - product_id
+        - quantity
+        - unit_price
+        - total_price
+
+    CreateSaleRequest:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/SalesTransactionItem'
+          description: List of items being sold
+        customer_name:
+          type: string
+          description: Customer name
+        customer_email:
+          type: string
+          format: email
+          description: Customer email
+        customer_phone:
+          type: string
+          description: Customer phone number
+        payment_method:
+          type: string
+          description: Payment method
+          example: "credit_card"
+        notes:
+          type: string
+          description: Additional notes
+      required:
+        - items
+
+    CreateRoleRequest:
+      type: object
+      properties:
+        user_id:
+          type: string
+          format: uuid
+          description: User ID to assign role to
+        role_type:
+          type: string
+          enum: [admin, staff, viewer]
+          description: Role type to assign
+      required:
+        - user_id
+        - role_type
+
+    UpdateRoleRequest:
+      type: object
+      properties:
+        role_type:
+          type: string
+          enum: [admin, staff, viewer]
+          description: New role type
+      required:
+        - role_type
+
+    LowStockProduct:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Product ID
+        name:
+          type: string
+          description: Product name
+        sku:
+          type: string
+          description: Stock Keeping Unit
+        quantity:
+          type: integer
+          minimum: 0
+          description: Current stock quantity
+        low_stock_threshold:
+          type: integer
+          minimum: 0
+          description: Low stock threshold
+        location:
+          type: string
+          description: Storage location
+      required:
+        - id
+        - name
+        - sku
+        - quantity
+        - low_stock_threshold
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Error message
+        details:
+          type: string
+          description: Additional error details
+        code:
+          type: string
+          description: Error code
+      required:
+        - error
+
+  responses:
+    BadRequest:
+      description: Bad request - invalid parameters or malformed request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: "Bad request"
+            details: "Invalid parameter format"
+            code: "INVALID_REQUEST"
+
+    Unauthorized:
+      description: Authentication required or invalid credentials
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: "Unauthorized"
+            details: "Valid authentication required"
+            code: "UNAUTHORIZED"
+
+    Forbidden:
+      description: Access denied - insufficient permissions
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: "Forbidden"
+            details: "Insufficient permissions for this operation"
+            code: "FORBIDDEN"
+
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: "Not found"
+            details: "The requested resource was not found"
+            code: "NOT_FOUND"
+
+    ValidationError:
+      description: Validation error - invalid data format or constraints
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: "Validation error"
+            details: "Required field 'name' is missing"
+            code: "VALIDATION_ERROR"
+
+tags:
+  - name: Authentication
+    description: User authentication and session management
+  - name: Products
+    description: Product inventory management operations
+  - name: Sales
+    description: Sales transaction processing and history
+  - name: Users & Roles
+    description: User and role management (Admin access required)
+  - name: Stock Alerts
+    description: Low stock monitoring and alerts
