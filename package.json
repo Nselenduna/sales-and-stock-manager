@@ -17,7 +17,11 @@
     "format:check": "prettier --check .",
     "type-check": "tsc --noEmit",
     "code-quality": "npm run lint && npm run format:check && npm run type-check",
-    "prepare": "husky"
+    "prepare": "husky",
+    "migrate:up": "node -r ts-node/register migrations/scripts/migrate.ts",
+    "migrate:down": "node -r ts-node/register migrations/scripts/rollback.ts",
+    "migrate:status": "node -r ts-node/register migrations/scripts/status.ts",
+    "migrate:create": "node migrations/scripts/create.js"
   },
   "dependencies": {
     "@expo/vector-icons": "^14.1.0",
@@ -31,13 +35,13 @@
     "expo": "53.0.20",
     "expo-barcode-scanner": "^13.0.1",
     "expo-camera": "^16.1.11",
+    "expo-file-system": "^18.0.0",
     "expo-haptics": "^14.1.4",
     "expo-image-picker": "^16.1.4",
     "expo-media-library": "^17.1.7",
-    "expo-status-bar": "~2.2.3",
-    "expo-file-system": "^18.0.0",
     "expo-sharing": "^13.0.0",
     "expo-sqlite": "~15.2.14",
+    "expo-status-bar": "~2.2.3",
     "react": "19.0.0",
     "react-native": "0.79.5",
     "react-native-elements": "^3.4.3",
@@ -83,6 +87,8 @@
     "prettier": "^3.6.2",
     "react-native-web": "^0.20.0",
     "react-test-renderer": "19.0.0",
+    "supabase": "^2.33.9",
+    "ts-node": "^10.9.2",
     "typescript": "^5.1.3"
   },
   "lint-staged": {

@@ -125,12 +125,21 @@ A comprehensive React Native mobile application for inventory management, sales 
    - Configure Supabase credentials in environment variables
    - Set up Expo development environment
 
-3. **Run Development Server**:
+3. **Database Setup**:
+   ```bash
+   # Initialize database schema (first time only)
+   npm run migrate:up
+   
+   # Check migration status
+   npm run migrate:status
+   ```
+
+4. **Run Development Server**:
    ```bash
    npm start
    ```
 
-4. **Run Tests**:
+5. **Run Tests**:
    ```bash
    npm test
    ```
@@ -148,12 +157,73 @@ A comprehensive React Native mobile application for inventory management, sales 
 ├── lib/               # Utility libraries and Supabase config
 ├── hooks/             # Custom React hooks
 ├── store/             # Zustand state management
+├── migrations/        # Database migration system
+│   ├── schema/        # SQL migration files
+│   ├── scripts/       # TypeScript migration utilities
+│   └── __tests__/     # Migration tests
 ├── __tests__/         # Test files
 │   └── sales/         # Sales module tests
 ├── modules/           # Feature documentation and specs
 └── docs/              # Project documentation
 │   └── sales/         # Sales module documentation
 ```
+
+## 🗄️ Database Management
+
+### Migration System
+
+The project includes a comprehensive database migration system built with TypeScript for managing schema changes safely.
+
+#### Available Commands
+
+```bash
+# Run all pending migrations
+npm run migrate:up
+
+# Run migrations up to specific version
+npm run migrate:up -- --to=003
+
+# Preview pending migrations (dry run)
+npm run migrate:up -- --dry-run
+
+# Rollback last migration
+npm run migrate:down
+
+# Rollback multiple migrations
+npm run migrate:down -- --steps=2
+
+# Rollback to specific version
+npm run migrate:down -- --to=001
+
+# Check migration status
+npm run migrate:status
+
+# Create new migration
+npm run migrate:create -- --name="add_user_preferences"
+
+# Create data migration
+npm run migrate:create -- --name="migrate_product_data" --template=data
+```
+
+#### Migration Features
+
+- **TypeScript Integration**: All migration utilities written in TypeScript
+- **Transaction Safety**: Every migration runs within a database transaction
+- **Rollback Support**: Automatic rollback file generation and execution
+- **Checksum Validation**: Ensures migration file integrity
+- **Data Integrity**: Built-in validation and constraint checking
+- **Version Tracking**: Sequential version numbering with gap detection
+- **Comprehensive Testing**: Full test coverage for migration system
+
+#### Schema Management
+
+- **Initial Schema**: Complete database schema with tables, indexes, and constraints
+- **Row Level Security**: Built-in RLS policies for data security
+- **Performance Indexes**: Optimized indexes for common query patterns
+- **Audit Triggers**: Automatic timestamp updates for all tables
+- **Referential Integrity**: Proper foreign key relationships and constraints
+
+For detailed migration documentation, see [migrations/README.md](migrations/README.md).
 
 ## 🤝 Contributing
 
