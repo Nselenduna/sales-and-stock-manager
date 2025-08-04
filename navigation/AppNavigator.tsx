@@ -44,6 +44,7 @@ import SecuritySettingsScreen from '../screens/security/SecuritySettingsScreen';
 
 // Settings Screens
 import SystemSettingsScreen from '../screens/settings/SystemSettingsScreen';
+import NotificationSettingsScreen from '../screens/settings/NotificationSettingsScreen';
 
 // Analytics Screens
 import AdvancedAnalyticsScreen from '../screens/analytics/AdvancedAnalyticsScreen';
@@ -84,7 +85,7 @@ const AdminTabNavigator = () => {
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
-        tabBarIcon: ({ focused: _focused, color, size }) => {
+        tabBarIcon: ({ color, size }) => {
           let iconName = 'settings';
           if (route.name === 'Inventory') {
             iconName = 'cube';
@@ -115,7 +116,7 @@ const StaffTabNavigator = () => {
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
-        tabBarIcon: ({ focused: _focused, color, size }) => {
+        tabBarIcon: ({  color, size }) => {
           let iconName = 'person';
           if (route.name === 'Inventory') {
             iconName = 'cube';
@@ -146,7 +147,7 @@ const ViewerTabNavigator = () => {
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
-        tabBarIcon: ({ focused: _focused, color, size }) => {
+        tabBarIcon: ({  color, size }) => {
           let iconName = 'eye';
           if (route.name === 'Inventory') {
             iconName = 'cube';
@@ -328,6 +329,13 @@ const AppNavigator = () => {
         <Stack.Screen
           name='SystemSettings'
           component={SystemSettingsScreen}
+          options={{
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name='NotificationSettings'
+          component={NotificationSettingsScreen}
           options={{
             headerShown: false,
           }}

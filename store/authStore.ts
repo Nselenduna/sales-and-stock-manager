@@ -5,23 +5,25 @@ import { supabase, UserWithRole } from '../lib/supabase';
 
 interface AuthState {
   user: UserWithRole | null;
-  session: any | null;
+  session: unknown | null;
   loading: boolean;
   isAuthenticated: boolean;
   userRole: 'admin' | 'staff' | 'viewer' | null;
 }
 
+/* eslint-disable @typescript-eslint/no-unused-vars */
 interface AuthActions {
-  setUser: (user: UserWithRole | null) => void;
-  setSession: (session: any | null) => void;
-  setLoading: (loading: boolean) => void;
-  signIn: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
-  signUp: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
+  setUser: (_user: UserWithRole | null) => void;
+  setSession: (_session: unknown | null) => void;
+  setLoading: (_loading: boolean) => void;
+  signIn: (_email: string, _password: string) => Promise<{ success: boolean; error?: string }>;
+  signUp: (_email: string, _password: string) => Promise<{ success: boolean; error?: string }>;
   signOut: () => Promise<void>;
   checkAuth: () => Promise<void>;
   checkUser: () => Promise<void>;
   getUserRole: () => Promise<void>;
 }
+/* eslint-enable @typescript-eslint/no-unused-vars */
 
 const useAuthStore = create<AuthState & AuthActions>()(
   persist(
@@ -51,8 +53,8 @@ const useAuthStore = create<AuthState & AuthActions>()(
           }
 
           return { success: true };
-        } catch (error: any) {
-          return { success: false, error: error.message };
+        } catch (error: unknown) {
+          return { success: false, error: (error as Error).message };
         } finally {
           set({ loading: false });
         }
@@ -83,8 +85,8 @@ const useAuthStore = create<AuthState & AuthActions>()(
           }
 
           return { success: true };
-        } catch (error: any) {
-          return { success: false, error: error.message };
+        } catch (error: unknown) {
+          return { success: false, error: (error as Error).message };
         } finally {
           set({ loading: false });
         }
@@ -93,6 +95,11 @@ const useAuthStore = create<AuthState & AuthActions>()(
       signOut: async () => {
         try {
           await supabase.auth.signOut();
+          
+          // Clear notification data on sign out
+          const { clearNotificationData } = await import('../store/notificationStore');
+          await clearNotificationData();
+          
           set({ user: null, session: null, isAuthenticated: false, userRole: null });
         } catch (error) {
           console.error('Sign out error:', error);

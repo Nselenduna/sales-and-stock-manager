@@ -76,6 +76,7 @@ A comprehensive React Native mobile application for inventory management, sales 
 - **Inventory Management**: CRUD operations for products with images and barcodes
 - **Sales Processing**: Complete POS system with cart management and checkout
 - **Stock Monitoring**: Real-time alerts for low stock items
+- **Push Notifications**: Smart notifications for stock alerts and critical updates
 - **Barcode Scanning**: Product lookup and inventory updates
 - **Role-Based Access**: Admin, Staff, and Viewer permissions
 - **Offline Support**: Full functionality without internet connection
@@ -87,13 +88,90 @@ A comprehensive React Native mobile application for inventory management, sales 
 - **Conflict Resolution**: Intelligent data merging for offline sync
 
 ### User Experience
+- **Push Notifications**: Intelligent stock alerts with user-configurable preferences
 - **Quick Actions**: One-tap access to common tasks
 - **Stock Alerts**: Visual indicators for inventory issues
 - **Sales Interface**: Intuitive cart management and checkout process
 - **Sync Feedback**: Real-time status updates
 - **Accessibility**: WCAG 2.1 AA compliant interface
 
-## 🧪 Testing
+## 🔔 Push Notification System
+
+The app includes a comprehensive push notification system for stock alerts and critical updates.
+
+### Features
+- **Smart Stock Monitoring**: Automatic detection of low stock and out-of-stock items
+- **User Preferences**: Granular control over notification types (low stock, out of stock, urgent messages)
+- **Permission Management**: Secure opt-in/opt-out functionality
+- **Cooldown Periods**: Prevents notification spam with intelligent timing
+- **Cross-Platform**: Works on iOS, Android, and Web
+- **Privacy-First**: Secure token management and data encryption
+
+### Notification Types
+1. **Low Stock Alerts**: When product quantity ≤ threshold
+2. **Out of Stock Alerts**: When product quantity = 0
+3. **Urgent Messages**: Critical system updates and important announcements
+
+### Setup Instructions
+
+#### 1. Database Setup
+Run the SQL migration in your Supabase dashboard:
+```sql
+-- See docs/database-schema-notifications.md for complete migration script
+```
+
+#### 2. Environment Configuration
+No additional environment variables required for basic functionality.
+For server-side notifications, configure your push notification service.
+
+#### 3. User Configuration
+Users can configure notifications via:
+- Settings → Notification Settings
+- Enable/disable specific notification types
+- Test notification functionality
+- Monitor notification history
+
+### Usage
+
+#### For Users
+1. **Enable Notifications**: Go to Settings → Notification Settings
+2. **Grant Permissions**: Allow notifications when prompted
+3. **Configure Preferences**: Choose which alert types to receive
+4. **Test Setup**: Use the "Send Test Notification" button
+
+#### For Developers
+```typescript
+import { notificationService, stockMonitoringService } from './lib/notifications';
+
+// Send manual alert
+await notificationService.sendStockAlert('Product Name', 5, 10, 'low_stock');
+
+// Check all stock levels
+await stockMonitoringService.checkStockLevels();
+
+// Get monitoring stats
+const stats = stockMonitoringService.getMonitoringStats();
+```
+
+### Security Features
+- **Row Level Security**: Database policies restrict access to user's own data
+- **Token Encryption**: Push tokens stored securely
+- **Permission Validation**: Notifications only sent to opted-in users
+- **Data Privacy**: Minimal data collection, GDPR compliant
+
+### Testing
+Run notification tests:
+```bash
+npm test -- __tests__/lib/notifications.test.ts
+npm test -- __tests__/lib/stockMonitoring.test.ts
+npm test -- __tests__/store/notificationStore.test.ts
+```
+
+### Troubleshooting
+- **Notifications not working**: Check device permissions in system settings
+- **No stock alerts**: Verify notification preferences are enabled
+- **Test notifications fail**: Ensure app has notification permissions
+
 
 - **Test Coverage**: ≥90% across all modules
 - **Test Status**: 0 failing tests
@@ -107,7 +185,7 @@ A comprehensive React Native mobile application for inventory management, sales 
 - **Image Loading**: 40%+ reduction in memory usage
 - **Sync Performance**: Exponential backoff with retry logic
 
-## 🔐 Security & Compliance
+## 🧪 Testing
 
 - **Input Sanitization**: XSS protection and SQL injection prevention
 - **Data Privacy**: GDPR-compliant offline data handling
