@@ -265,6 +265,19 @@ const AdminDashboard = ({ navigation }: { navigation: any }) => {
                <Text style={styles.cardButtonText}>Settings</Text>
              </TouchableOpacity>
            </View>
+
+           <View style={styles.card}>
+             <Text style={styles.cardTitle}>Notification Settings</Text>
+             <Text style={styles.cardDescription}>
+               Configure push notifications and stock alerts
+             </Text>
+             <TouchableOpacity 
+               style={styles.cardButton}
+               onPress={() => navigation.navigate('NotificationSettings')}
+             >
+               <Text style={styles.cardButtonText}>Notifications</Text>
+             </TouchableOpacity>
+           </View>
         </View>
 
         <TouchableOpacity style={styles.signOutButton} onPress={handleSignOut}>

@@ -151,6 +151,19 @@ const StaffDashboard: React.FC<{ navigation: any }> = ({ navigation }) => {
               <Text style={styles.cardButtonText}>Quick Actions</Text>
             </TouchableOpacity>
           </View>
+
+          <View style={styles.card}>
+            <Text style={styles.cardTitle}>Notification Settings</Text>
+            <Text style={styles.cardDescription}>
+              Configure your notification preferences for stock alerts.
+            </Text>
+            <TouchableOpacity 
+              style={styles.cardButton}
+              onPress={() => navigation.navigate('NotificationSettings')}
+            >
+              <Text style={styles.cardButtonText}>Notifications</Text>
+            </TouchableOpacity>
+          </View>
         </View>
 
         <TouchableOpacity style={styles.signOutButton} onPress={handleSignOut}>
