@@ -12,104 +12,77 @@ import {
   ScrollView,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { supabase } from '../../lib/supabase';
+import { useAuthStore } from '../../store/authStore';
+import { RoleManagementService, UserWithRole } from '../../lib/roleManagementService';
+import { UserRole, ROLE_LABELS, ROLE_COLORS, hasPermission } from '../../lib/permissions';
 import Icon from '../../components/Icon';
 
-interface User {
-  id: string;
-  email: string;
-  role: 'admin' | 'manager' | 'staff' | 'viewer';
-  full_name?: string;
-  phone?: string;
-  is_active: boolean;
-  created_at: string;
-  last_login?: string;
-}
-
 interface UserManagementScreenProps {
-  navigation: any;
+  navigation: {
+    goBack: () => void;
+    navigate: (screen: string, params?: object) => void;
+  };
 }
 
 const UserManagementScreen: React.FC<UserManagementScreenProps> = ({
   navigation,
 }) => {
-  const [users, setUsers] = useState<User[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { user, userRole } = useAuthStore();
+  const [users, setUsers] = useState<UserWithRole[]>([]);
   const [refreshing, setRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [showAddUserModal, setShowAddUserModal] = useState(false);
   const [showEditUserModal, setShowEditUserModal] = useState(false);
-  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [selectedUser, setSelectedUser] = useState<UserWithRole | null>(null);
   const [newUser, setNewUser] = useState({
     email: '',
     full_name: '',
     phone: '',
-    role: 'staff' as const,
+    password: '',
+    role: 'cashier' as UserRole,
   });
 
-  const roles = [
-    { key: 'admin', label: 'Administrator', color: '#dc2626' },
-    { key: 'manager', label: 'Manager', color: '#ea580c' },
-    { key: 'staff', label: 'Staff', color: '#2563eb' },
-    { key: 'viewer', label: 'Viewer', color: '#059669' },
+  const availableRoles: { key: UserRole; label: string; color: string }[] = [
+    { key: 'admin', label: ROLE_LABELS.admin, color: ROLE_COLORS.admin },
+    { key: 'manager', label: ROLE_LABELS.manager, color: ROLE_COLORS.manager },
+    { key: 'cashier', label: ROLE_LABELS.cashier, color: ROLE_COLORS.cashier },
   ];
 
+  // Check if current user has permissions for user management
+  const canViewUsers = hasPermission(userRole, 'users:view');
+  const canCreateUsers = hasPermission(userRole, 'users:create');
+  const canEditUsers = hasPermission(userRole, 'users:edit');
+  const canAssignRoles = hasPermission(userRole, 'users:assign_roles');
+
   useEffect(() => {
+    if (!canViewUsers) {
+      Alert.alert('Access Denied', 'You do not have permission to view users');
+      navigation.goBack();
+      return;
+    }
     fetchUsers();
-  }, []);
+  }, [canViewUsers, navigation]);
 
   const fetchUsers = async () => {
+    if (!user?.id) {
+      Alert.alert('Error', 'You must be logged in to manage users');
+      return;
+    }
+
     try {
       setLoading(true);
-      const { data: { user } } = await supabase.auth.getUser();
+      const result = await RoleManagementService.getUsers(user.id);
       
-      if (!user) {
-        Alert.alert('Error', 'You must be logged in to manage users');
-        return;
+      if (result.success && result.users) {
+        setUsers(result.users);
+      } else {
+        Alert.alert('Error', result.error || 'Failed to fetch users');
       }
-
-      // For now, we'll create mock user data since admin API requires special permissions
-      // In a production environment, you would need to set up proper admin access
-      const mockUsers: User[] = [
-        {
-          id: user.id,
-          email: user.email || '',
-          role: 'admin',
-          full_name: 'Admin User',
-          phone: '+1234567890',
-          is_active: true,
-          created_at: user.created_at || new Date().toISOString(),
-          last_login: user.last_sign_in_at || new Date().toISOString(),
-        },
-        {
-          id: 'mock-user-1',
-          email: 'manager@example.com',
-          role: 'manager',
-          full_name: 'Manager User',
-          phone: '+1234567891',
-          is_active: true,
-          created_at: new Date(Date.now() - 86400000).toISOString(),
-          last_login: new Date(Date.now() - 3600000).toISOString(),
-        },
-        {
-          id: 'mock-user-2',
-          email: 'staff@example.com',
-          role: 'staff',
-          full_name: 'Staff User',
-          phone: '+1234567892',
-          is_active: true,
-          created_at: new Date(Date.now() - 172800000).toISOString(),
-          last_login: new Date(Date.now() - 7200000).toISOString(),
-        }
-      ];
-
-      setUsers(mockUsers);
     } catch (error) {
       console.error('Error fetching users:', error);
       Alert.alert('Error', 'Failed to fetch users');
-    } finally {
-      setLoading(false);
     }
+  };
   };
 
   const onRefresh = async () => {
@@ -119,50 +92,73 @@ const UserManagementScreen: React.FC<UserManagementScreenProps> = ({
   };
 
   const handleAddUser = async () => {
-    if (!newUser.email || !newUser.full_name) {
-      Alert.alert('Error', 'Email and full name are required');
+    if (!newUser.email || !newUser.full_name || !newUser.password) {
+      Alert.alert('Error', 'Email, full name, and password are required');
+      return;
+    }
+
+    if (!canCreateUsers) {
+      Alert.alert('Access Denied', 'You do not have permission to create users');
+      return;
+    }
+
+    if (!user?.id) {
+      Alert.alert('Error', 'User context not available');
       return;
     }
 
     try {
-      // For now, we'll simulate user creation since admin API requires special permissions
-      // In a production environment, you would need to set up proper admin access
-      const mockNewUser: User = {
-        id: `mock-user-${Date.now()}`,
-        email: newUser.email,
-        role: newUser.role,
-        full_name: newUser.full_name,
-        phone: newUser.phone,
-        is_active: true,
-        created_at: new Date().toISOString(),
-        last_login: null,
-      };
+      const result = await RoleManagementService.createUser(
+        {
+          email: newUser.email,
+          password: newUser.password,
+          full_name: newUser.full_name,
+          phone: newUser.phone,
+          role: newUser.role,
+        },
+        user.id
+      );
 
-      setUsers(prev => [...prev, mockNewUser]);
-      Alert.alert('Success', 'User created successfully (mock data). In production, they would receive an email to set their password.');
-      setShowAddUserModal(false);
-      setNewUser({ email: '', full_name: '', phone: '', role: 'staff' });
+      if (result.success) {
+        Alert.alert('Success', 'User created successfully! They will receive an email to activate their account.');
+        setShowAddUserModal(false);
+        setNewUser({ email: '', full_name: '', phone: '', password: '', role: 'cashier' });
+        fetchUsers();
+      } else {
+        Alert.alert('Error', result.error || 'Failed to create user');
+      }
     } catch (error) {
       console.error('Error creating user:', error);
       Alert.alert('Error', 'Failed to create user');
     }
   };
 
-  const handleUpdateUserRole = async (userId: string, newRole: string) => {
+  const handleUpdateUserRole = async (userId: string, newRole: UserRole) => {
+    if (!canAssignRoles) {
+      Alert.alert('Access Denied', 'You do not have permission to assign roles');
+      return;
+    }
+
+    if (!user?.id) {
+      Alert.alert('Error', 'User context not available');
+      return;
+    }
+
     try {
-      const { error } = await supabase.auth.admin.updateUserById(userId, {
-        user_metadata: { role: newRole },
+      const result = await RoleManagementService.assignRole({
+        userId,
+        newRole,
+        assignedBy: user.id,
       });
 
-      if (error) {
-        Alert.alert('Error', error.message);
-        return;
+      if (result.success) {
+        Alert.alert('Success', 'User role updated successfully');
+        setShowEditUserModal(false);
+        setSelectedUser(null);
+        fetchUsers();
+      } else {
+        Alert.alert('Error', result.error || 'Failed to update user role');
       }
-
-      Alert.alert('Success', 'User role updated successfully');
-      setShowEditUserModal(false);
-      setSelectedUser(null);
-      fetchUsers();
     } catch (error) {
       console.error('Error updating user:', error);
       Alert.alert('Error', 'Failed to update user');
@@ -170,18 +166,25 @@ const UserManagementScreen: React.FC<UserManagementScreenProps> = ({
   };
 
   const handleToggleUserStatus = async (userId: string, isActive: boolean) => {
+    if (!canEditUsers) {
+      Alert.alert('Access Denied', 'You do not have permission to modify users');
+      return;
+    }
+
+    if (!user?.id) {
+      Alert.alert('Error', 'User context not available');
+      return;
+    }
+
     try {
-      const { error } = await supabase.auth.admin.updateUserById(userId, {
-        user_metadata: { is_active: isActive },
-      });
+      const result = await RoleManagementService.toggleUserStatus(userId, isActive, user.id);
 
-      if (error) {
-        Alert.alert('Error', error.message);
-        return;
+      if (result.success) {
+        Alert.alert('Success', `User ${isActive ? 'activated' : 'deactivated'} successfully`);
+        fetchUsers();
+      } else {
+        Alert.alert('Error', result.error || 'Failed to update user status');
       }
-
-      Alert.alert('Success', `User ${isActive ? 'activated' : 'deactivated'} successfully`);
-      fetchUsers();
     } catch (error) {
       console.error('Error updating user status:', error);
       Alert.alert('Error', 'Failed to update user status');
@@ -194,17 +197,15 @@ const UserManagementScreen: React.FC<UserManagementScreenProps> = ({
     user.role.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const getRoleColor = (role: string) => {
-    const roleInfo = roles.find(r => r.key === role);
-    return roleInfo?.color || '#6b7280';
+  const getRoleColor = (role: UserRole) => {
+    return ROLE_COLORS[role] || '#6b7280';
   };
 
-  const getRoleLabel = (role: string) => {
-    const roleInfo = roles.find(r => r.key === role);
-    return roleInfo?.label || role;
+  const getRoleLabel = (role: UserRole) => {
+    return ROLE_LABELS[role] || role;
   };
 
-  const renderUserItem = ({ item }: { item: User }) => (
+  const renderUserItem = ({ item }: { item: UserWithRole }) => (
     <View style={styles.userCard}>
       <View style={styles.userInfo}>
         <View style={styles.userHeader}>
@@ -226,24 +227,31 @@ const UserManagementScreen: React.FC<UserManagementScreenProps> = ({
       </View>
       
       <View style={styles.userActions}>
-        <TouchableOpacity
-          style={[styles.statusButton, { backgroundColor: item.is_active ? '#059669' : '#dc2626' }]}
-          onPress={() => handleToggleUserStatus(item.id, !item.is_active)}
-        >
-          <Text style={styles.statusButtonText}>
-            {item.is_active ? 'Active' : 'Inactive'}
-          </Text>
-        </TouchableOpacity>
+        {canEditUsers && (
+          <TouchableOpacity
+            style={[
+              styles.statusButton, 
+              item.is_active ? styles.statusButtonActive : styles.statusButtonInactive
+            ]}
+            onPress={() => handleToggleUserStatus(item.id, !item.is_active)}
+          >
+            <Text style={styles.statusButtonText}>
+              {item.is_active ? 'Active' : 'Inactive'}
+            </Text>
+          </TouchableOpacity>
+        )}
         
-        <TouchableOpacity
-          style={styles.editButton}
-          onPress={() => {
-            setSelectedUser(item);
-            setShowEditUserModal(true);
-          }}
-        >
-          <Icon name="edit" size={16} color="#2563eb" />
-        </TouchableOpacity>
+        {canAssignRoles && (
+          <TouchableOpacity
+            style={styles.editButton}
+            onPress={() => {
+              setSelectedUser(item);
+              setShowEditUserModal(true);
+            }}
+          >
+            <Icon name="edit" size={16} color="#2563eb" />
+          </TouchableOpacity>
+        )}
       </View>
     </View>
   );
@@ -258,12 +266,14 @@ const UserManagementScreen: React.FC<UserManagementScreenProps> = ({
           <Icon name="arrow-back" size={24} color="white" />
         </TouchableOpacity>
         <Text style={styles.title}>User Management</Text>
-        <TouchableOpacity
-          style={styles.addButton}
-          onPress={() => setShowAddUserModal(true)}
-        >
-          <Icon name="add" size={24} color="white" />
-        </TouchableOpacity>
+        {canCreateUsers && (
+          <TouchableOpacity
+            style={styles.addButton}
+            onPress={() => setShowAddUserModal(true)}
+          >
+            <Icon name="add" size={24} color="white" />
+          </TouchableOpacity>
+        )}
       </View>
 
       <View style={styles.searchContainer}>
@@ -339,6 +349,14 @@ const UserManagementScreen: React.FC<UserManagementScreenProps> = ({
             
             <TextInput
               style={styles.input}
+              placeholder="Password"
+              value={newUser.password}
+              onChangeText={(text) => setNewUser({ ...newUser, password: text })}
+              secureTextEntry
+            />
+            
+            <TextInput
+              style={styles.input}
               placeholder="Phone (optional)"
               value={newUser.phone}
               onChangeText={(text) => setNewUser({ ...newUser, phone: text })}
@@ -348,14 +366,14 @@ const UserManagementScreen: React.FC<UserManagementScreenProps> = ({
             <Text style={styles.label}>Role:</Text>
             <ScrollView horizontal showsHorizontalScrollIndicator={false}>
               <View style={styles.roleSelector}>
-                {roles.map((role) => (
+                {availableRoles.map((role) => (
                   <TouchableOpacity
                     key={role.key}
                     style={[
                       styles.roleOption,
                       newUser.role === role.key && styles.roleOptionSelected,
                     ]}
-                    onPress={() => setNewUser({ ...newUser, role: role.key as any })}
+                    onPress={() => setNewUser({ ...newUser, role: role.key })}
                   >
                     <Text style={[
                       styles.roleOptionText,
@@ -407,7 +425,7 @@ const UserManagementScreen: React.FC<UserManagementScreenProps> = ({
                 <Text style={styles.label}>Change to:</Text>
                 <ScrollView horizontal showsHorizontalScrollIndicator={false}>
                   <View style={styles.roleSelector}>
-                    {roles.map((role) => (
+                    {availableRoles.map((role) => (
                       <TouchableOpacity
                         key={role.key}
                         style={[
@@ -586,6 +604,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 8,
+  },
+  statusButtonActive: {
+    backgroundColor: '#059669',
+  },
+  statusButtonInactive: {
+    backgroundColor: '#dc2626',
   },
   statusButtonText: {
     fontSize: 12,

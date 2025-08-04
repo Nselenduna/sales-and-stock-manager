@@ -5,15 +5,15 @@ import { supabase, UserWithRole } from '../lib/supabase';
 
 interface AuthState {
   user: UserWithRole | null;
-  session: any | null;
+  session: Record<string, unknown> | null;
   loading: boolean;
   isAuthenticated: boolean;
-  userRole: 'admin' | 'staff' | 'viewer' | null;
+  userRole: 'admin' | 'manager' | 'cashier' | null;
 }
 
 interface AuthActions {
   setUser: (user: UserWithRole | null) => void;
-  setSession: (session: any | null) => void;
+  setSession: (session: Record<string, unknown> | null) => void;
   setLoading: (loading: boolean) => void;
   signIn: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
   signUp: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
@@ -32,16 +32,16 @@ const useAuthStore = create<AuthState & AuthActions>()(
       isAuthenticated: false,
       userRole: null,
 
-      setUser: (user) => set({ user, isAuthenticated: !!user }),
-      setSession: (session) => set({ session }),
-      setLoading: (loading) => set({ loading }),
+      setUser: (userArg) => set({ user: userArg, isAuthenticated: !!userArg }),
+      setSession: (sessionArg) => set({ session: sessionArg }),
+      setLoading: (loadingArg) => set({ loading: loadingArg }),
 
-      signIn: async (email, password) => {
+      signIn: async (emailArg, passwordArg) => {
         try {
           set({ loading: true });
           const { data, error } = await supabase.auth.signInWithPassword({
-            email,
-            password,
+            email: emailArg,
+            password: passwordArg,
           });
 
           if (error) throw error;
@@ -51,19 +51,19 @@ const useAuthStore = create<AuthState & AuthActions>()(
           }
 
           return { success: true };
-        } catch (error: any) {
-          return { success: false, error: error.message };
+        } catch (error: unknown) {
+          return { success: false, error: (error as Error).message };
         } finally {
           set({ loading: false });
         }
       },
 
-      signUp: async (email, password) => {
+      signUp: async (emailArg, passwordArg) => {
         try {
           set({ loading: true });
           const { data, error } = await supabase.auth.signUp({
-            email,
-            password,
+            email: emailArg,
+            password: passwordArg,
           });
 
           if (error) throw error;
@@ -74,7 +74,7 @@ const useAuthStore = create<AuthState & AuthActions>()(
               .from('roles')
               .insert({
                 user_id: data.user.id,
-                role_type: 'staff', // Default role
+                role_type: 'cashier', // Default role
               });
 
             if (roleError) throw roleError;
@@ -83,8 +83,8 @@ const useAuthStore = create<AuthState & AuthActions>()(
           }
 
           return { success: true };
-        } catch (error: any) {
-          return { success: false, error: error.message };
+        } catch (error: unknown) {
+          return { success: false, error: (error as Error).message };
         } finally {
           set({ loading: false });
         }
@@ -138,7 +138,7 @@ const useAuthStore = create<AuthState & AuthActions>()(
               role: roleData || {
                 id: '',
                 user_id: user.id,
-                role_type: 'staff',
+                role_type: 'cashier',
                 created_at: new Date().toISOString(),
                 updated_at: new Date().toISOString()
               }

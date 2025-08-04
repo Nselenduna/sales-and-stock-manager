@@ -24,7 +24,7 @@ export interface User {
 export interface Role {
   id: string;
   user_id: string;
-  role_type: 'admin' | 'staff' | 'viewer';
+  role_type: 'admin' | 'manager' | 'cashier';
   created_at: string;
   updated_at: string;
 }

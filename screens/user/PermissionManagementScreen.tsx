@@ -3,128 +3,77 @@ import {
   View,
   Text,
   StyleSheet,
-  FlatList,
   TouchableOpacity,
   Switch,
   Alert,
   ScrollView,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { supabase } from '../../lib/supabase';
+import { useAuthStore } from '../../store/authStore';
+import { 
+  Permission, 
+  UserRole, 
+  ROLE_PERMISSIONS, 
+  ROLE_LABELS, 
+  ROLE_COLORS,
+  PERMISSION_CATEGORIES,
+  PERMISSION_DESCRIPTIONS,
+  hasPermission
+} from '../../lib/permissions';
 import Icon from '../../components/Icon';
 
-interface Permission {
-  id: string;
-  name: string;
-  description: string;
-  category: 'sales' | 'inventory' | 'users' | 'reports' | 'system';
-}
-
-interface RolePermission {
-  role: string;
-  permissions: { [key: string]: boolean };
+interface RolePermissionState {
+  role: UserRole;
+  permissions: { [key in Permission]?: boolean };
 }
 
 interface PermissionManagementScreenProps {
-  navigation: any;
+  navigation: {
+    goBack: () => void;
+  };
 }
 
 const PermissionManagementScreen: React.FC<PermissionManagementScreenProps> = ({
   navigation,
 }) => {
-  const [permissions, setPermissions] = useState<Permission[]>([]);
-  const [rolePermissions, setRolePermissions] = useState<RolePermission[]>([]);
-  const [selectedRole, setSelectedRole] = useState<string>('admin');
-  const [loading, setLoading] = useState(true);
+  const { userRole } = useAuthStore();
+  const [rolePermissions, setRolePermissions] = useState<RolePermissionState[]>([]);
+  const [selectedRole, setSelectedRole] = useState<UserRole>('admin');
 
-  const roles = [
-    { key: 'admin', label: 'Administrator', color: '#dc2626' },
-    { key: 'manager', label: 'Manager', color: '#ea580c' },
-    { key: 'staff', label: 'Staff', color: '#2563eb' },
-    { key: 'viewer', label: 'Viewer', color: '#059669' },
+  const availableRoles: { key: UserRole; label: string; color: string }[] = [
+    { key: 'admin', label: ROLE_LABELS.admin, color: ROLE_COLORS.admin },
+    { key: 'manager', label: ROLE_LABELS.manager, color: ROLE_COLORS.manager },
+    { key: 'cashier', label: ROLE_LABELS.cashier, color: ROLE_COLORS.cashier },
   ];
 
+  // Check if current user has permission to manage permissions
+  const canManagePermissions = hasPermission(userRole, 'users:assign_roles');
+
   useEffect(() => {
+    if (!canManagePermissions) {
+      Alert.alert('Access Denied', 'You do not have permission to manage permissions');
+      navigation.goBack();
+      return;
+    }
     initializePermissions();
-  }, []);
+  }, [canManagePermissions, navigation]);
 
   const initializePermissions = () => {
-    // Define all available permissions
-    const allPermissions: Permission[] = [
-      // Sales permissions
-      { id: 'sales_view', name: 'View Sales', description: 'View sales records and history', category: 'sales' },
-      { id: 'sales_create', name: 'Create Sales', description: 'Create new sales transactions', category: 'sales' },
-      { id: 'sales_edit', name: 'Edit Sales', description: 'Modify existing sales records', category: 'sales' },
-      { id: 'sales_delete', name: 'Delete Sales', description: 'Delete sales records', category: 'sales' },
-      { id: 'sales_refund', name: 'Process Refunds', description: 'Process customer refunds', category: 'sales' },
-      
-      // Inventory permissions
-      { id: 'inventory_view', name: 'View Inventory', description: 'View product inventory', category: 'inventory' },
-      { id: 'inventory_create', name: 'Add Products', description: 'Add new products to inventory', category: 'inventory' },
-      { id: 'inventory_edit', name: 'Edit Products', description: 'Modify product information', category: 'inventory' },
-      { id: 'inventory_delete', name: 'Delete Products', description: 'Remove products from inventory', category: 'inventory' },
-      { id: 'inventory_adjust', name: 'Adjust Stock', description: 'Adjust product quantities', category: 'inventory' },
-      
-      // User management permissions
-      { id: 'users_view', name: 'View Users', description: 'View user list and profiles', category: 'users' },
-      { id: 'users_create', name: 'Create Users', description: 'Create new user accounts', category: 'users' },
-      { id: 'users_edit', name: 'Edit Users', description: 'Modify user information and roles', category: 'users' },
-      { id: 'users_delete', name: 'Delete Users', description: 'Remove user accounts', category: 'users' },
-      { id: 'users_permissions', name: 'Manage Permissions', description: 'Manage user permissions and roles', category: 'users' },
-      
-      // Reports permissions
-      { id: 'reports_view', name: 'View Reports', description: 'Access to view reports and analytics', category: 'reports' },
-      { id: 'reports_export', name: 'Export Reports', description: 'Export reports to various formats', category: 'reports' },
-      { id: 'reports_create', name: 'Create Reports', description: 'Create custom reports', category: 'reports' },
-      
-      // System permissions
-      { id: 'system_settings', name: 'System Settings', description: 'Access to system configuration', category: 'system' },
-      { id: 'system_backup', name: 'System Backup', description: 'Perform system backups', category: 'system' },
-      { id: 'system_logs', name: 'View Logs', description: 'Access system and activity logs', category: 'system' },
-    ];
-
-    setPermissions(allPermissions);
-
-    // Initialize role permissions with default values
-    const defaultRolePermissions: RolePermission[] = roles.map(role => ({
+    // Initialize role permissions with actual permission definitions
+    const initialRolePermissions: RolePermissionState[] = availableRoles.map(role => ({
       role: role.key,
-      permissions: allPermissions.reduce((acc, permission) => {
-        // Set default permissions based on role
-        switch (role.key) {
-          case 'admin':
-            acc[permission.id] = true; // Admins have all permissions
-            break;
-          case 'manager':
-            acc[permission.id] = [
-              'sales_view', 'sales_create', 'sales_edit', 'sales_refund',
-              'inventory_view', 'inventory_create', 'inventory_edit', 'inventory_adjust',
-              'users_view', 'reports_view', 'reports_export', 'system_logs'
-            ].includes(permission.id);
-            break;
-          case 'staff':
-            acc[permission.id] = [
-              'sales_view', 'sales_create',
-              'inventory_view', 'inventory_adjust',
-              'reports_view'
-            ].includes(permission.id);
-            break;
-          case 'viewer':
-            acc[permission.id] = [
-              'sales_view', 'inventory_view', 'reports_view'
-            ].includes(permission.id);
-            break;
-          default:
-            acc[permission.id] = false;
-        }
-        return acc;
-      }, {} as { [key: string]: boolean })
+      permissions: Object.values(PERMISSION_CATEGORIES)
+        .flatMap(category => category.permissions)
+        .reduce((acc, permission) => {
+          acc[permission] = ROLE_PERMISSIONS[role.key]?.includes(permission) ?? false;
+          return acc;
+        }, {} as { [key in Permission]?: boolean })
     }));
 
-    setRolePermissions(defaultRolePermissions);
-    setLoading(false);
+    setRolePermissions(initialRolePermissions);
   };
 
-  const handlePermissionToggle = (permissionId: string, enabled: boolean) => {
+  const handlePermissionToggle = (permission: Permission, enabled: boolean) => {
     setRolePermissions(prev => 
       prev.map(rolePerm => 
         rolePerm.role === selectedRole 
@@ -132,7 +81,7 @@ const PermissionManagementScreen: React.FC<PermissionManagementScreenProps> = ({
               ...rolePerm,
               permissions: {
                 ...rolePerm.permissions,
-                [permissionId]: enabled
+                [permission]: enabled
               }
             }
           : rolePerm
@@ -155,110 +104,46 @@ const PermissionManagementScreen: React.FC<PermissionManagementScreenProps> = ({
     }
   };
 
-  const getCategoryIcon = (category: string) => {
-    switch (category) {
-      case 'sales':
-        return 'receipt';
-      case 'inventory':
-        return 'inventory';
-      case 'users':
-        return 'users';
-      case 'reports':
-        return 'bar-chart';
-      case 'system':
-        return 'settings';
-      default:
-        return 'info';
-    }
+  const getCurrentRolePermissions = () => {
+    return rolePermissions.find(rp => rp.role === selectedRole)?.permissions || {};
   };
 
-  const getCategoryColor = (category: string) => {
-    switch (category) {
-      case 'sales':
-        return '#059669';
-      case 'inventory':
-        return '#2563eb';
-      case 'users':
-        return '#dc2626';
-      case 'reports':
-        return '#ea580c';
-      case 'system':
-        return '#7c3aed';
-      default:
-        return '#6b7280';
-    }
-  };
-
-  const getCategoryLabel = (category: string) => {
-    switch (category) {
-      case 'sales':
-        return 'Sales';
-      case 'inventory':
-        return 'Inventory';
-      case 'users':
-        return 'Users';
-      case 'reports':
-        return 'Reports';
-      case 'system':
-        return 'System';
-      default:
-        return category;
-    }
-  };
-
-  const currentRolePermissions = rolePermissions.find(rp => rp.role === selectedRole)?.permissions || {};
-
-  const groupedPermissions = permissions.reduce((acc, permission) => {
-    if (!acc[permission.category]) {
-      acc[permission.category] = [];
-    }
-    acc[permission.category].push(permission);
-    return acc;
-  }, {} as { [key: string]: Permission[] });
-
-  const renderPermissionItem = ({ item }: { item: Permission }) => (
-    <View style={styles.permissionItem}>
-      <View style={styles.permissionInfo}>
-        <Text style={styles.permissionName}>{item.name}</Text>
-        <Text style={styles.permissionDescription}>{item.description}</Text>
-      </View>
-      <Switch
-        value={currentRolePermissions[item.id] || false}
-        onValueChange={(value) => handlePermissionToggle(item.id, value)}
-        trackColor={{ false: '#e2e8f0', true: '#2563eb' }}
-        thumbColor={currentRolePermissions[item.id] ? '#ffffff' : '#f4f3f4'}
-      />
-    </View>
-  );
-
-  const renderCategorySection = (category: string, categoryPermissions: Permission[]) => (
-    <View key={category} style={styles.categorySection}>
-      <View style={styles.categoryHeader}>
-        <Icon 
-          name={getCategoryIcon(category)} 
-          size={20} 
-          color={getCategoryColor(category)} 
-        />
-        <Text style={[styles.categoryTitle, { color: getCategoryColor(category) }]}>
-          {getCategoryLabel(category)}
-        </Text>
-      </View>
-      {categoryPermissions.map(permission => (
-        <View key={permission.id} style={styles.permissionItem}>
-          <View style={styles.permissionInfo}>
-            <Text style={styles.permissionName}>{permission.name}</Text>
-            <Text style={styles.permissionDescription}>{permission.description}</Text>
-          </View>
-          <Switch
-            value={currentRolePermissions[permission.id] || false}
-            onValueChange={(value) => handlePermissionToggle(permission.id, value)}
-            trackColor={{ false: '#e2e8f0', true: '#2563eb' }}
-            thumbColor={currentRolePermissions[permission.id] ? '#ffffff' : '#f4f3f4'}
+  const renderCategorySection = (categoryKey: string, category: typeof PERMISSION_CATEGORIES[keyof typeof PERMISSION_CATEGORIES]) => {
+    const currentPermissions = getCurrentRolePermissions();
+    
+    return (
+      <View key={categoryKey} style={styles.categorySection}>
+        <View style={styles.categoryHeader}>
+          <Icon 
+            name={category.icon} 
+            size={20} 
+            color={category.color} 
           />
+          <Text style={[styles.categoryTitle, { color: category.color }]}>
+            {category.label}
+          </Text>
         </View>
-      ))}
-    </View>
-  );
+        {category.permissions.map(permission => (
+          <View key={permission} style={styles.permissionItem}>
+            <View style={styles.permissionInfo}>
+              <Text style={styles.permissionName}>
+                {permission.split(':')[1].charAt(0).toUpperCase() + permission.split(':')[1].slice(1)}
+              </Text>
+              <Text style={styles.permissionDescription}>
+                {PERMISSION_DESCRIPTIONS[permission]}
+              </Text>
+            </View>
+            <Switch
+              value={currentPermissions[permission] || false}
+              onValueChange={(value) => handlePermissionToggle(permission, value)}
+              trackColor={{ false: '#e2e8f0', true: '#2563eb' }}
+              thumbColor={currentPermissions[permission] ? '#ffffff' : '#f4f3f4'}
+            />
+          </View>
+        ))}
+      </View>
+    );
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -280,7 +165,7 @@ const PermissionManagementScreen: React.FC<PermissionManagementScreenProps> = ({
 
       <View style={styles.roleSelector}>
         <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-          {roles.map((role) => (
+          {availableRoles.map((role) => (
             <TouchableOpacity
               key={role.key}
               style={[
@@ -293,7 +178,7 @@ const PermissionManagementScreen: React.FC<PermissionManagementScreenProps> = ({
               <Text style={[
                 styles.roleButtonText,
                 selectedRole === role.key && styles.roleButtonTextActive,
-                { color: selectedRole === role.key ? 'white' : role.color }
+                selectedRole === role.key ? styles.roleButtonTextWhite : { color: role.color }
               ]}>
                 {role.label}
               </Text>
@@ -305,27 +190,27 @@ const PermissionManagementScreen: React.FC<PermissionManagementScreenProps> = ({
       <View style={styles.statsContainer}>
         <View style={styles.statCard}>
           <Text style={styles.statNumber}>
-            {Object.values(currentRolePermissions).filter(Boolean).length}
+            {Object.values(getCurrentRolePermissions()).filter(Boolean).length}
           </Text>
           <Text style={styles.statLabel}>Active Permissions</Text>
         </View>
         <View style={styles.statCard}>
           <Text style={styles.statNumber}>
-            {permissions.length}
+            {Object.values(PERMISSION_CATEGORIES).flatMap(c => c.permissions).length}
           </Text>
           <Text style={styles.statLabel}>Total Permissions</Text>
         </View>
         <View style={styles.statCard}>
           <Text style={styles.statNumber}>
-            {Object.keys(groupedPermissions).length}
+            {Object.keys(PERMISSION_CATEGORIES).length}
           </Text>
           <Text style={styles.statLabel}>Categories</Text>
         </View>
       </View>
 
       <ScrollView style={styles.permissionsContainer}>
-        {Object.entries(groupedPermissions).map(([category, categoryPermissions]) =>
-          renderCategorySection(category, categoryPermissions)
+        {Object.entries(PERMISSION_CATEGORIES).map(([categoryKey, category]) =>
+          renderCategorySection(categoryKey, category)
         )}
       </ScrollView>
     </SafeAreaView>
@@ -388,6 +273,9 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   roleButtonTextActive: {
+    color: 'white',
+  },
+  roleButtonTextWhite: {
     color: 'white',
   },
   statsContainer: {
