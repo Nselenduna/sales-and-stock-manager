@@ -21,6 +21,7 @@ import { useDebouncedSearch } from '../../hooks/useDebounce';
 import Icon from '../../components/Icon';
 import { useSyncFeedback } from '../../hooks/useSyncFeedback';
 import SyncStatusBanner from '../../components/SyncStatusBanner';
+import { handleError } from '../../lib/errorHandler'; // Import centralized error handler
 
 interface InventoryListScreenProps {
   navigation: any;
@@ -28,10 +29,10 @@ interface InventoryListScreenProps {
 
 // Constants for FlashList performance optimization
 const ITEM_HEIGHT = 120;
-const ESTIMATED_ITEM_SIZE = 120; // FlashList requires estimatedItemSize
+const ESTIMATED_ITEM_SIZE = 120;
 const INITIAL_NUM_TO_RENDER = 10;
 const MAX_TO_RENDER_PER_BATCH = 5;
-const WINDOW_SIZE = 21; // Should be around 2 * initialNumToRender
+const WINDOW_SIZE = 21;
 
 const InventoryListScreen: React.FC<InventoryListScreenProps> = ({
   navigation,
@@ -42,16 +43,12 @@ const InventoryListScreen: React.FC<InventoryListScreenProps> = ({
   const [refreshing, setRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
-  const [filterBy, setFilterBy] = useState<
-    'all' | 'low_stock' | 'out_of_stock'
-  >('all');
+  const [filterBy, setFilterBy] = useState<'all' | 'low_stock' | 'out_of_stock'>('all');
   const [page, setPage] = useState(0);
   const [hasMore, setHasMore] = useState(true);
 
-  // Debounced search for better performance
   const { debouncedValue: debouncedSearchQuery, isSearching } = useDebouncedSearch(searchQuery, 300);
 
-  // Sync feedback management
   const {
     syncState,
     setSyncing,
@@ -60,13 +57,11 @@ const InventoryListScreen: React.FC<InventoryListScreenProps> = ({
     retry,
   } = useSyncFeedback();
 
-  // Check if user can edit inventory - memoized
   const canEditInventory = useMemo(
     () => userRole === 'admin' || userRole === 'staff',
     [userRole]
   );
 
-  // Memoized fetch function with pagination and sync feedback
   const fetchProducts = useCallback(
     async (refresh = false) => {
       if (refresh) {
@@ -78,8 +73,8 @@ const InventoryListScreen: React.FC<InventoryListScreenProps> = ({
 
       try {
         setLoading(true);
-        setSyncing(); // Show sync status
-        
+        setSyncing();
+
         const pageSize = 20;
         const pageIndex = refresh ? 0 : page;
 
@@ -97,15 +92,14 @@ const InventoryListScreen: React.FC<InventoryListScreenProps> = ({
           setProducts(prev => [...prev, ...(data || [])]);
         }
 
-        // Check if we've reached the end
         setHasMore((data || []).length === pageSize);
         if (!refresh) {
           setPage(prev => prev + 1);
         }
 
-        setSuccess(); // Show success status
+        setSuccess();
       } catch (error) {
-        console.error('Error fetching products:', error);
+        handleError(error, "InventoryListScreen/fetchProducts");
         setFailed('Failed to load inventory');
         Alert.alert('Error', 'Failed to load inventory');
       } finally {
@@ -115,23 +109,18 @@ const InventoryListScreen: React.FC<InventoryListScreenProps> = ({
     [sortOrder, page, hasMore, setSyncing, setSuccess, setFailed]
   );
 
-  // Memoized refresh function
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
     await fetchProducts(true);
     setRefreshing(false);
   }, [fetchProducts]);
 
-  // Initial data load
   useEffect(() => {
     fetchProducts(true);
   }, [sortOrder]);
 
-  // Memoized filtered products
   const filteredProducts = useMemo(() => {
     let filtered = products;
-
-    // Apply search filter using debounced query for better performance
     if (debouncedSearchQuery) {
       const query = debouncedSearchQuery.toLowerCase();
       filtered = filtered.filter(
@@ -142,7 +131,6 @@ const InventoryListScreen: React.FC<InventoryListScreenProps> = ({
       );
     }
 
-    // Apply stock filter
     switch (filterBy) {
       case 'low_stock':
         filtered = filtered.filter(
@@ -157,22 +145,18 @@ const InventoryListScreen: React.FC<InventoryListScreenProps> = ({
       default:
         break;
     }
-
     return filtered;
   }, [products, debouncedSearchQuery, filterBy]);
 
-  // Memoized product count text
   const productCountText = useMemo(
     () => `${filteredProducts.length} of ${products.length} items`,
     [filteredProducts.length, products.length]
   );
 
-  // Debounced search handler
   const handleSearchChange = useCallback((text: string) => {
     setSearchQuery(text);
   }, []);
 
-  // Navigation handlers - memoized
   const handleProductPress = useCallback(
     (product: Product) => {
       navigation.navigate('ProductDetail', { product });
@@ -202,16 +186,12 @@ const InventoryListScreen: React.FC<InventoryListScreenProps> = ({
     setSortOrder(prev => (prev === 'asc' ? 'desc' : 'asc'));
   }, []);
 
-  // Load more products when reaching end of list
   const handleEndReached = useCallback(() => {
     if (!loading && hasMore) {
       fetchProducts();
     }
   }, [loading, hasMore, fetchProducts]);
 
-  // FlashList uses estimatedItemSize instead of getItemLayout for better performance
-
-  // Memoized render functions
   const renderProductCard = useCallback(
     ({ item }: { item: Product }) => (
       <ProductCard
@@ -268,7 +248,6 @@ const InventoryListScreen: React.FC<InventoryListScreenProps> = ({
 
   const renderFooter = useCallback(() => {
     if (!loading || refreshing) return null;
-
     return (
       <View style={styles.footerLoader}>
         <ActivityIndicator size='small' color='#007AFF' />
@@ -277,7 +256,6 @@ const InventoryListScreen: React.FC<InventoryListScreenProps> = ({
     );
   }, [loading, refreshing]);
 
-  // Loading state
   if (loading && page === 0) {
     return (
       <View style={styles.loadingContainer}>
@@ -303,7 +281,6 @@ const InventoryListScreen: React.FC<InventoryListScreenProps> = ({
         sortOrder={sortOrder}
         onSortToggle={handleSortToggle}
       />
-
       <FlashList
         data={filteredProducts}
         renderItem={renderProductCard}
@@ -323,18 +300,15 @@ const InventoryListScreen: React.FC<InventoryListScreenProps> = ({
         onEndReached={handleEndReached}
         onEndReachedThreshold={0.5}
         updateCellsBatchingPeriod={50}
-        // FlashList specific optimizations
         overrideItemLayout={(layout, item, index) => {
           layout.size = ITEM_HEIGHT;
         }}
-        // Performance optimizations
         drawDistance={1000}
         estimatedListSize={{
           height: filteredProducts.length * ESTIMATED_ITEM_SIZE,
           width: 400,
         }}
       />
-
       <FloatingActionButton
         onPress={handleAddProduct}
         visible={canEditInventory}
@@ -392,7 +366,7 @@ const styles = StyleSheet.create({
   },
   listContainer: {
     padding: 20,
-    paddingBottom: 100, // Space for FAB
+    paddingBottom: 100,
   },
   footerLoader: {
     flexDirection: 'row',
