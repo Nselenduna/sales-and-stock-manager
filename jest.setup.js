@@ -1,5 +1,11 @@
 // Jest setup file for React Native testing
 
+// Set up the global environment
+global.window = {}; 
+global.window.requestAnimationFrame = (callback) => {
+  setTimeout(callback, 0);
+};
+
 // Mock AsyncStorage
 jest.mock('@react-native-async-storage/async-storage', () =>
   require('@react-native-async-storage/async-storage/jest/async-storage-mock')
@@ -19,10 +25,17 @@ jest.mock('@react-navigation/native', () => ({
     navigate: jest.fn(),
     goBack: jest.fn(),
     setOptions: jest.fn(),
+    push: jest.fn(),
+    replace: jest.fn(),
+    reset: jest.fn(),
   }),
   useRoute: () => ({
     params: {},
+    key: 'test-route',
+    name: 'TestScreen',
   }),
+  useFocusEffect: jest.fn(),
+  NavigationContainer: ({ children }) => children,
 }));
 
 // Mock Supabase
@@ -32,11 +45,15 @@ jest.mock('@supabase/supabase-js', () => ({
       select: jest.fn(() => ({
         eq: jest.fn(() => ({
           single: jest.fn(() => Promise.resolve({ data: null, error: null })),
+          order: jest.fn(() => Promise.resolve({ data: [], error: null })),
         })),
+        order: jest.fn(() => Promise.resolve({ data: [], error: null })),
+        limit: jest.fn(() => Promise.resolve({ data: [], error: null })),
       })),
       insert: jest.fn(() => Promise.resolve({ data: null, error: null })),
       update: jest.fn(() => Promise.resolve({ data: null, error: null })),
       delete: jest.fn(() => Promise.resolve({ data: null, error: null })),
+      upsert: jest.fn(() => Promise.resolve({ data: null, error: null })),
     })),
     auth: {
       getSession: jest.fn(() =>
@@ -49,6 +66,9 @@ jest.mock('@supabase/supabase-js', () => ({
         Promise.resolve({ data: { user: null }, error: null })
       ),
       signOut: jest.fn(() => Promise.resolve({ error: null })),
+      onAuthStateChange: jest.fn(() => ({
+        data: { subscription: { unsubscribe: jest.fn() } },
+      })),
     },
   })),
 }));
@@ -68,6 +88,13 @@ global.Alert = {
   alert: jest.fn(),
 };
 
+// Mock Haptics
+jest.mock('expo-haptics', () => ({
+  impactAsync: jest.fn(),
+  selectionAsync: jest.fn(),
+  notificationAsync: jest.fn(),
+}));
+
 // Console error suppression for expected warnings
 const originalError = console.error;
 beforeAll(() => {
@@ -75,7 +102,9 @@ beforeAll(() => {
     if (
       typeof args[0] === 'string' &&
       (args[0].includes('Warning: ReactDOM.render is no longer supported') ||
-        args[0].includes('Warning: Animated: `useNativeDriver`'))
+        args[0].includes('Warning: Animated: `useNativeDriver`') ||
+        args[0].includes('The current testing environment is not configured to support act') ||
+        args[0].includes('Warning: An invalid form control'))
     ) {
       return;
     }
