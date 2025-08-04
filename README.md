@@ -75,10 +75,19 @@ A comprehensive React Native mobile application for inventory management, sales 
 ### Core Functionality
 - **Inventory Management**: CRUD operations for products with images and barcodes
 - **Sales Processing**: Complete POS system with cart management and checkout
+- **Receipt Management**: ⭐ **NEW** - View, search, and reprint receipts for past transactions
 - **Stock Monitoring**: Real-time alerts for low stock items
 - **Barcode Scanning**: Product lookup and inventory updates
 - **Role-Based Access**: Admin, Staff, and Viewer permissions
 - **Offline Support**: Full functionality without internet connection
+
+### Receipt Management Features ⭐ **NEW**
+- **Receipt Viewing**: Full-featured receipt viewer with loading states and error handling
+- **Advanced Search**: Search receipts by transaction ID, customer name, email, or product name
+- **Multiple Export Formats**: Text and HTML receipt export with sharing capabilities
+- **Offline Access**: View receipts even when offline using local storage
+- **Real-time Filtering**: Instant search results with case-insensitive matching
+- **Secure Storage**: Receipts stored both locally and remotely with automatic synchronization
 
 ### Performance Optimizations
 - **Virtualized Lists**: Smooth scrolling with 1000+ items
@@ -135,25 +144,77 @@ A comprehensive React Native mobile application for inventory management, sales 
    npm test
    ```
 
+5. **Run Receipt Management Tests** ⭐ **NEW**:
+   ```bash
+   # Test receipt viewing functionality
+   npm test -- __tests__/screens/ReceiptScreen.test.tsx
+   
+   # Test receipt search functionality
+   npm test -- __tests__/screens/SalesHistoryScreen.test.tsx
+   
+   # Test sales and receipt generation
+   npm test -- __tests__/hooks/useSales.test.tsx
+   ```
+
 ## 📁 Project Structure
 
 ```
 ├── components/          # Reusable UI components
 ├── screens/            # Screen components
-│   ├── sales/         # Sales module screens
+│   ├── sales/         # Sales module screens (includes ReceiptScreen)
 │   ├── inventory/     # Inventory management screens
 │   ├── dashboard/     # Role-based dashboards
 │   └── auth/          # Authentication screens
 ├── navigation/         # Navigation configuration
 ├── lib/               # Utility libraries and Supabase config
+│   └── receiptGenerator.ts  # Receipt formatting utilities
 ├── hooks/             # Custom React hooks
+│   └── useSales.ts    # Enhanced with receipt generation
 ├── store/             # Zustand state management
 ├── __tests__/         # Test files
-│   └── sales/         # Sales module tests
-├── modules/           # Feature documentation and specs
-└── docs/              # Project documentation
-│   └── sales/         # Sales module documentation
+│   ├── screens/       # Screen component tests
+│   └── hooks/         # Hook tests
+├── docs/              # Project documentation
+│   └── receipts/      # Receipt management documentation
+└── modules/           # Feature documentation and specs
 ```
+
+## 🎯 Usage Guide
+
+### Receipt Management ⭐ **NEW**
+
+#### Viewing Receipts
+1. Navigate to **Sales History** from the dashboard
+2. Browse existing transactions or use the search functionality
+3. Tap on any transaction to view its detailed receipt
+4. Use the export buttons to share or save receipts
+
+#### Searching for Receipts
+1. In Sales History, use the search bar at the top
+2. Search by:
+   - **Transaction ID**: Enter full or partial transaction ID
+   - **Customer Name**: Search for customer names
+   - **Customer Email**: Find transactions by email address
+   - **Product Name**: Search by products purchased
+3. Results filter automatically as you type
+4. Use the clear button (×) to reset search
+5. Combine search with status filters (All, Synced, Queued, Failed)
+
+#### Exporting and Sharing Receipts
+1. From any receipt view, choose your export option:
+   - **Share Text**: Plain text format for basic sharing
+   - **Export HTML**: Professional formatted receipts
+2. Select sharing method (email, messaging, file saving)
+3. Receipt is automatically generated and ready to share
+
+#### Advanced Features
+- **Offline Access**: View receipts even without internet connection
+- **Real-time Search**: Instant filtering as you type
+- **Multiple Formats**: Text and HTML export options
+- **Secure Storage**: Receipts safely stored locally and in the cloud
+- **Error Handling**: Graceful handling of missing or corrupted data
+
+For detailed usage instructions, see [Receipt Management Documentation](docs/receipts/README.md).
 
 ## 🤝 Contributing
 
