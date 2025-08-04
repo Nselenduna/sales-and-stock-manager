@@ -3,6 +3,8 @@ import { supabase, SalesTransaction } from '../lib/supabase';
 import { SyncQueueManager } from '../lib/SyncQueueManager';
 import { useSalesCart, CartItem as CartItemType } from './useSalesCart';
 import { PaymentMethod } from '../components/PaymentSelector';
+import { generateReceipt as generateReceiptText, ReceiptData } from '../lib/receiptGenerator';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import NetInfo from '@react-native-community/netinfo';
 
 // Simple UUID generator that doesn't rely on crypto
@@ -16,16 +18,16 @@ const generateUUID = (): string => {
 
 interface UseSalesReturn {
   cart: CartItemType[];
-  addToCart: (_productId: string, _quantity?: number) => Promise<void>;
-  removeFromCart: (_productId: string) => void;
-  updateQuantity: (_productId: string, _quantity: number) => void;
+  addToCart: (productId: string, quantity?: number) => Promise<void>;
+  removeFromCart: (productId: string) => void;
+  updateQuantity: (productId: string, quantity: number) => void;
   clearCart: () => void;
   getCartTotal: () => number;
-  checkout: (_paymentMethod: PaymentMethod, _customerInfo?: { name?: string; email?: string; phone?: string; notes?: string }) => Promise<{ success: boolean; transactionId?: string; error?: string; receipt?: string }>;
+  checkout: (paymentMethod: PaymentMethod, customerInfo?: { name?: string; email?: string; phone?: string; notes?: string }) => Promise<{ success: boolean; transactionId?: string; error?: string; receipt?: string }>;
   isProcessing: boolean;
   syncStatus: 'idle' | 'syncing' | 'error';
   retrySync: () => Promise<void>;
-  generateReceipt: (_transactionId: string) => Promise<string>;
+  generateReceipt: (transactionId: string) => Promise<string>;
 }
 
 export const useSales = (): UseSalesReturn => {
@@ -47,9 +49,9 @@ export const useSales = (): UseSalesReturn => {
   // Extract cart items for compatibility
   const cart = cartState.items;
 
-  const addToCart = useCallback(async (_productId: string, _quantity: number = 1) => {
+  const addToCart = useCallback(async (productId: string, quantity: number = 1) => {
     try {
-      if (!_productId) {
+      if (!productId) {
         throw new Error('Product ID is required');
       }
       
@@ -57,7 +59,7 @@ export const useSales = (): UseSalesReturn => {
       const { data: product, error } = await supabase
         .from('products')
         .select('*')
-        .eq('id', _productId)
+        .eq('id', productId)
         .single();
 
       if (error || !product) {
@@ -65,19 +67,19 @@ export const useSales = (): UseSalesReturn => {
       }
 
       // Add to cart using the new cart system
-      addItem(product, _quantity);
+      addItem(product, quantity);
     } catch (error) {
       console.error('Failed to add to cart:', error);
       throw error;
     }
   }, [addItem]);
 
-  const removeFromCart = useCallback((_productId: string) => {
-    removeItem(_productId);
+  const removeFromCart = useCallback((productId: string) => {
+    removeItem(productId);
   }, [removeItem]);
 
-  const updateQuantity = useCallback((_productId: string, _quantity: number) => {
-    updateCartQuantity(_productId, _quantity);
+  const updateQuantity = useCallback((productId: string, quantity: number) => {
+    updateCartQuantity(productId, quantity);
   }, [updateCartQuantity]);
 
   const getCartTotal = useCallback(() => {
@@ -85,8 +87,8 @@ export const useSales = (): UseSalesReturn => {
   }, [getTotal]);
 
   const checkout = useCallback(async (
-    _paymentMethod: PaymentMethod,
-    _customerInfo?: { name?: string; email?: string; phone?: string; notes?: string }
+    paymentMethod: PaymentMethod,
+    customerInfo?: { name?: string; email?: string; phone?: string; notes?: string }
   ) => {
     if (isEmpty()) {
       return { success: false, error: 'Cart is empty' };
@@ -111,11 +113,11 @@ export const useSales = (): UseSalesReturn => {
         })),
         total: Math.round(getTotal() * 100), // Convert to pence
         status: 'completed',
-        payment_method: _paymentMethod,
-        customer_name: _customerInfo?.name,
-        customer_email: _customerInfo?.email,
-        customer_phone: _customerInfo?.phone,
-        notes: _customerInfo?.notes,
+        payment_method: paymentMethod,
+        customer_name: customerInfo?.name,
+        customer_email: customerInfo?.email,
+        customer_phone: customerInfo?.phone,
+        notes: customerInfo?.notes,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       };
@@ -140,7 +142,11 @@ export const useSales = (): UseSalesReturn => {
         }
       } else {
         // Queue for offline sync
-        await syncQueue.addToQueue('sales', transactionData);
+        await syncQueue.addToQueue({
+          operation: 'create',
+          entity: 'sales',
+          data: transactionData,
+        });
       }
 
       // Generate receipt
@@ -156,17 +162,15 @@ export const useSales = (): UseSalesReturn => {
         subtotal: getTotal(), // Keep as decimal for receipt
         tax: 0, // TODO: Add tax calculation
         total: getTotal(), // Keep as decimal for receipt
-        payment_method: _paymentMethod,
-        customer_name: _customerInfo?.name,
-        customer_email: _customerInfo?.email,
-        customer_phone: _customerInfo?.phone,
-        notes: _customerInfo?.notes,
+        payment_method: paymentMethod,
+        customer_name: customerInfo?.name,
+        customer_email: customerInfo?.email,
+        customer_phone: customerInfo?.phone,
+        notes: customerInfo?.notes,
       };
 
-      // The generateReceipt function is no longer imported, so this line will cause an error.
-      // Assuming the intent was to generate a receipt here or that generateReceipt is now a local function.
-      // For now, commenting out the line as per the edit hint.
-      // const receipt = generateReceipt(receiptData); 
+      // Generate receipt
+      const receipt = generateReceiptText(receiptData);
 
       // Clear cart after successful checkout
       clearCart();
@@ -174,7 +178,7 @@ export const useSales = (): UseSalesReturn => {
       return {
         success: true,
         transactionId,
-        receipt: 'Receipt generation disabled', // Placeholder as generateReceipt is removed
+        receipt,
       };
     } catch (error) {
       console.error('Checkout failed:', error);
@@ -187,43 +191,51 @@ export const useSales = (): UseSalesReturn => {
     }
   }, [cartState.items, isEmpty, getTotal, clearCart, syncQueue]);
 
-  const generateReceipt = useCallback(async (_transactionId: string): Promise<string> => {
+  const generateReceipt = useCallback(async (transactionId: string): Promise<string> => {
     try {
-      // Fetch transaction data from Supabase or local storage
-      const { data: transaction, error } = await supabase
-        .from('sales')
-        .select('*')
-        .eq('id', _transactionId)
-        .single();
+      // First try to load from local storage
+      const localTransactions = await AsyncStorage.getItem('sales_transactions');
+      let transaction = null;
+      
+      if (localTransactions) {
+        const parsed = JSON.parse(localTransactions);
+        transaction = parsed.find((t: SalesTransaction) => t.id === transactionId);
+      }
+      
+      // If not found locally, try Supabase
+      if (!transaction) {
+        const { data, error } = await supabase
+          .from('sales')
+          .select('*')
+          .eq('id', transactionId)
+          .single();
 
-      if (error || !transaction) {
-        throw new Error('Transaction not found');
+        if (error || !data) {
+          throw new Error('Transaction not found');
+        }
+        transaction = data;
       }
 
-      const receiptData = {
+      const receiptData: ReceiptData = {
         sale_id: transaction.id,
         date: transaction.created_at,
-        items: transaction.items.map((item: any) => ({
-          name: item.name,
+        items: transaction.items.map((item: { product_name?: string; quantity: number; unit_price: number; total_price: number }) => ({
+          name: item.product_name || 'Unknown Product',
           quantity: item.quantity,
-          unit_price: item.unit_price,
-          total_price: item.total_price,
+          unit_price: item.unit_price / 100, // Convert from pence to pounds
+          total_price: item.total_price / 100, // Convert from pence to pounds
         })),
-        subtotal: transaction.total,
+        subtotal: transaction.total / 100, // Convert from pence to pounds
         tax: 0, // TODO: Add tax calculation
-        total: transaction.total,
-        payment_method: transaction.payment_method,
+        total: transaction.total / 100, // Convert from pence to pounds
+        payment_method: transaction.payment_method || 'Unknown',
         customer_name: transaction.customer_name,
         customer_email: transaction.customer_email,
         customer_phone: transaction.customer_phone,
         notes: transaction.notes,
       };
 
-      // The generateReceipt function is no longer imported, so this line will cause an error.
-      // Assuming the intent was to generate a receipt here or that generateReceipt is now a local function.
-      // For now, commenting out the line as per the edit hint.
-      // return generateReceipt(receiptData); 
-      return 'Receipt generation disabled'; // Placeholder as generateReceipt is removed
+      return generateReceiptText(receiptData);
     } catch (error) {
       console.error('Failed to generate receipt:', error);
       throw error;

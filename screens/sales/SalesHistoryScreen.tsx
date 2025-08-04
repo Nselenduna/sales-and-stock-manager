@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -10,6 +10,7 @@ import {
   SafeAreaView,
   RefreshControl,
   ScrollView,
+  TextInput,
 } from 'react-native';
 import { supabase, SalesTransaction, SalesHistoryFilters } from '../../lib/supabase';
 import Icon from '../../components/Icon';
@@ -19,15 +20,19 @@ import * as FileSystem from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
 
 interface SalesHistoryScreenProps {
-  navigation: any;
+  navigation: {
+    goBack: () => void;
+    navigate: (screen: string, params?: Record<string, unknown>) => void;
+  };
 }
 
 const SalesHistoryScreen: React.FC<SalesHistoryScreenProps> = ({ navigation }) => {
   const [transactions, setTransactions] = useState<SalesTransaction[]>([]);
   const [filteredTransactions, setFilteredTransactions] = useState<SalesTransaction[]>([]);
+  const [searchQuery, setSearchQuery] = useState<string>('');
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [filters, setFilters] = useState<SalesHistoryFilters>({
+  const [filters] = useState<SalesHistoryFilters>({
     limit: 50,
     offset: 0,
   });
@@ -35,13 +40,13 @@ const SalesHistoryScreen: React.FC<SalesHistoryScreenProps> = ({ navigation }) =
 
   useEffect(() => {
     loadTransactions();
-  }, []);
+  }, [loadTransactions]);
 
   useEffect(() => {
     applyFilters();
-  }, [transactions, statusFilter]);
+  }, [applyFilters]);
 
-  const loadTransactions = async () => {
+  const loadTransactions = useCallback(async () => {
     setIsLoading(true);
     try {
       // Load from local storage first
@@ -72,7 +77,7 @@ const SalesHistoryScreen: React.FC<SalesHistoryScreenProps> = ({ navigation }) =
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [filters]);
 
   const loadLocalTransactions = async (): Promise<SalesTransaction[]> => {
     try {
@@ -101,15 +106,42 @@ const SalesHistoryScreen: React.FC<SalesHistoryScreenProps> = ({ navigation }) =
     );
   };
 
-  const applyFilters = () => {
+  const applyFilters = useCallback(() => {
     let filtered = transactions;
 
+    // Apply status filter
     if (statusFilter !== 'all') {
       filtered = filtered.filter(transaction => transaction.status === statusFilter);
     }
 
+    // Apply search filter
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase().trim();
+      filtered = filtered.filter(transaction => {
+        // Search by transaction ID
+        if (transaction.id.toLowerCase().includes(query)) {
+          return true;
+        }
+        
+        // Search by customer name
+        if (transaction.customer_name?.toLowerCase().includes(query)) {
+          return true;
+        }
+        
+        // Search by customer email
+        if (transaction.customer_email?.toLowerCase().includes(query)) {
+          return true;
+        }
+        
+        // Search by product names in items
+        return transaction.items.some(item => 
+          item.product_name?.toLowerCase().includes(query)
+        );
+      });
+    }
+
     setFilteredTransactions(filtered);
-  };
+  }, [transactions, statusFilter, searchQuery]);
 
   const onRefresh = async () => {
     setIsRefreshing(true);
@@ -199,8 +231,7 @@ const SalesHistoryScreen: React.FC<SalesHistoryScreenProps> = ({ navigation }) =
     <TouchableOpacity
       style={styles.transactionItem}
       onPress={() => {
-        // TODO: Navigate to transaction details
-        Alert.alert('Transaction Details', `ID: ${item.id}\nTotal: ${formatCurrency(item.total)}`);
+        navigation.navigate('Receipt', { transactionId: item.id });
       }}
     >
       <View style={styles.transactionHeader}>
@@ -234,6 +265,11 @@ const SalesHistoryScreen: React.FC<SalesHistoryScreenProps> = ({ navigation }) =
           {item.items.slice(0, 2).map(item => item.product_name).join(', ')}
           {item.items.length > 2 && '...'}
         </Text>
+      </View>
+      
+      <View style={styles.receiptAction}>
+        <Icon name="receipt" size={16} color="#007AFF" />
+        <Text style={styles.receiptActionText}>View Receipt</Text>
       </View>
     </TouchableOpacity>
   );
@@ -293,6 +329,23 @@ const SalesHistoryScreen: React.FC<SalesHistoryScreenProps> = ({ navigation }) =
           {renderFilterButton('queued', 'Queued')}
           {renderFilterButton('failed', 'Failed')}
         </ScrollView>
+      </View>
+
+      {/* Search */}
+      <View style={styles.searchContainer}>
+        <Icon name="search" size={20} color="#8E8E93" style={styles.searchIcon} />
+        <TextInput
+          style={styles.searchInput}
+          placeholder="Search by ID, customer, or product..."
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+          placeholderTextColor="#8E8E93"
+        />
+        {searchQuery.length > 0 && (
+          <TouchableOpacity onPress={() => setSearchQuery('')} style={styles.clearButton}>
+            <Icon name="close-circle" size={20} color="#8E8E93" />
+          </TouchableOpacity>
+        )}
       </View>
 
       {/* Transactions List */}
@@ -468,6 +521,47 @@ const styles = StyleSheet.create({
     marginTop: 16,
     fontSize: 16,
     color: '#8E8E93',
+  },
+  searchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    marginHorizontal: 16,
+    marginVertical: 8,
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  searchIcon: {
+    marginRight: 8,
+  },
+  searchInput: {
+    flex: 1,
+    fontSize: 16,
+    color: '#1C1C1E',
+    paddingVertical: 4,
+  },
+  clearButton: {
+    padding: 4,
+  },
+  receiptAction: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 8,
+    paddingTop: 8,
+    borderTopWidth: 1,
+    borderTopColor: '#F2F2F7',
+  },
+  receiptActionText: {
+    fontSize: 14,
+    color: '#007AFF',
+    marginLeft: 4,
+    fontWeight: '500',
   },
 });
 
