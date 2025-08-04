@@ -9,7 +9,10 @@ import {
   Alert,
   RefreshControl,
 } from 'react-native';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from 'react-native-safe-area-context';
 import { supabase } from '../../lib/supabase';
 import Icon from '../../components/Icon';
 import { formatCurrency } from '../../lib/utils';
@@ -46,7 +49,9 @@ interface InventoryAnalyticsScreenProps {
   navigation: any;
 }
 
-const InventoryAnalyticsScreen: React.FC<InventoryAnalyticsScreenProps> = ({ navigation }) => {
+const InventoryAnalyticsScreen: React.FC<InventoryAnalyticsScreenProps> = ({
+  navigation,
+}) => {
   const [metrics, setMetrics] = useState<InventoryMetrics>({
     totalProducts: 0,
     totalValue: 0,
@@ -59,7 +64,9 @@ const InventoryAnalyticsScreen: React.FC<InventoryAnalyticsScreenProps> = ({ nav
   });
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [timeRange, setTimeRange] = useState<'week' | 'month' | 'quarter'>('month');
+  const [timeRange, setTimeRange] = useState<'week' | 'month' | 'quarter'>(
+    'month'
+  );
   const insets = useSafeAreaInsets();
 
   useEffect(() => {
@@ -92,21 +99,26 @@ const InventoryAnalyticsScreen: React.FC<InventoryAnalyticsScreenProps> = ({ nav
 
       // Calculate basic metrics
       const totalProducts = productsData.length;
-      const totalValue = productsData.reduce((sum, product) => 
-        sum + ((product.price || 0) * (product.quantity || 0)), 0
+      const totalValue = productsData.reduce(
+        (sum, product) => sum + (product.price || 0) * (product.quantity || 0),
+        0
       );
-      const lowStockItems = productsData.filter(p => 
-        p.quantity <= (p.low_stock_threshold || 0) && p.quantity > 0
+      const lowStockItems = productsData.filter(
+        p => p.quantity <= (p.low_stock_threshold || 0) && p.quantity > 0
       ).length;
       const outOfStockItems = productsData.filter(p => p.quantity === 0).length;
 
       // Calculate product turnover using the database function
-      const { data: turnoverData, error: turnoverError } = await supabase
-        .rpc('get_inventory_turnover', { start_date: startDate.toISOString() });
+      const { data: turnoverData, error: turnoverError } = await supabase.rpc(
+        'get_inventory_turnover',
+        { start_date: startDate.toISOString() }
+      );
 
       if (turnoverError) {
         console.error('Error fetching inventory turnover:', turnoverError);
-        console.log('Using mock data due to missing database function. Run database migration to enable real analytics.');
+        console.log(
+          'Using mock data due to missing database function. Run database migration to enable real analytics.'
+        );
         // Continue with empty turnover data - will use mock calculations
       }
 
@@ -116,7 +128,10 @@ const InventoryAnalyticsScreen: React.FC<InventoryAnalyticsScreenProps> = ({ nav
       });
 
       // Calculate average turnover
-      const totalTurnover = Array.from(productTurnover.values()).reduce((sum, val) => sum + val, 0);
+      const totalTurnover = Array.from(productTurnover.values()).reduce(
+        (sum, val) => sum + val,
+        0
+      );
       const averageTurnover = totalTurnover / Math.max(productTurnover.size, 1);
 
       // Get top performing products
@@ -211,29 +226,53 @@ const InventoryAnalyticsScreen: React.FC<InventoryAnalyticsScreenProps> = ({ nav
     setIsRefreshing(false);
   };
 
-  const renderMetricCard = (title: string, value: string, subtitle?: string, icon?: string, color?: string) => (
+  const renderMetricCard = (
+    title: string,
+    value: string,
+    subtitle?: string,
+    icon?: string,
+    color?: string
+  ) => (
     <View style={[styles.metricCard, { borderLeftColor: color || '#007AFF' }]}>
       <View style={styles.metricHeader}>
         {icon && <Icon name={icon} size={20} color={color || '#007AFF'} />}
         <Text style={styles.metricTitle}>{title}</Text>
       </View>
-      <Text style={[styles.metricValue, { color: color || '#007AFF' }]}>{value}</Text>
+      <Text style={[styles.metricValue, { color: color || '#007AFF' }]}>
+        {value}
+      </Text>
       {subtitle && <Text style={styles.metricSubtitle}>{subtitle}</Text>}
     </View>
   );
 
-  const renderTimeRangeButton = (range: 'week' | 'month' | 'quarter', label: string) => (
+  const renderTimeRangeButton = (
+    range: 'week' | 'month' | 'quarter',
+    label: string
+  ) => (
     <TouchableOpacity
-      style={[styles.timeRangeButton, timeRange === range && styles.timeRangeButtonActive]}
+      style={[
+        styles.timeRangeButton,
+        timeRange === range && styles.timeRangeButtonActive,
+      ]}
       onPress={() => setTimeRange(range)}
     >
-      <Text style={[styles.timeRangeButtonText, timeRange === range && styles.timeRangeButtonTextActive]}>
+      <Text
+        style={[
+          styles.timeRangeButtonText,
+          timeRange === range && styles.timeRangeButtonTextActive,
+        ]}
+      >
         {label}
       </Text>
     </TouchableOpacity>
   );
 
-  const renderProductList = (title: string, products: any[], emptyMessage: string, renderItem: (item: any) => React.ReactNode) => (
+  const renderProductList = (
+    title: string,
+    products: any[],
+    emptyMessage: string,
+    renderItem: (item: any) => React.ReactNode
+  ) => (
     <View style={styles.productListCard}>
       <Text style={styles.productListTitle}>{title}</Text>
       {products.length > 0 ? (
@@ -247,26 +286,30 @@ const InventoryAnalyticsScreen: React.FC<InventoryAnalyticsScreenProps> = ({ nav
   );
 
   const renderHeader = () => (
-    <View 
+    <View
       style={[
         styles.header,
-        isUIPolishEnabled('safeAreaInsets') && { paddingTop: insets.top + 10 }
+        isUIPolishEnabled('safeAreaInsets') && { paddingTop: insets.top + 10 },
       ]}
     >
       <View style={styles.headerContent}>
         <Text style={styles.headerTitle}>Inventory Analytics</Text>
         <Text style={styles.headerSubtitle}>
-          {timeRange === 'week' ? 'Last 7 Days' : timeRange === 'month' ? 'Last 30 Days' : 'Last 90 Days'}
+          {timeRange === 'week'
+            ? 'Last 7 Days'
+            : timeRange === 'month'
+              ? 'Last 30 Days'
+              : 'Last 90 Days'}
         </Text>
       </View>
       <TouchableOpacity
         style={styles.backButton}
         onPress={() => navigation.goBack()}
         accessible={true}
-        accessibilityLabel="Go back"
-        accessibilityRole="button"
+        accessibilityLabel='Go back'
+        accessibilityRole='button'
       >
-        <Icon name="arrow-back" size={24} color="white" />
+        <Icon name='arrow-back' size={24} color='white' />
       </TouchableOpacity>
     </View>
   );
@@ -276,7 +319,7 @@ const InventoryAnalyticsScreen: React.FC<InventoryAnalyticsScreenProps> = ({ nav
       <SafeAreaView style={styles.container}>
         {renderHeader()}
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#007AFF" />
+          <ActivityIndicator size='large' color='#007AFF' />
           <Text style={styles.loadingText}>Loading analytics...</Text>
         </View>
       </SafeAreaView>
@@ -286,7 +329,7 @@ const InventoryAnalyticsScreen: React.FC<InventoryAnalyticsScreenProps> = ({ nav
   return (
     <SafeAreaView style={styles.container}>
       {renderHeader()}
-      
+
       <ScrollView
         style={styles.content}
         refreshControl={
@@ -309,7 +352,7 @@ const InventoryAnalyticsScreen: React.FC<InventoryAnalyticsScreenProps> = ({ nav
             'cube',
             '#007AFF'
           )}
-          
+
           {renderMetricCard(
             'Total Value',
             formatCurrency(metrics.totalValue),
@@ -317,7 +360,7 @@ const InventoryAnalyticsScreen: React.FC<InventoryAnalyticsScreenProps> = ({ nav
             'price',
             '#34C759'
           )}
-          
+
           {renderMetricCard(
             'Low Stock',
             metrics.lowStockItems.toString(),
@@ -325,7 +368,7 @@ const InventoryAnalyticsScreen: React.FC<InventoryAnalyticsScreenProps> = ({ nav
             'alert-triangle',
             '#FF9500'
           )}
-          
+
           {renderMetricCard(
             'Out of Stock',
             metrics.outOfStockItems.toString(),
@@ -341,13 +384,22 @@ const InventoryAnalyticsScreen: React.FC<InventoryAnalyticsScreenProps> = ({ nav
           <View style={styles.performanceRow}>
             <View style={styles.performanceItem}>
               <Text style={styles.performanceLabel}>Average Turnover</Text>
-              <Text style={styles.performanceValue}>{metrics.averageTurnover.toFixed(1)}</Text>
+              <Text style={styles.performanceValue}>
+                {metrics.averageTurnover.toFixed(1)}
+              </Text>
               <Text style={styles.performanceSubtext}>units per period</Text>
             </View>
             <View style={styles.performanceItem}>
               <Text style={styles.performanceLabel}>Stock Coverage</Text>
               <Text style={styles.performanceValue}>
-                {metrics.totalProducts > 0 ? ((metrics.totalProducts - metrics.outOfStockItems) / metrics.totalProducts * 100).toFixed(1) : '0'}%
+                {metrics.totalProducts > 0
+                  ? (
+                      ((metrics.totalProducts - metrics.outOfStockItems) /
+                        metrics.totalProducts) *
+                      100
+                    ).toFixed(1)
+                  : '0'}
+                %
               </Text>
               <Text style={styles.performanceSubtext}>products available</Text>
             </View>
@@ -359,19 +411,24 @@ const InventoryAnalyticsScreen: React.FC<InventoryAnalyticsScreenProps> = ({ nav
           'Top Performing Products',
           metrics.topPerformingProducts,
           'No sales data available',
-          (product) => (
+          product => (
             <View key={product.id} style={styles.productItem}>
               <View style={styles.productInfo}>
                 <Text style={styles.productName}>{product.name}</Text>
                 <Text style={styles.productDetails}>
-                  {product.turnoverRate} units sold • {formatCurrency(product.value)} value
+                  {product.turnoverRate} units sold •{' '}
+                  {formatCurrency(product.value)} value
                 </Text>
               </View>
               <TouchableOpacity
                 style={styles.productButton}
-                onPress={() => navigation.navigate('ProductDetail', { productId: product.id })}
+                onPress={() =>
+                  navigation.navigate('ProductDetail', {
+                    productId: product.id,
+                  })
+                }
               >
-                <Icon name="chevron-right" size={16} color="#007AFF" />
+                <Icon name='chevron-right' size={16} color='#007AFF' />
               </TouchableOpacity>
             </View>
           )
@@ -382,7 +439,7 @@ const InventoryAnalyticsScreen: React.FC<InventoryAnalyticsScreenProps> = ({ nav
           'Slow Moving Products',
           metrics.slowMovingProducts,
           'All products are moving well',
-          (product) => (
+          product => (
             <View key={product.id} style={styles.productItem}>
               <View style={styles.productInfo}>
                 <Text style={styles.productName}>{product.name}</Text>
@@ -392,9 +449,13 @@ const InventoryAnalyticsScreen: React.FC<InventoryAnalyticsScreenProps> = ({ nav
               </View>
               <TouchableOpacity
                 style={styles.productButton}
-                onPress={() => navigation.navigate('ProductDetail', { productId: product.id })}
+                onPress={() =>
+                  navigation.navigate('ProductDetail', {
+                    productId: product.id,
+                  })
+                }
               >
-                <Icon name="chevron-right" size={16} color="#007AFF" />
+                <Icon name='chevron-right' size={16} color='#007AFF' />
               </TouchableOpacity>
             </View>
           )
@@ -413,14 +474,20 @@ const InventoryAnalyticsScreen: React.FC<InventoryAnalyticsScreenProps> = ({ nav
                   </Text>
                 </View>
                 <View style={styles.categoryBar}>
-                  <View 
+                  <View
                     style={[
-                      styles.categoryBarFill, 
-                      { 
+                      styles.categoryBarFill,
+                      {
                         width: `${(category.value / metrics.totalValue) * 100}%`,
-                        backgroundColor: ['#007AFF', '#34C759', '#FF9500', '#FF3B30', '#5856D6'][index % 5]
-                      }
-                    ]} 
+                        backgroundColor: [
+                          '#007AFF',
+                          '#34C759',
+                          '#FF9500',
+                          '#FF3B30',
+                          '#5856D6',
+                        ][index % 5],
+                      },
+                    ]}
                   />
                 </View>
               </View>
@@ -436,31 +503,31 @@ const InventoryAnalyticsScreen: React.FC<InventoryAnalyticsScreenProps> = ({ nav
               style={styles.quickActionButton}
               onPress={() => navigation.navigate('Inventory')}
             >
-              <Icon name="list" size={24} color="#007AFF" />
+              <Icon name='list' size={24} color='#007AFF' />
               <Text style={styles.quickActionText}>View Inventory</Text>
             </TouchableOpacity>
-            
+
             <TouchableOpacity
               style={styles.quickActionButton}
               onPress={() => navigation.navigate('StockAlerts')}
             >
-              <Icon name="alert-circle" size={24} color="#FF3B30" />
+              <Icon name='alert-circle' size={24} color='#FF3B30' />
               <Text style={styles.quickActionText}>Stock Alerts</Text>
             </TouchableOpacity>
-            
+
             <TouchableOpacity
               style={styles.quickActionButton}
               onPress={() => navigation.navigate('AddProduct')}
             >
-              <Icon name="plus" size={24} color="#34C759" />
+              <Icon name='plus' size={24} color='#34C759' />
               <Text style={styles.quickActionText}>Add Product</Text>
             </TouchableOpacity>
-            
+
             <TouchableOpacity
               style={styles.quickActionButton}
               onPress={() => navigation.navigate('SalesAnalytics')}
             >
-              <Icon name="receipt" size={24} color="#FF9500" />
+              <Icon name='receipt' size={24} color='#FF9500' />
               <Text style={styles.quickActionText}>Sales Analytics</Text>
             </TouchableOpacity>
           </View>
@@ -755,4 +822,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default InventoryAnalyticsScreen; 
+export default InventoryAnalyticsScreen;

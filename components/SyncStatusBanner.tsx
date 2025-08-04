@@ -71,23 +71,31 @@ const SyncStatusBanner: React.FC<SyncStatusBannerProps> = ({
 
   return (
     <View
-      style={[
-        styles.container,
-        { backgroundColor: config.backgroundColor },
-      ]}
+      style={[styles.container, { backgroundColor: config.backgroundColor }]}
       accessible={true}
       accessibilityLabel={`Sync status: ${config.text}`}
-      accessibilityRole="status"
-      accessibilityLiveRegion="polite"
+      accessibilityRole='status'
+      accessibilityLiveRegion='polite'
     >
       <View style={styles.content}>
         <View style={styles.leftSection}>
           {status === 'syncing' ? (
-            <ActivityIndicator size="small" color={config.color} style={styles.icon} />
+            <ActivityIndicator
+              size='small'
+              color={config.color}
+              style={styles.icon}
+            />
           ) : (
-            <Icon name={config.icon} size={20} color={config.color} style={styles.icon} />
+            <Icon
+              name={config.icon}
+              size={20}
+              color={config.color}
+              style={styles.icon}
+            />
           )}
-          <Text style={[styles.text, { color: config.color }]}>{config.text}</Text>
+          <Text style={[styles.text, { color: config.color }]}>
+            {config.text}
+          </Text>
         </View>
 
         {status === 'failed' && onRetry && (
@@ -95,10 +103,12 @@ const SyncStatusBanner: React.FC<SyncStatusBannerProps> = ({
             style={[styles.retryButton, { borderColor: config.color }]}
             onPress={onRetry}
             accessible={true}
-            accessibilityLabel="Retry sync"
-            accessibilityRole="button"
+            accessibilityLabel='Retry sync'
+            accessibilityRole='button'
           >
-            <Text style={[styles.retryText, { color: config.color }]}>Retry</Text>
+            <Text style={[styles.retryText, { color: config.color }]}>
+              Retry
+            </Text>
           </TouchableOpacity>
         )}
       </View>
@@ -144,4 +154,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default SyncStatusBanner; 
+export default SyncStatusBanner;

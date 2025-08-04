@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ErrorBoundary UI Demo</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 80vh;
+            background-color: #f5f5f5;
+            padding: 20px;
+        }
+        .content {
+            background-color: white;
+            border-radius: 10px;
+            padding: 24px;
+            max-width: 350px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .title {
+            font-size: 20px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 12px;
+        }
+        .message {
+            font-size: 16px;
+            color: #666;
+            line-height: 24px;
+            margin-bottom: 24px;
+        }
+        .button {
+            background-color: #007AFF;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            margin: 8px;
+            cursor: pointer;
+            min-width: 120px;
+        }
+        .debug-button {
+            background-color: #FF6B6B;
+        }
+        .button:hover {
+            opacity: 0.8;
+        }
+        .demo-section {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .demo-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #333;
+        }
+        .code {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 4px;
+            padding: 12px;
+            font-family: 'Monaco', 'Consolas', monospace;
+            font-size: 14px;
+            color: #495057;
+            overflow-x: auto;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1 style="text-align: center; color: #333;">🛡️ ErrorBoundary UI Demo</h1>
+    <p style="text-align: center; color: #666; max-width: 600px; margin: 0 auto 30px;">
+        This demonstrates the ErrorBoundary component's fallback UI that users see when an error occurs in the React Native app.
+    </p>
+
+    <div class="demo-section">
+        <div class="demo-title">📱 How it appears in the app:</div>
+        <div class="container">
+            <div class="content">
+                <div class="title">Oops! Something went wrong</div>
+                <div class="message">We encountered an unexpected error. Please try refreshing the screen.</div>
+                <button class="button">Try Again</button>
+                <button class="button debug-button">Show Error Details</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="demo-section">
+        <div class="demo-title">💻 Usage Example:</div>
+        <div class="code">
+&lt;ErrorBoundary
+  errorTitle="Inventory Error"
+  errorMessage="There was an issue loading inventory. Please try again."
+  onError={(error, errorInfo) => {
+    console.error('Error:', error.message);
+    // Send to crash reporting service
+  }}
+&gt;
+  &lt;InventoryListScreen /&gt;
+&lt;/ErrorBoundary&gt;
+        </div>
+    </div>
+
+    <div class="demo-section">
+        <div class="demo-title">⚙️ Features:</div>
+        <ul style="color: #666; line-height: 1.6;">
+            <li>🎯 <strong>Prevents app crashes</strong> - Catches errors and shows fallback UI</li>
+            <li>👤 <strong>User-friendly messages</strong> - Clear, non-technical error descriptions</li>
+            <li>🔄 <strong>Recovery options</strong> - "Try Again" button to reset error state</li>
+            <li>🐛 <strong>Developer tools</strong> - Error details in development mode</li>
+            <li>📊 <strong>Error logging</strong> - Structured logging for monitoring</li>
+            <li>🔧 <strong>Customizable</strong> - Custom titles, messages, and callbacks</li>
+        </ul>
+    </div>
+
+    <div class="demo-section">
+        <div class="demo-title">📊 Implementation Coverage:</div>
+        <ul style="color: #666; line-height: 1.6;">
+            <li>✅ <strong>App Level</strong> - Root ErrorBoundary in App.tsx</li>
+            <li>✅ <strong>Navigation Level</strong> - All tab navigators protected</li>
+            <li>✅ <strong>Screen Level</strong> - Critical screens (Inventory, Sales, Scanner)</li>
+            <li>✅ <strong>Component Level</strong> - withErrorBoundary HOC for easy wrapping</li>
+        </ul>
+    </div>
+
+    <script>
+        // Simulate the "Try Again" functionality
+        document.querySelector('.button:not(.debug-button)').addEventListener('click', function() {
+            alert('✅ ErrorBoundary reset! The component would re-render and try to recover.');
+        });
+
+        // Simulate the "Show Error Details" functionality  
+        document.querySelector('.debug-button').addEventListener('click', function() {
+            alert(`🐛 Error Details (Development Mode Only):
+
+Error: Example error message
+Stack: at Component line 42
+Component Stack: at InventoryListScreen > at ErrorBoundary
+
+This detailed information helps developers debug issues.`);
+        });
+    </script>
+</body>
+</html>

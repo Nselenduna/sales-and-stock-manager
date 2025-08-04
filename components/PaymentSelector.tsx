@@ -52,7 +52,9 @@ const PaymentSelector: React.FC<PaymentSelectorProps> = ({
 }) => {
   const [isModalVisible, setIsModalVisible] = useState(false);
 
-  const selectedOption = PAYMENT_METHODS.find(method => method.id === selectedMethod);
+  const selectedOption = PAYMENT_METHODS.find(
+    method => method.id === selectedMethod
+  );
 
   const handleSelectMethod = (method: PaymentMethod) => {
     onSelectMethod(method);
@@ -62,26 +64,30 @@ const PaymentSelector: React.FC<PaymentSelectorProps> = ({
   return (
     <View style={styles.container}>
       <Text style={styles.label}>Payment Method</Text>
-      
+
       <TouchableOpacity
         style={[styles.selector, disabled && styles.disabled]}
         onPress={() => !disabled && setIsModalVisible(true)}
         disabled={disabled}
         accessible={true}
         accessibilityLabel={`Payment method: ${selectedOption?.label}`}
-        accessibilityRole="button"
+        accessibilityRole='button'
       >
         <View style={styles.selectorContent}>
-          <Icon name={selectedOption?.icon || 'help-circle'} size={20} color="#666" />
+          <Icon
+            name={selectedOption?.icon || 'help-circle'}
+            size={20}
+            color='#666'
+          />
           <Text style={styles.selectorText}>{selectedOption?.label}</Text>
-          <Icon name="chevron-down" size={16} color="#666" />
+          <Icon name='chevron-down' size={16} color='#666' />
         </View>
       </TouchableOpacity>
 
       <Modal
         visible={isModalVisible}
         transparent={true}
-        animationType="slide"
+        animationType='slide'
         onRequestClose={() => setIsModalVisible(false)}
       >
         <View style={styles.modalOverlay}>
@@ -92,15 +98,15 @@ const PaymentSelector: React.FC<PaymentSelectorProps> = ({
                 onPress={() => setIsModalVisible(false)}
                 style={styles.closeButton}
                 accessible={true}
-                accessibilityLabel="Close payment method selector"
-                accessibilityRole="button"
+                accessibilityLabel='Close payment method selector'
+                accessibilityRole='button'
               >
-                <Icon name="x" size={24} color="#666" />
+                <Icon name='x' size={24} color='#666' />
               </TouchableOpacity>
             </View>
 
             <ScrollView style={styles.methodsList}>
-              {PAYMENT_METHODS.map((_method) => (
+              {PAYMENT_METHODS.map(_method => (
                 <TouchableOpacity
                   key={_method.id}
                   style={[
@@ -110,20 +116,25 @@ const PaymentSelector: React.FC<PaymentSelectorProps> = ({
                   onPress={() => handleSelectMethod(_method.id)}
                   accessible={true}
                   accessibilityLabel={`${_method.label} payment method`}
-                  accessibilityRole="button"
-                  accessibilityState={{ selected: selectedMethod === _method.id }}
+                  accessibilityRole='button'
+                  accessibilityState={{
+                    selected: selectedMethod === _method.id,
+                  }}
                 >
                   <View style={styles.methodContent}>
-                    <Icon 
-                      name={_method.icon} 
-                      size={24} 
-                      color={selectedMethod === _method.id ? '#007AFF' : '#666'} 
+                    <Icon
+                      name={_method.icon}
+                      size={24}
+                      color={selectedMethod === _method.id ? '#007AFF' : '#666'}
                     />
                     <View style={styles.methodText}>
-                      <Text style={[
-                        styles.methodLabel,
-                        selectedMethod === _method.id && styles.selectedMethodText,
-                      ]}>
+                      <Text
+                        style={[
+                          styles.methodLabel,
+                          selectedMethod === _method.id &&
+                            styles.selectedMethodText,
+                        ]}
+                      >
                         {_method.label}
                       </Text>
                       <Text style={styles.methodDescription}>
@@ -132,7 +143,7 @@ const PaymentSelector: React.FC<PaymentSelectorProps> = ({
                     </View>
                   </View>
                   {selectedMethod === _method.id && (
-                    <Icon name="check" size={20} color="#007AFF" />
+                    <Icon name='check' size={20} color='#007AFF' />
                   )}
                 </TouchableOpacity>
               ))}
@@ -244,4 +255,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default PaymentSelector; 
+export default PaymentSelector;

@@ -24,7 +24,9 @@ interface RouteParams {
   reportType: 'sales' | 'inventory' | 'analytics';
 }
 
-const ReportDetailScreen: React.FC<ReportDetailScreenProps> = ({ navigation }) => {
+const ReportDetailScreen: React.FC<ReportDetailScreenProps> = ({
+  navigation,
+}) => {
   const route = useRoute();
   const { reportId, reportTitle, reportType } = route.params as RouteParams;
   const [loading, setLoading] = useState(true);
@@ -59,7 +61,9 @@ const ReportDetailScreen: React.FC<ReportDetailScreenProps> = ({ navigation }) =
       setReportData(data);
     } catch (err) {
       console.error('Failed to load report data:', err);
-      setError(err instanceof Error ? err.message : 'Failed to load report data');
+      setError(
+        err instanceof Error ? err.message : 'Failed to load report data'
+      );
     } finally {
       setLoading(false);
     }
@@ -88,19 +92,22 @@ const ReportDetailScreen: React.FC<ReportDetailScreenProps> = ({ navigation }) =
 
   const loadAnalyticsReport = async () => {
     // Try to use the analytics function
-    const { data, error } = await supabase
-      .rpc('get_sales_metrics');
+    const { data, error } = await supabase.rpc('get_sales_metrics');
 
     if (error) {
       // Fallback to basic query if function doesn't exist
       const { data: fallbackData, error: fallbackError } = await supabase
         .from('sales')
         .select('total, created_at')
-        .gte('created_at', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString());
+        .gte(
+          'created_at',
+          new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()
+        );
 
       if (fallbackError) throw fallbackError;
-      
-      const totalRevenue = fallbackData?.reduce((sum, sale) => sum + (sale.total || 0), 0) || 0;
+
+      const totalRevenue =
+        fallbackData?.reduce((sum, sale) => sum + (sale.total || 0), 0) || 0;
       const totalSales = fallbackData?.length || 0;
       const avgOrderValue = totalSales > 0 ? totalRevenue / totalSales : 0;
 
@@ -128,7 +135,7 @@ const ReportDetailScreen: React.FC<ReportDetailScreenProps> = ({ navigation }) =
     if (!reportData || reportData.length === 0) {
       return (
         <View style={styles.emptyState}>
-          <Icon name="receipt" size={48} color="#C7C7CC" />
+          <Icon name='receipt' size={48} color='#C7C7CC' />
           <Text style={styles.emptyStateText}>No sales data available</Text>
         </View>
       );
@@ -146,7 +153,12 @@ const ReportDetailScreen: React.FC<ReportDetailScreenProps> = ({ navigation }) =
             <View style={styles.summaryItem}>
               <Text style={styles.summaryLabel}>Total Revenue</Text>
               <Text style={styles.summaryValue}>
-                {formatCurrency(reportData.reduce((sum: number, sale: any) => sum + (sale.total || 0), 0) / 100)}
+                {formatCurrency(
+                  reportData.reduce(
+                    (sum: number, sale: any) => sum + (sale.total || 0),
+                    0
+                  ) / 100
+                )}
               </Text>
             </View>
           </View>
@@ -156,7 +168,9 @@ const ReportDetailScreen: React.FC<ReportDetailScreenProps> = ({ navigation }) =
         {reportData.map((sale: any, index: number) => (
           <View key={sale.id || index} style={styles.saleItem}>
             <View style={styles.saleHeader}>
-              <Text style={styles.saleId}>#{sale.id?.slice(0, 8) || 'N/A'}</Text>
+              <Text style={styles.saleId}>
+                #{sale.id?.slice(0, 8) || 'N/A'}
+              </Text>
               <Text style={styles.saleDate}>
                 {new Date(sale.created_at).toLocaleDateString()}
               </Text>
@@ -167,7 +181,12 @@ const ReportDetailScreen: React.FC<ReportDetailScreenProps> = ({ navigation }) =
             <Text style={styles.saleTotal}>
               {formatCurrency((sale.total || 0) / 100)}
             </Text>
-            <View style={[styles.statusBadge, { backgroundColor: getStatusColor(sale.status) }]}>
+            <View
+              style={[
+                styles.statusBadge,
+                { backgroundColor: getStatusColor(sale.status) },
+              ]}
+            >
               <Text style={styles.statusText}>{sale.status}</Text>
             </View>
           </View>
@@ -180,17 +199,17 @@ const ReportDetailScreen: React.FC<ReportDetailScreenProps> = ({ navigation }) =
     if (!reportData || reportData.length === 0) {
       return (
         <View style={styles.emptyState}>
-          <Icon name="box" size={48} color="#C7C7CC" />
+          <Icon name='box' size={48} color='#C7C7CC' />
           <Text style={styles.emptyStateText}>No inventory data available</Text>
         </View>
       );
     }
 
-    const lowStockItems = reportData.filter((product: any) => 
-      product.quantity <= product.low_stock_threshold
+    const lowStockItems = reportData.filter(
+      (product: any) => product.quantity <= product.low_stock_threshold
     );
-    const outOfStockItems = reportData.filter((product: any) => 
-      product.quantity === 0
+    const outOfStockItems = reportData.filter(
+      (product: any) => product.quantity === 0
     );
 
     return (
@@ -204,11 +223,15 @@ const ReportDetailScreen: React.FC<ReportDetailScreenProps> = ({ navigation }) =
             </View>
             <View style={styles.summaryItem}>
               <Text style={styles.summaryLabel}>Low Stock</Text>
-              <Text style={[styles.summaryValue, { color: '#FF9500' }]}>{lowStockItems.length}</Text>
+              <Text style={[styles.summaryValue, { color: '#FF9500' }]}>
+                {lowStockItems.length}
+              </Text>
             </View>
             <View style={styles.summaryItem}>
               <Text style={styles.summaryLabel}>Out of Stock</Text>
-              <Text style={[styles.summaryValue, { color: '#FF3B30' }]}>{outOfStockItems.length}</Text>
+              <Text style={[styles.summaryValue, { color: '#FF3B30' }]}>
+                {outOfStockItems.length}
+              </Text>
             </View>
           </View>
         </View>
@@ -238,7 +261,7 @@ const ReportDetailScreen: React.FC<ReportDetailScreenProps> = ({ navigation }) =
     if (!reportData) {
       return (
         <View style={styles.emptyState}>
-          <Icon name="analytics" size={48} color="#C7C7CC" />
+          <Icon name='analytics' size={48} color='#C7C7CC' />
           <Text style={styles.emptyStateText}>No analytics data available</Text>
         </View>
       );
@@ -257,7 +280,9 @@ const ReportDetailScreen: React.FC<ReportDetailScreenProps> = ({ navigation }) =
             </View>
             <View style={styles.summaryItem}>
               <Text style={styles.summaryLabel}>Total Sales</Text>
-              <Text style={styles.summaryValue}>{reportData.total_sales || 0}</Text>
+              <Text style={styles.summaryValue}>
+                {reportData.total_sales || 0}
+              </Text>
             </View>
           </View>
           <View style={styles.summaryRow}>
@@ -269,7 +294,9 @@ const ReportDetailScreen: React.FC<ReportDetailScreenProps> = ({ navigation }) =
             </View>
             <View style={styles.summaryItem}>
               <Text style={styles.summaryLabel}>Top Product</Text>
-              <Text style={styles.summaryValue}>{reportData.top_product || 'N/A'}</Text>
+              <Text style={styles.summaryValue}>
+                {reportData.top_product || 'N/A'}
+              </Text>
             </View>
           </View>
         </View>
@@ -294,7 +321,7 @@ const ReportDetailScreen: React.FC<ReportDetailScreenProps> = ({ navigation }) =
     if (loading) {
       return (
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#007AFF" />
+          <ActivityIndicator size='large' color='#007AFF' />
           <Text style={styles.loadingText}>Loading report...</Text>
         </View>
       );
@@ -303,7 +330,7 @@ const ReportDetailScreen: React.FC<ReportDetailScreenProps> = ({ navigation }) =
     if (error) {
       return (
         <View style={styles.errorContainer}>
-          <Icon name="alert-circle" size={48} color="#FF3B30" />
+          <Icon name='alert-circle' size={48} color='#FF3B30' />
           <Text style={styles.errorText}>{error}</Text>
           <TouchableOpacity style={styles.retryButton} onPress={handleRefresh}>
             <Text style={styles.retryButtonText}>Retry</Text>
@@ -332,11 +359,11 @@ const ReportDetailScreen: React.FC<ReportDetailScreenProps> = ({ navigation }) =
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity style={styles.backButton} onPress={handleBackPress}>
-          <Icon name="arrow-back" size={24} color="#007AFF" />
+          <Icon name='arrow-back' size={24} color='#007AFF' />
         </TouchableOpacity>
         <Text style={styles.title}>{reportTitle}</Text>
         <TouchableOpacity style={styles.refreshButton} onPress={handleRefresh}>
-          <Icon name="refresh" size={24} color="#007AFF" />
+          <Icon name='refresh' size={24} color='#007AFF' />
         </TouchableOpacity>
       </View>
 
@@ -549,4 +576,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default ReportDetailScreen; 
+export default ReportDetailScreen;

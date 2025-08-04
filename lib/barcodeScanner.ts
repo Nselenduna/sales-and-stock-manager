@@ -181,7 +181,7 @@ export class BarcodeScannerUtil {
       // Check if it looks like a URL or contains meaningful text
       const urlPattern = /^https?:\/\/.+/i;
       const textPattern = /^[a-zA-Z0-9\s\-_\.\/\?=&%#]+$/i;
-      
+
       if (urlPattern.test(cleanBarcode) || textPattern.test(cleanBarcode)) {
         return {
           isValid: true,
@@ -317,9 +317,18 @@ export class BarcodeScannerUtil {
   getSupportedBarcodeTypes(): string[] {
     // Handle case where BarCodeScanner.Constants might be undefined
     if (!BarCodeScanner?.Constants?.BarCodeType) {
-      return ['ean13', 'upc_a', 'code128', 'code39', 'qr', 'codebar', 'ean8', 'upc_e'];
+      return [
+        'ean13',
+        'upc_a',
+        'code128',
+        'code39',
+        'qr',
+        'codebar',
+        'ean8',
+        'upc_e',
+      ];
     }
-    
+
     return [
       BarCodeScanner.Constants.BarCodeType.ean13,
       BarCodeScanner.Constants.BarCodeType.upc_a,

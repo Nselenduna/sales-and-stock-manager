@@ -63,9 +63,13 @@ export function mergeProductChanges(
     const remoteValue = remoteProduct[field];
 
     // Check if both local and remote have different values
-    if (localValue !== remoteValue && localValue !== undefined && remoteValue !== undefined) {
+    if (
+      localValue !== remoteValue &&
+      localValue !== undefined &&
+      remoteValue !== undefined
+    ) {
       conflictingFields.push(field);
-      
+
       // Auto-merge strategy: prefer local changes for most fields
       // but be conservative with critical fields
       if (field === 'sku' || field === 'barcode') {
@@ -73,7 +77,10 @@ export function mergeProductChanges(
         mergedProduct[field] = remoteValue;
       } else if (field === 'quantity') {
         // For quantity, use the higher value (safer)
-        mergedProduct[field] = Math.max(Number(localValue) || 0, Number(remoteValue) || 0);
+        mergedProduct[field] = Math.max(
+          Number(localValue) || 0,
+          Number(remoteValue) || 0
+        );
       } else {
         // For other fields, prefer local changes
         mergedProduct[field] = localValue;
@@ -97,11 +104,13 @@ export function mergeProductChanges(
  * Log conflict resolution for audit trail
  * @param metadata - Conflict resolution metadata
  */
-export async function logConflictResolution(metadata: ConflictMetadata): Promise<void> {
+export async function logConflictResolution(
+  metadata: ConflictMetadata
+): Promise<void> {
   try {
     // Log to Supabase audit table
     const { supabase } = await import('../supabase');
-    
+
     await supabase.from('sync_conflicts').insert({
       product_id: metadata.productId,
       conflicting_fields: metadata.conflictingFields,
@@ -141,7 +150,8 @@ export function createConflictMetadata(
   // Extract only the conflicting fields
   for (const field of conflictingFields) {
     localChanges[field as keyof Product] = localProduct[field as keyof Product];
-    remoteChanges[field as keyof Product] = remoteProduct[field as keyof Product];
+    remoteChanges[field as keyof Product] =
+      remoteProduct[field as keyof Product];
   }
 
   return {
@@ -153,4 +163,4 @@ export function createConflictMetadata(
     resolutionType,
     resolvedBy,
   };
-} 
+}

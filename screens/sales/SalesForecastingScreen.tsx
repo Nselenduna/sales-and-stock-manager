@@ -9,7 +9,10 @@ import {
   Alert,
   RefreshControl,
 } from 'react-native';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from 'react-native-safe-area-context';
 import { supabase } from '../../lib/supabase';
 import Icon from '../../components/Icon';
 import { formatCurrency } from '../../lib/utils'; // eslint-disable-line no-unused-vars
@@ -30,12 +33,18 @@ interface SalesForecastingScreenProps {
   navigation: any;
 }
 
-const SalesForecastingScreen: React.FC<SalesForecastingScreenProps> = ({ navigation }) => {
+const SalesForecastingScreen: React.FC<SalesForecastingScreenProps> = ({
+  navigation,
+}) => {
   const [forecastData, setForecastData] = useState<ForecastData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [forecastPeriod, setForecastPeriod] = useState<'week' | 'month' | 'quarter'>('month');
-  const [filterRisk, setFilterRisk] = useState<'all' | 'high' | 'medium' | 'low'>('all');
+  const [forecastPeriod, setForecastPeriod] = useState<
+    'week' | 'month' | 'quarter'
+  >('month');
+  const [filterRisk, setFilterRisk] = useState<
+    'all' | 'high' | 'medium' | 'low'
+  >('all');
   const insets = useSafeAreaInsets();
 
   useEffect(() => {
@@ -56,7 +65,7 @@ const SalesForecastingScreen: React.FC<SalesForecastingScreenProps> = ({ navigat
       // Get sales data for the last 30 days to calculate average daily sales
       const thirtyDaysAgo = new Date();
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-      
+
       const { data: sales, error: salesError } = await supabase
         .from('sales')
         .select('*')
@@ -69,16 +78,23 @@ const SalesForecastingScreen: React.FC<SalesForecastingScreenProps> = ({ navigat
       const salesData = sales || [];
 
       // Calculate product sales frequency using the database function
-      const { data: turnoverData, error: turnoverError } = await supabase
-        .rpc('get_inventory_turnover', { start_date: thirtyDaysAgo.toISOString() });
+      const { data: turnoverData, error: turnoverError } = await supabase.rpc(
+        'get_inventory_turnover',
+        { start_date: thirtyDaysAgo.toISOString() }
+      );
 
       if (turnoverError) {
         console.error('Error fetching inventory turnover:', turnoverError);
-        console.log('Using mock data due to missing database function. Run database migration to enable real forecasting.');
+        console.log(
+          'Using mock data due to missing database function. Run database migration to enable real forecasting.'
+        );
         // Continue with empty turnover data - will use mock calculations
       }
 
-      const productSales = new Map<string, { totalQuantity: number; daysWithSales: number }>();
+      const productSales = new Map<
+        string,
+        { totalQuantity: number; daysWithSales: number }
+      >();
       (turnoverData || []).forEach(item => {
         productSales.set(item.product_id, {
           totalQuantity: item.quantity_sold || 0,
@@ -88,17 +104,28 @@ const SalesForecastingScreen: React.FC<SalesForecastingScreenProps> = ({ navigat
 
       // Generate forecast data
       const forecast: ForecastData[] = productsData.map(product => {
-        const salesInfo = productSales.get(product.id) || { totalQuantity: 0, daysWithSales: 0 };
-        const averageDailySales = salesInfo.daysWithSales > 0 
-          ? salesInfo.totalQuantity / salesInfo.daysWithSales 
-          : 0;
-        
-        const daysUntilStockout = averageDailySales > 0 
-          ? Math.floor((product.quantity || 0) / averageDailySales)
-          : 999; // Infinite if no sales
+        const salesInfo = productSales.get(product.id) || {
+          totalQuantity: 0,
+          daysWithSales: 0,
+        };
+        const averageDailySales =
+          salesInfo.daysWithSales > 0
+            ? salesInfo.totalQuantity / salesInfo.daysWithSales
+            : 0;
 
-        const predictedDemand = getPredictedDemand(averageDailySales, forecastPeriod);
-        const recommendedOrder = Math.max(0, predictedDemand - (product.quantity || 0));
+        const daysUntilStockout =
+          averageDailySales > 0
+            ? Math.floor((product.quantity || 0) / averageDailySales)
+            : 999; // Infinite if no sales
+
+        const predictedDemand = getPredictedDemand(
+          averageDailySales,
+          forecastPeriod
+        );
+        const recommendedOrder = Math.max(
+          0,
+          predictedDemand - (product.quantity || 0)
+        );
 
         let riskLevel: 'low' | 'medium' | 'high' = 'low';
         if (daysUntilStockout <= 7) riskLevel = 'high';
@@ -134,7 +161,10 @@ const SalesForecastingScreen: React.FC<SalesForecastingScreenProps> = ({ navigat
     }
   };
 
-  const getPredictedDemand = (averageDailySales: number, period: 'week' | 'month' | 'quarter'): number => {
+  const getPredictedDemand = (
+    averageDailySales: number,
+    period: 'week' | 'month' | 'quarter'
+  ): number => {
     const daysInPeriod = period === 'week' ? 7 : period === 'month' ? 30 : 90;
     return Math.ceil(averageDailySales * daysInPeriod);
   };
@@ -147,29 +177,35 @@ const SalesForecastingScreen: React.FC<SalesForecastingScreenProps> = ({ navigat
 
   const getRiskColor = (riskLevel: 'low' | 'medium' | 'high'): string => {
     switch (riskLevel) {
-      case 'high': return '#FF3B30';
-      case 'medium': return '#FF9500';
-      case 'low': return '#34C759';
+      case 'high':
+        return '#FF3B30';
+      case 'medium':
+        return '#FF9500';
+      case 'low':
+        return '#34C759';
     }
   };
 
   const getRiskIcon = (riskLevel: 'low' | 'medium' | 'high'): string => {
     switch (riskLevel) {
-      case 'high': return 'alert-triangle';
-      case 'medium': return 'alert-circle';
-      case 'low': return 'check-circle';
+      case 'high':
+        return 'alert-triangle';
+      case 'medium':
+        return 'alert-circle';
+      case 'low':
+        return 'check-circle';
     }
   };
 
-  const filteredData = forecastData.filter(item => 
-    filterRisk === 'all' || item.riskLevel === filterRisk
+  const filteredData = forecastData.filter(
+    item => filterRisk === 'all' || item.riskLevel === filterRisk
   );
 
   const renderHeader = () => (
-    <View 
+    <View
       style={[
         styles.header,
-        isUIPolishEnabled('safeAreaInsets') && { paddingTop: insets.top + 10 }
+        isUIPolishEnabled('safeAreaInsets') && { paddingTop: insets.top + 10 },
       ]}
     >
       <View style={styles.headerContent}>
@@ -182,10 +218,10 @@ const SalesForecastingScreen: React.FC<SalesForecastingScreenProps> = ({ navigat
         style={styles.backButton}
         onPress={() => navigation.goBack()}
         accessible={true}
-        accessibilityLabel="Go back"
-        accessibilityRole="button"
+        accessibilityLabel='Go back'
+        accessibilityRole='button'
       >
-        <Icon name="arrow-back" size={24} color="white" />
+        <Icon name='arrow-back' size={24} color='white' />
       </TouchableOpacity>
     </View>
   );
@@ -203,14 +239,18 @@ const SalesForecastingScreen: React.FC<SalesForecastingScreenProps> = ({ navigat
             key={key}
             style={[
               styles.periodButton,
-              forecastPeriod === key && styles.periodButtonActive
+              forecastPeriod === key && styles.periodButtonActive,
             ]}
-            onPress={() => setForecastPeriod(key as 'week' | 'month' | 'quarter')}
+            onPress={() =>
+              setForecastPeriod(key as 'week' | 'month' | 'quarter')
+            }
           >
-            <Text style={[
-              styles.periodButtonText,
-              forecastPeriod === key && styles.periodButtonTextActive
-            ]}>
+            <Text
+              style={[
+                styles.periodButtonText,
+                forecastPeriod === key && styles.periodButtonTextActive,
+              ]}
+            >
               {label}
             </Text>
           </TouchableOpacity>
@@ -233,14 +273,18 @@ const SalesForecastingScreen: React.FC<SalesForecastingScreenProps> = ({ navigat
             key={key}
             style={[
               styles.filterButton,
-              filterRisk === key && { backgroundColor: color }
+              filterRisk === key && { backgroundColor: color },
             ]}
-            onPress={() => setFilterRisk(key as 'all' | 'high' | 'medium' | 'low')}
+            onPress={() =>
+              setFilterRisk(key as 'all' | 'high' | 'medium' | 'low')
+            }
           >
-            <Text style={[
-              styles.filterButtonText,
-              filterRisk === key && styles.filterButtonTextActive
-            ]}>
+            <Text
+              style={[
+                styles.filterButtonText,
+                filterRisk === key && styles.filterButtonTextActive,
+              ]}
+            >
               {label}
             </Text>
           </TouchableOpacity>
@@ -255,21 +299,25 @@ const SalesForecastingScreen: React.FC<SalesForecastingScreenProps> = ({ navigat
         <View style={styles.productInfo}>
           <Text style={styles.productName}>{item.productName}</Text>
           <View style={styles.riskIndicator}>
-            <Icon 
-              name={getRiskIcon(item.riskLevel)} 
-              size={16} 
-              color={getRiskColor(item.riskLevel)} 
+            <Icon
+              name={getRiskIcon(item.riskLevel)}
+              size={16}
+              color={getRiskColor(item.riskLevel)}
             />
-            <Text style={[styles.riskText, { color: getRiskColor(item.riskLevel) }]}>
+            <Text
+              style={[styles.riskText, { color: getRiskColor(item.riskLevel) }]}
+            >
               {item.riskLevel.toUpperCase()} RISK
             </Text>
           </View>
         </View>
         <TouchableOpacity
           style={styles.detailButton}
-          onPress={() => navigation.navigate('ProductDetail', { productId: item.productId })}
+          onPress={() =>
+            navigation.navigate('ProductDetail', { productId: item.productId })
+          }
         >
-          <Icon name="chevron-right" size={16} color="#007AFF" />
+          <Icon name='chevron-right' size={16} color='#007AFF' />
         </TouchableOpacity>
       </View>
 
@@ -281,14 +329,18 @@ const SalesForecastingScreen: React.FC<SalesForecastingScreenProps> = ({ navigat
           </View>
           <View style={styles.metric}>
             <Text style={styles.metricLabel}>Daily Sales</Text>
-            <Text style={styles.metricValue}>{item.averageDailySales.toFixed(1)}</Text>
+            <Text style={styles.metricValue}>
+              {item.averageDailySales.toFixed(1)}
+            </Text>
           </View>
           <View style={styles.metric}>
             <Text style={styles.metricLabel}>Days Left</Text>
-            <Text style={[
-              styles.metricValue,
-              { color: item.daysUntilStockout <= 7 ? '#FF3B30' : '#333' }
-            ]}>
+            <Text
+              style={[
+                styles.metricValue,
+                { color: item.daysUntilStockout <= 7 ? '#FF3B30' : '#333' },
+              ]}
+            >
               {item.daysUntilStockout === 999 ? '∞' : item.daysUntilStockout}
             </Text>
           </View>
@@ -301,10 +353,12 @@ const SalesForecastingScreen: React.FC<SalesForecastingScreenProps> = ({ navigat
           </View>
           <View style={styles.metric}>
             <Text style={styles.metricLabel}>Recommended Order</Text>
-            <Text style={[
-              styles.metricValue,
-              { color: item.recommendedOrder > 0 ? '#FF3B30' : '#34C759' }
-            ]}>
+            <Text
+              style={[
+                styles.metricValue,
+                { color: item.recommendedOrder > 0 ? '#FF3B30' : '#34C759' },
+              ]}
+            >
               {item.recommendedOrder}
             </Text>
           </View>
@@ -314,24 +368,37 @@ const SalesForecastingScreen: React.FC<SalesForecastingScreenProps> = ({ navigat
       {item.recommendedOrder > 0 && (
         <TouchableOpacity
           style={styles.orderButton}
-          onPress={() => navigation.navigate('EditProduct', { 
-            mode: 'edit', 
-            productId: item.productId,
-            focusOnQuantity: true 
-          })}
+          onPress={() =>
+            navigation.navigate('EditProduct', {
+              mode: 'edit',
+              productId: item.productId,
+              focusOnQuantity: true,
+            })
+          }
         >
-          <Icon name="plus" size={16} color="white" />
-          <Text style={styles.orderButtonText}>Order {item.recommendedOrder} units</Text>
+          <Icon name='plus' size={16} color='white' />
+          <Text style={styles.orderButtonText}>
+            Order {item.recommendedOrder} units
+          </Text>
         </TouchableOpacity>
       )}
     </View>
   );
 
   const renderSummary = () => {
-    const highRisk = forecastData.filter(item => item.riskLevel === 'high').length;
-    const mediumRisk = forecastData.filter(item => item.riskLevel === 'medium').length;
-    const lowRisk = forecastData.filter(item => item.riskLevel === 'low').length;
-    const totalRecommended = forecastData.reduce((sum, item) => sum + item.recommendedOrder, 0);
+    const highRisk = forecastData.filter(
+      item => item.riskLevel === 'high'
+    ).length;
+    const mediumRisk = forecastData.filter(
+      item => item.riskLevel === 'medium'
+    ).length;
+    const lowRisk = forecastData.filter(
+      item => item.riskLevel === 'low'
+    ).length;
+    const totalRecommended = forecastData.reduce(
+      (sum, item) => sum + item.recommendedOrder,
+      0
+    );
 
     return (
       <View style={styles.summaryCard}>
@@ -339,19 +406,27 @@ const SalesForecastingScreen: React.FC<SalesForecastingScreenProps> = ({ navigat
         <View style={styles.summaryGrid}>
           <View style={styles.summaryItem}>
             <Text style={styles.summaryLabel}>High Risk Items</Text>
-            <Text style={[styles.summaryValue, { color: '#FF3B30' }]}>{highRisk}</Text>
+            <Text style={[styles.summaryValue, { color: '#FF3B30' }]}>
+              {highRisk}
+            </Text>
           </View>
           <View style={styles.summaryItem}>
             <Text style={styles.summaryLabel}>Medium Risk Items</Text>
-            <Text style={[styles.summaryValue, { color: '#FF9500' }]}>{mediumRisk}</Text>
+            <Text style={[styles.summaryValue, { color: '#FF9500' }]}>
+              {mediumRisk}
+            </Text>
           </View>
           <View style={styles.summaryItem}>
             <Text style={styles.summaryLabel}>Low Risk Items</Text>
-            <Text style={[styles.summaryValue, { color: '#34C759' }]}>{lowRisk}</Text>
+            <Text style={[styles.summaryValue, { color: '#34C759' }]}>
+              {lowRisk}
+            </Text>
           </View>
           <View style={styles.summaryItem}>
             <Text style={styles.summaryLabel}>Total Recommended Order</Text>
-            <Text style={[styles.summaryValue, { color: '#007AFF' }]}>{totalRecommended}</Text>
+            <Text style={[styles.summaryValue, { color: '#007AFF' }]}>
+              {totalRecommended}
+            </Text>
           </View>
         </View>
       </View>
@@ -363,7 +438,7 @@ const SalesForecastingScreen: React.FC<SalesForecastingScreenProps> = ({ navigat
       <SafeAreaView style={styles.container}>
         {renderHeader()}
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#007AFF" />
+          <ActivityIndicator size='large' color='#007AFF' />
           <Text style={styles.loadingText}>Loading forecast data...</Text>
         </View>
       </SafeAreaView>
@@ -373,7 +448,7 @@ const SalesForecastingScreen: React.FC<SalesForecastingScreenProps> = ({ navigat
   return (
     <SafeAreaView style={styles.container}>
       {renderHeader()}
-      
+
       <ScrollView
         style={styles.content}
         refreshControl={
@@ -388,12 +463,12 @@ const SalesForecastingScreen: React.FC<SalesForecastingScreenProps> = ({ navigat
           <Text style={styles.forecastListTitle}>
             Product Forecast ({filteredData.length} items)
           </Text>
-          
+
           {filteredData.length > 0 ? (
             filteredData.map(renderForecastItem)
           ) : (
             <View style={styles.emptyState}>
-              <Icon name="check-circle" size={48} color="#34C759" />
+              <Icon name='check-circle' size={48} color='#34C759' />
               <Text style={styles.emptyStateText}>
                 No products match the current filter
               </Text>
@@ -409,31 +484,31 @@ const SalesForecastingScreen: React.FC<SalesForecastingScreenProps> = ({ navigat
               style={styles.quickActionButton}
               onPress={() => navigation.navigate('Inventory')}
             >
-              <Icon name="list" size={24} color="#007AFF" />
+              <Icon name='list' size={24} color='#007AFF' />
               <Text style={styles.quickActionText}>View Inventory</Text>
             </TouchableOpacity>
-            
+
             <TouchableOpacity
               style={styles.quickActionButton}
               onPress={() => navigation.navigate('StockAlerts')}
             >
-              <Icon name="alert-circle" size={24} color="#FF3B30" />
+              <Icon name='alert-circle' size={24} color='#FF3B30' />
               <Text style={styles.quickActionText}>Stock Alerts</Text>
             </TouchableOpacity>
-            
+
             <TouchableOpacity
               style={styles.quickActionButton}
               onPress={() => navigation.navigate('SalesAnalytics')}
             >
-              <Icon name="receipt" size={24} color="#FF9500" />
+              <Icon name='receipt' size={24} color='#FF9500' />
               <Text style={styles.quickActionText}>Sales Analytics</Text>
             </TouchableOpacity>
-            
+
             <TouchableOpacity
               style={styles.quickActionButton}
               onPress={() => navigation.navigate('InventoryAnalytics')}
             >
-              <Icon name="bar-chart" size={24} color="#34C759" />
+              <Icon name='bar-chart' size={24} color='#34C759' />
               <Text style={styles.quickActionText}>Inventory Analytics</Text>
             </TouchableOpacity>
           </View>
@@ -724,4 +799,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default SalesForecastingScreen; 
+export default SalesForecastingScreen;

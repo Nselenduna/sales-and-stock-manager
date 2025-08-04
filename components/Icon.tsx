@@ -30,7 +30,7 @@ const Icon: React.FC<IconProps> = ({
       forward: '→',
       next: '▶️',
       previous: '◀️',
-      
+
       // Arrows and chevrons
       'arrow-back': '←',
       'arrow-left': '←',
@@ -41,7 +41,7 @@ const Icon: React.FC<IconProps> = ({
       'chevron-right': '〉',
       'chevron-up': '⌃',
       'chevron-down': '⌄',
-      
+
       // Status and feedback
       check: '✅',
       'checkmark-circle': '✅',
@@ -55,7 +55,7 @@ const Icon: React.FC<IconProps> = ({
       'close-circle': '❌',
       'x-circle': '❌',
       x: '✕',
-      
+
       // Common actions
       plus: '➕',
       'plus-circle': '➕',
@@ -66,65 +66,65 @@ const Icon: React.FC<IconProps> = ({
       download: '⬇️',
       upload: '⬆️',
       share: '📤',
-      
+
       // Time and date
       time: '⏰',
       clock: '🕐',
       'clock-outline': '🕐',
       calendar: '📅',
-      
+
       // People and users
       person: '👤',
       user: '👤',
       users: '👥',
-      
+
       // Products and inventory
       cube: '📦',
       'cube-outline': '📦',
       package: '📦',
       box: '📦',
       inventory: '📦',
-      
+
       // Sales and commerce
       'shopping-cart': '🛒',
       receipt: '🧾',
       price: '💰',
       'credit-card': '💳',
-      
+
       // Technology
       camera: '📷',
       'camera-off': '📷',
       'qr-code': '📱',
       barcode: '📱',
       'barcode-info': '📱',
-      
+
       // Location and navigation
       location: '📍',
       'location-info': '📍',
-      
+
       // Settings and configuration
       settings: '⚙️',
       filter: '🔧',
       sort: '📊',
-      
+
       // Information and help
       help: '❓',
       'help-circle': '❓',
       question: '❓',
-      
+
       // Lists and data
       list: '📋',
       history: '📜',
-      
+
       // Links and connections
       link: '🔗',
-      
+
       // Flash and camera controls
       'flash-off': '⚡',
       'flash-on': '⚡',
       'flash-auto': '⚡',
       'camera-switch': '🔄',
-      
+
       // Product management
       'add-product': '➕',
       'save-product': '💾',
@@ -133,26 +133,26 @@ const Icon: React.FC<IconProps> = ({
       'price-info': '💰',
       'category-info': '📂',
       'description-info': '📝',
-      
+
       // Analytics and trends
       'trending-up': '📈',
       'trending-down': '��',
       'bar-chart': '📊',
       'pie-chart': '🥧',
-      
+
       // Targets and goals
       target: '🎯',
       kpi: '🎯',
-      
+
       // Ideas and insights
       lightbulb: '💡',
       insights: '💡',
-      
+
       // User management
       'person-add': '👤➕',
       login: '🔐',
       logout: '🚪',
-      
+
       // Security
       backup: '💾',
       shield: '🛡️',
@@ -160,11 +160,11 @@ const Icon: React.FC<IconProps> = ({
       unlock: '🔓',
       key: '🔑',
       security: '🔐',
-      
+
       // Notifications
       notifications: '🔔',
       bell: '🔔',
-      
+
       // System status
       'sync-status': '🔄',
       offline: '📴',
@@ -173,7 +173,7 @@ const Icon: React.FC<IconProps> = ({
       'warning-status': '🟡',
       'success-status': '🟢',
       'info-status': '🔵',
-      
+
       // Analytics and dashboard
       dashboard: '📊',
       analytics: '📈',
@@ -203,7 +203,7 @@ const Icon: React.FC<IconProps> = ({
       fullscreen: '⛶',
       window: '⊞',
       tab: '📑',
-      
+
       // Files and documents
       folder: '📁',
       file: '📄',
@@ -211,27 +211,27 @@ const Icon: React.FC<IconProps> = ({
       spreadsheet: '📊',
       chart: '📈',
       graph: '📊',
-      
+
       // Data and storage
       data: '💾',
       database: '🗄️',
       server: '🖥️',
       cloud: '☁️',
-      
+
       // Network and connectivity
       network: '🌐',
       wifi: '📶',
       signal: '📡',
       connection: '🔗',
-      
+
       // Activity and monitoring
       activity: '📊',
       'online-users': '👥',
       'low-stock': '⚠️',
-      
+
       // Export and sharing
       export: '📤',
-      
+
       // Eye and visibility
       eye: '👁️',
     };

@@ -4,9 +4,12 @@
  * @param currency - Currency code (default: 'GBP')
  * @returns Formatted currency string
  */
-export const formatCurrency = (amountInPence: number, currency: string = 'GBP'): string => {
+export const formatCurrency = (
+  amountInPence: number,
+  currency: string = 'GBP'
+): string => {
   const amountInPounds = amountInPence / 100;
-  
+
   return new Intl.NumberFormat('en-GB', {
     style: 'currency',
     currency: currency,
@@ -23,14 +26,14 @@ export const formatCurrency = (amountInPence: number, currency: string = 'GBP'):
 export const parsePriceToPence = (priceString: string): number => {
   // Remove currency symbols and whitespace
   const cleanPrice = priceString.replace(/[£$€,\s]/g, '');
-  
+
   // Parse as float and convert to pence
   const priceInPounds = parseFloat(cleanPrice);
-  
+
   if (isNaN(priceInPounds)) {
     return 0;
   }
-  
+
   return Math.round(priceInPounds * 100);
 };
 
@@ -81,9 +84,9 @@ export const debounce = <T extends (...args: any[]) => any>(
   wait: number
 ): ((...args: Parameters<T>) => void) => {
   let timeout: NodeJS.Timeout;
-  
+
   return (...args: Parameters<T>) => {
     clearTimeout(timeout);
     timeout = setTimeout(() => func(...args), wait);
   };
-}; 
+};

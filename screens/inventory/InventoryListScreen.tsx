@@ -22,6 +22,7 @@ import Icon from '../../components/Icon';
 import { useSyncFeedback } from '../../hooks/useSyncFeedback';
 import SyncStatusBanner from '../../components/SyncStatusBanner';
 import { handleError } from '../../lib/errorHandler'; // Import centralized error handler
+import { withErrorBoundary } from '../../components/ErrorBoundaryComponents';
 
 interface InventoryListScreenProps {
   navigation: any;
@@ -43,19 +44,17 @@ const InventoryListScreen: React.FC<InventoryListScreenProps> = ({
   const [refreshing, setRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
-  const [filterBy, setFilterBy] = useState<'all' | 'low_stock' | 'out_of_stock'>('all');
+  const [filterBy, setFilterBy] = useState<
+    'all' | 'low_stock' | 'out_of_stock'
+  >('all');
   const [page, setPage] = useState(0);
   const [hasMore, setHasMore] = useState(true);
 
-  const { debouncedValue: debouncedSearchQuery, isSearching } = useDebouncedSearch(searchQuery, 300);
+  const { debouncedValue: debouncedSearchQuery, isSearching } =
+    useDebouncedSearch(searchQuery, 300);
 
-  const {
-    syncState,
-    setSyncing,
-    setFailed,
-    setSuccess,
-    retry,
-  } = useSyncFeedback();
+  const { syncState, setSyncing, setFailed, setSuccess, retry } =
+    useSyncFeedback();
 
   const canEditInventory = useMemo(
     () => userRole === 'admin' || userRole === 'staff',
@@ -99,7 +98,7 @@ const InventoryListScreen: React.FC<InventoryListScreenProps> = ({
 
         setSuccess();
       } catch (error) {
-        handleError(error, "InventoryListScreen/fetchProducts");
+        handleError(error, 'InventoryListScreen/fetchProducts');
         setFailed('Failed to load inventory');
         Alert.alert('Error', 'Failed to load inventory');
       } finally {
@@ -216,10 +215,10 @@ const InventoryListScreen: React.FC<InventoryListScreenProps> = ({
           style={styles.backButton}
           onPress={() => navigation.goBack()}
           accessible={true}
-          accessibilityLabel="Go back to dashboard"
-          accessibilityRole="button"
+          accessibilityLabel='Go back to dashboard'
+          accessibilityRole='button'
         >
-          <Icon name="arrow-back" size={24} color="white" />
+          <Icon name='arrow-back' size={24} color='white' />
         </TouchableOpacity>
       </View>
     ),
@@ -274,7 +273,11 @@ const InventoryListScreen: React.FC<InventoryListScreenProps> = ({
         queueCount={syncState.queueCount}
         onRetry={retry}
       />
-      <SearchBar value={searchQuery} onChangeText={handleSearchChange} isSearching={isSearching} />
+      <SearchBar
+        value={searchQuery}
+        onChangeText={handleSearchChange}
+        isSearching={isSearching}
+      />
       <FilterBar
         activeFilter={filterBy}
         onFilterChange={setFilterBy}
@@ -381,4 +384,15 @@ const styles = StyleSheet.create({
   },
 });
 
-export default React.memo(InventoryListScreen);
+export default withErrorBoundary(React.memo(InventoryListScreen), {
+  errorTitle: 'Inventory Error',
+  errorMessage: 'There was an issue loading the inventory. Please try again.',
+  onError: (error, errorInfo) => {
+    console.error('Inventory screen error:', {
+      error: error.message,
+      stack: error.stack,
+      componentStack: errorInfo.componentStack,
+    });
+    // TODO: Send to crash reporting service
+  },
+});

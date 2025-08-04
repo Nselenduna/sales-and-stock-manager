@@ -1,9 +1,9 @@
 /**
  * Input Sanitization Module
- * 
+ *
  * Provides utilities for sanitizing user input to prevent XSS attacks
  * and ensure data integrity across the application.
- * 
+ *
  * Features:
  * - Input sanitization for forms, search, and authentication
  * - Whitespace trimming and normalization
@@ -117,24 +117,29 @@ export function sanitizeInput(
  * Remove potentially dangerous script content
  */
 function removeScriptContent(input: string): string {
-  return input
-    // Remove script tags and their content
-    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
-    // Remove on* event handlers - more comprehensive pattern
-    .replace(/\s*on\w+\s*=\s*["'][^"']*["']/gi, '')
-    .replace(/\s*on\w+\s*=\s*[^>\s]*/gi, '')
-    // Remove javascript: URLs
-    .replace(/javascript:.*$/gi, '')
-    // Remove data: URLs (potential XSS vectors)
-    .replace(/data:.*$/gi, '')
-    // Remove vbscript: URLs
-    .replace(/vbscript:.*$/gi, '')
-    // Remove expression() CSS
-    .replace(/expression\s*\(/gi, '')
-    // Remove eval() calls
-    .replace(/eval\s*\(/gi, '')
-    // Remove specific HTML tags that might contain scripts (but not all tags)
-    .replace(/<(iframe|object|embed|form|input|textarea|select|button|img)[^>]*>/gi, '');
+  return (
+    input
+      // Remove script tags and their content
+      .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+      // Remove on* event handlers - more comprehensive pattern
+      .replace(/\s*on\w+\s*=\s*["'][^"']*["']/gi, '')
+      .replace(/\s*on\w+\s*=\s*[^>\s]*/gi, '')
+      // Remove javascript: URLs
+      .replace(/javascript:.*$/gi, '')
+      // Remove data: URLs (potential XSS vectors)
+      .replace(/data:.*$/gi, '')
+      // Remove vbscript: URLs
+      .replace(/vbscript:.*$/gi, '')
+      // Remove expression() CSS
+      .replace(/expression\s*\(/gi, '')
+      // Remove eval() calls
+      .replace(/eval\s*\(/gi, '')
+      // Remove specific HTML tags that might contain scripts (but not all tags)
+      .replace(
+        /<(iframe|object|embed|form|input|textarea|select|button|img)[^>]*>/gi,
+        ''
+      )
+  );
 }
 
 /**
@@ -150,7 +155,7 @@ function escapeHtmlEntities(input: string): string {
     '/': '/',
   };
 
-  return input.replace(/[&<>"'/]/g, (char) => htmlEntities[char] || char);
+  return input.replace(/[&<>"'/]/g, char => htmlEntities[char] || char);
 }
 
 /**
@@ -208,7 +213,9 @@ function performSecurityChecks(input: string): string[] {
 /**
  * Sanitize email input specifically
  */
-export function sanitizeEmail(email: string | null | undefined): SanitizeResult {
+export function sanitizeEmail(
+  email: string | null | undefined
+): SanitizeResult {
   const result = sanitizeInput(email, {
     trim: true,
     escapeHtml: false, // Don't escape HTML for emails
@@ -223,11 +230,13 @@ export function sanitizeEmail(email: string | null | undefined): SanitizeResult 
     // More strict email validation
     const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
     // Additional checks for common invalid patterns
-    if (result.value.includes('..') || 
-        result.value.startsWith('@') || 
-        result.value.endsWith('@') ||
-        result.value.includes('@.') ||
-        !result.value.includes('@')) {
+    if (
+      result.value.includes('..') ||
+      result.value.startsWith('@') ||
+      result.value.endsWith('@') ||
+      result.value.includes('@.') ||
+      !result.value.includes('@')
+    ) {
       result.isValid = false;
       result.errors.push('Invalid email format');
     } else if (!emailRegex.test(result.value)) {
@@ -242,7 +251,9 @@ export function sanitizeEmail(email: string | null | undefined): SanitizeResult 
 /**
  * Sanitize password input specifically
  */
-export function sanitizePassword(password: string | null | undefined): SanitizeResult {
+export function sanitizePassword(
+  password: string | null | undefined
+): SanitizeResult {
   const result = sanitizeInput(password, {
     trim: false, // Don't trim passwords
     escapeHtml: false, // Don't escape HTML for passwords
@@ -268,7 +279,9 @@ export function sanitizePassword(password: string | null | undefined): SanitizeR
 /**
  * Sanitize product name input
  */
-export function sanitizeProductName(name: string | null | undefined): SanitizeResult {
+export function sanitizeProductName(
+  name: string | null | undefined
+): SanitizeResult {
   return sanitizeInput(name, {
     trim: true,
     escapeHtml: true,
@@ -297,7 +310,9 @@ export function sanitizeSKU(sku: string | null | undefined): SanitizeResult {
     // Allow alphanumeric characters, hyphens, and underscores
     const skuRegex = /^[A-Za-z0-9\-_]+$/;
     if (!skuRegex.test(result.value)) {
-      result.errors.push('SKU can only contain letters, numbers, hyphens, and underscores');
+      result.errors.push(
+        'SKU can only contain letters, numbers, hyphens, and underscores'
+      );
       result.isValid = false;
     }
   }
@@ -308,7 +323,9 @@ export function sanitizeSKU(sku: string | null | undefined): SanitizeResult {
 /**
  * Sanitize product description input
  */
-export function sanitizeDescription(description: string | null | undefined): SanitizeResult {
+export function sanitizeDescription(
+  description: string | null | undefined
+): SanitizeResult {
   return sanitizeInput(description, {
     trim: true,
     escapeHtml: true,
@@ -322,7 +339,9 @@ export function sanitizeDescription(description: string | null | undefined): San
 /**
  * Sanitize search query input
  */
-export function sanitizeSearchQuery(query: string | null | undefined): SanitizeResult {
+export function sanitizeSearchQuery(
+  query: string | null | undefined
+): SanitizeResult {
   return sanitizeInput(query, {
     trim: true,
     escapeHtml: true,
@@ -346,10 +365,10 @@ export function sanitizeCurrency(
   } = {}
 ): SanitizeResult {
   const { min = 0, max, allowNegative = false, decimalPlaces = 2 } = options;
-  
+
   // Convert to string for processing
   const stringInput = String(input || '');
-  
+
   const result = sanitizeInput(stringInput, {
     trim: true,
     escapeHtml: false, // Don't escape HTML for numbers
@@ -362,13 +381,13 @@ export function sanitizeCurrency(
   if (result.isValid && result.value) {
     // Check if input contains non-numeric characters (excluding decimal, comma, and minus)
     const hasNonNumeric = /[^0-9.,-]/.test(result.value);
-    
+
     if (hasNonNumeric) {
       result.errors.push('Invalid currency value');
       result.isValid = false;
       return result;
     }
-    
+
     // Check for multiple decimal points (invalid)
     const decimalCount = (result.value.match(/\./g) || []).length;
     if (decimalCount > 1) {
@@ -376,7 +395,7 @@ export function sanitizeCurrency(
       result.isValid = false;
       return result;
     }
-    
+
     // Check for multiple commas (invalid)
     const commaCount = (result.value.match(/,/g) || []).length;
     if (commaCount > 1) {
@@ -384,10 +403,10 @@ export function sanitizeCurrency(
       result.isValid = false;
       return result;
     }
-    
+
     // Handle comma/period inputs (European vs US format)
     let cleanValue = result.value;
-    
+
     // Handle European format (comma as decimal separator)
     if (cleanValue.includes(',') && !cleanValue.includes('.')) {
       // If only comma exists, treat as decimal separator
@@ -403,25 +422,30 @@ export function sanitizeCurrency(
         cleanValue = cleanValue.replace(/,/g, '');
       }
     }
-    
+
     // Remove any non-numeric characters except decimal point and minus
     cleanValue = cleanValue.replace(/[^0-9.-]/g, '');
-    
+
     // Handle negative numbers
     if (!allowNegative) {
       cleanValue = cleanValue.replace(/-/g, '');
     }
-    
+
     // Ensure only one decimal point
     const parts = cleanValue.split('.');
     if (parts.length > 2) {
       cleanValue = parts[0] + '.' + parts.slice(1).join('');
     }
-    
+
     // Convert to number for validation
     const numValue = parseFloat(cleanValue);
-    
-    if (isNaN(numValue) || cleanValue === '' || cleanValue === '.' || cleanValue === '-') {
+
+    if (
+      isNaN(numValue) ||
+      cleanValue === '' ||
+      cleanValue === '.' ||
+      cleanValue === '-'
+    ) {
       result.errors.push('Invalid currency value');
       result.isValid = false;
     } else {
@@ -430,12 +454,12 @@ export function sanitizeCurrency(
         result.errors.push(`Value must be at least ${min}`);
         result.isValid = false;
       }
-      
+
       if (max !== undefined && numValue > max) {
         result.errors.push(`Value must be at most ${max}`);
         result.isValid = false;
       }
-      
+
       // Format to specified decimal places
       if (result.isValid) {
         result.value = numValue.toFixed(decimalPlaces);
@@ -459,10 +483,10 @@ export function sanitizeNumeric(
   } = {}
 ): SanitizeResult {
   const { min, max, allowDecimals = true, allowNegative = false } = options;
-  
+
   // Convert to string for processing
   const stringInput = String(input || '');
-  
+
   const result = sanitizeInput(stringInput, {
     trim: true,
     escapeHtml: false, // Don't escape HTML for numbers
@@ -475,35 +499,35 @@ export function sanitizeNumeric(
   if (result.isValid && result.value) {
     // Check if input contains non-numeric characters (excluding decimal and minus)
     const hasNonNumeric = /[^0-9.-]/.test(result.value);
-    
+
     if (hasNonNumeric) {
       result.errors.push('Invalid numeric value');
       result.isValid = false;
       return result;
     }
-    
+
     // Remove any non-numeric characters except decimal point and minus
     let cleanValue = result.value.replace(/[^0-9.-]/g, '');
-    
+
     // Handle negative numbers
     if (!allowNegative) {
       cleanValue = cleanValue.replace(/-/g, '');
     }
-    
+
     // Handle decimals
     if (!allowDecimals) {
       cleanValue = cleanValue.replace(/\./g, '');
     }
-    
+
     // Ensure only one decimal point
     const parts = cleanValue.split('.');
     if (parts.length > 2) {
       cleanValue = parts[0] + '.' + parts.slice(1).join('');
     }
-    
+
     // Convert to number for validation
     const numValue = parseFloat(cleanValue);
-    
+
     if (isNaN(numValue)) {
       result.errors.push('Invalid numeric value');
       result.isValid = false;
@@ -513,12 +537,12 @@ export function sanitizeNumeric(
         result.errors.push(`Value must be at least ${min}`);
         result.isValid = false;
       }
-      
+
       if (max !== undefined && numValue > max) {
         result.errors.push(`Value must be at most ${max}`);
         result.isValid = false;
       }
-      
+
       result.value = cleanValue;
     }
   }
@@ -534,12 +558,12 @@ export function sanitizeBatch(
   fieldConfig: Record<string, SanitizeOptions>
 ): Record<string, SanitizeResult> {
   const results: Record<string, SanitizeResult> = {};
-  
+
   for (const [fieldName, value] of Object.entries(inputs)) {
     const config = fieldConfig[fieldName] || DEFAULT_OPTIONS;
     results[fieldName] = sanitizeInput(value, config);
   }
-  
+
   return results;
 }
 
@@ -553,14 +577,16 @@ export function isBatchValid(results: Record<string, SanitizeResult>): boolean {
 /**
  * Get all errors from a batch of sanitized results
  */
-export function getBatchErrors(results: Record<string, SanitizeResult>): Record<string, string[]> {
+export function getBatchErrors(
+  results: Record<string, SanitizeResult>
+): Record<string, string[]> {
   const errors: Record<string, string[]> = {};
-  
+
   for (const [fieldName, result] of Object.entries(results)) {
     if (!result.isValid && result.errors.length > 0) {
       errors[fieldName] = result.errors;
     }
   }
-  
+
   return errors;
-} 
+}

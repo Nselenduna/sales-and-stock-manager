@@ -16,8 +16,10 @@ const mockBarCodeScanner = {
       back: 'back',
     },
   },
-  requestPermissionsAsync: jest.fn(() => Promise.resolve({ status: 'granted' })),
+  requestPermissionsAsync: jest.fn(() =>
+    Promise.resolve({ status: 'granted' })
+  ),
   scanFromURLAsync: jest.fn(() => Promise.resolve({ data: 'test-barcode' })),
 };
 
-export default mockBarCodeScanner; 
+export default mockBarCodeScanner;

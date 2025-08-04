@@ -46,11 +46,13 @@ const StaffDashboard: React.FC<{ navigation: any }> = ({ navigation }) => {
             // Handle the scanned barcode result
             // You can navigate to inventory or product detail based on the result
             if (result.product) {
-              navigation.navigate('ProductDetail', { productId: result.product.id });
+              navigation.navigate('ProductDetail', {
+                productId: result.product.id,
+              });
             } else {
               navigation.navigate('Inventory');
             }
-          }
+          },
         });
         break;
       case 'create-sale':
@@ -115,7 +117,8 @@ const StaffDashboard: React.FC<{ navigation: any }> = ({ navigation }) => {
           <View style={styles.card}>
             <Text style={styles.cardTitle}>Sales</Text>
             <Text style={styles.cardDescription}>
-              Process sales transactions, scan barcodes, and manage customer purchases.
+              Process sales transactions, scan barcodes, and manage customer
+              purchases.
             </Text>
             <TouchableOpacity
               style={styles.cardButton}
@@ -131,7 +134,7 @@ const StaffDashboard: React.FC<{ navigation: any }> = ({ navigation }) => {
               Monitor low stock items and receive alerts when products need
               restocking.
             </Text>
-            <TouchableOpacity 
+            <TouchableOpacity
               style={styles.cardButton}
               onPress={handleStockAlerts}
             >
@@ -144,7 +147,7 @@ const StaffDashboard: React.FC<{ navigation: any }> = ({ navigation }) => {
             <Text style={styles.cardDescription}>
               Quick access to common tasks and frequently used features.
             </Text>
-            <TouchableOpacity 
+            <TouchableOpacity
               style={styles.cardButton}
               onPress={handleQuickActions}
             >

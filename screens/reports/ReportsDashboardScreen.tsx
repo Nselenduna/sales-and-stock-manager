@@ -8,7 +8,10 @@ import {
   Alert,
   RefreshControl,
 } from 'react-native';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from 'react-native-safe-area-context';
 import { supabase } from '../../lib/supabase';
 import Icon from '../../components/Icon';
 import { formatCurrency } from '../../lib/utils';
@@ -28,10 +31,14 @@ interface ReportsDashboardScreenProps {
   navigation: any;
 }
 
-const ReportsDashboardScreen: React.FC<ReportsDashboardScreenProps> = ({ navigation }) => {
+const ReportsDashboardScreen: React.FC<ReportsDashboardScreenProps> = ({
+  navigation,
+}) => {
   const [isLoading, setIsLoading] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState<'all' | 'sales' | 'inventory' | 'analytics' | 'customers'>('all');
+  const [selectedCategory, setSelectedCategory] = useState<
+    'all' | 'sales' | 'inventory' | 'analytics' | 'customers'
+  >('all');
   const insets = useSafeAreaInsets();
 
   const reportTypes: ReportType[] = [
@@ -39,7 +46,8 @@ const ReportsDashboardScreen: React.FC<ReportsDashboardScreenProps> = ({ navigat
     {
       id: 'sales-summary',
       title: 'Sales Summary Report',
-      description: 'Daily, weekly, and monthly sales summaries with revenue breakdown',
+      description:
+        'Daily, weekly, and monthly sales summaries with revenue breakdown',
       icon: 'receipt',
       color: '#007AFF',
       category: 'sales',
@@ -77,7 +85,8 @@ const ReportsDashboardScreen: React.FC<ReportsDashboardScreenProps> = ({ navigat
     {
       id: 'inventory-status',
       title: 'Inventory Status Report',
-      description: 'Current stock levels, low stock alerts, and inventory value',
+      description:
+        'Current stock levels, low stock alerts, and inventory value',
       icon: 'cube',
       color: '#FF3B30',
       category: 'inventory',
@@ -196,8 +205,8 @@ const ReportsDashboardScreen: React.FC<ReportsDashboardScreenProps> = ({ navigat
     { id: 'customers', label: 'Customers', icon: 'person' },
   ];
 
-  const filteredReports = reportTypes.filter(report => 
-    selectedCategory === 'all' || report.category === selectedCategory
+  const filteredReports = reportTypes.filter(
+    report => selectedCategory === 'all' || report.category === selectedCategory
   );
 
   const onRefresh = async () => {
@@ -208,11 +217,14 @@ const ReportsDashboardScreen: React.FC<ReportsDashboardScreenProps> = ({ navigat
 
   const handleReportPress = (report: ReportType) => {
     if (!report.available) {
-      Alert.alert('Coming Soon', 'This report will be available in the next update.');
+      Alert.alert(
+        'Coming Soon',
+        'This report will be available in the next update.'
+      );
       return;
     }
 
-    navigation.navigate('ReportDetail', { 
+    navigation.navigate('ReportDetail', {
       reportId: report.id,
       reportTitle: report.title,
       reportType: report.category,
@@ -226,11 +238,15 @@ const ReportsDashboardScreen: React.FC<ReportsDashboardScreenProps> = ({ navigat
       const { data: salesData, error: salesError } = await supabase
         .from('sales')
         .select('*')
-        .gte('created_at', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString());
+        .gte(
+          'created_at',
+          new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()
+        );
 
       if (salesError) throw salesError;
 
-      const totalRevenue = salesData?.reduce((sum, sale) => sum + (sale.total || 0), 0) || 0;
+      const totalRevenue =
+        salesData?.reduce((sum, sale) => sum + (sale.total || 0), 0) || 0;
       const totalSales = salesData?.length || 0;
 
       Alert.alert(
@@ -247,10 +263,10 @@ const ReportsDashboardScreen: React.FC<ReportsDashboardScreenProps> = ({ navigat
   };
 
   const renderHeader = () => (
-    <View 
+    <View
       style={[
         styles.header,
-        isUIPolishEnabled('safeAreaInsets') && { paddingTop: insets.top + 10 }
+        isUIPolishEnabled('safeAreaInsets') && { paddingTop: insets.top + 10 },
       ]}
     >
       <View style={styles.headerContent}>
@@ -263,10 +279,10 @@ const ReportsDashboardScreen: React.FC<ReportsDashboardScreenProps> = ({ navigat
         style={styles.backButton}
         onPress={() => navigation.goBack()}
         accessible={true}
-        accessibilityLabel="Go back"
-        accessibilityRole="button"
+        accessibilityLabel='Go back'
+        accessibilityRole='button'
       >
-        <Icon name="arrow-back" size={24} color="white" />
+        <Icon name='arrow-back' size={24} color='white' />
       </TouchableOpacity>
     </View>
   );
@@ -279,19 +295,22 @@ const ReportsDashboardScreen: React.FC<ReportsDashboardScreenProps> = ({ navigat
             key={category.id}
             style={[
               styles.categoryButton,
-              selectedCategory === category.id && styles.categoryButtonActive
+              selectedCategory === category.id && styles.categoryButtonActive,
             ]}
             onPress={() => setSelectedCategory(category.id as any)}
           >
-            <Icon 
-              name={category.icon} 
-              size={16} 
-              color={selectedCategory === category.id ? 'white' : '#666'} 
+            <Icon
+              name={category.icon}
+              size={16}
+              color={selectedCategory === category.id ? 'white' : '#666'}
             />
-            <Text style={[
-              styles.categoryButtonText,
-              selectedCategory === category.id && styles.categoryButtonTextActive
-            ]}>
+            <Text
+              style={[
+                styles.categoryButtonText,
+                selectedCategory === category.id &&
+                  styles.categoryButtonTextActive,
+              ]}
+            >
               {category.label}
             </Text>
           </TouchableOpacity>
@@ -309,33 +328,33 @@ const ReportsDashboardScreen: React.FC<ReportsDashboardScreenProps> = ({ navigat
           onPress={handleQuickExport}
           disabled={isLoading}
         >
-          <Icon name="download" size={24} color="#007AFF" />
+          <Icon name='download' size={24} color='#007AFF' />
           <Text style={styles.quickActionText}>
             {isLoading ? 'Exporting...' : 'Quick Export'}
           </Text>
         </TouchableOpacity>
-        
+
         <TouchableOpacity
           style={styles.quickActionButton}
           onPress={() => navigation.navigate('SalesAnalytics')}
         >
-          <Icon name="receipt" size={24} color="#34C759" />
+          <Icon name='receipt' size={24} color='#34C759' />
           <Text style={styles.quickActionText}>Sales Analytics</Text>
         </TouchableOpacity>
-        
+
         <TouchableOpacity
           style={styles.quickActionButton}
           onPress={() => navigation.navigate('InventoryAnalytics')}
         >
-          <Icon name="bar-chart" size={24} color="#FF9500" />
+          <Icon name='bar-chart' size={24} color='#FF9500' />
           <Text style={styles.quickActionText}>Inventory Analytics</Text>
         </TouchableOpacity>
-        
+
         <TouchableOpacity
           style={styles.quickActionButton}
           onPress={() => navigation.navigate('SalesForecasting')}
         >
-          <Icon name="lightbulb" size={24} color="#FF3B30" />
+          <Icon name='lightbulb' size={24} color='#FF3B30' />
           <Text style={styles.quickActionText}>Forecasting</Text>
         </TouchableOpacity>
       </View>
@@ -351,16 +370,16 @@ const ReportsDashboardScreen: React.FC<ReportsDashboardScreenProps> = ({ navigat
     >
       <View style={styles.reportHeader}>
         <View style={[styles.reportIcon, { backgroundColor: report.color }]}>
-          <Icon name={report.icon} size={24} color="white" />
+          <Icon name={report.icon} size={24} color='white' />
         </View>
         <View style={styles.reportInfo}>
           <Text style={styles.reportTitle}>{report.title}</Text>
           <Text style={styles.reportDescription}>{report.description}</Text>
         </View>
-        <Icon 
-          name="chevron-right" 
-          size={20} 
-          color={report.available ? '#007AFF' : '#ccc'} 
+        <Icon
+          name='chevron-right'
+          size={20}
+          color={report.available ? '#007AFF' : '#ccc'}
         />
       </View>
       {!report.available && (
@@ -374,7 +393,7 @@ const ReportsDashboardScreen: React.FC<ReportsDashboardScreenProps> = ({ navigat
   return (
     <SafeAreaView style={styles.container}>
       {renderHeader()}
-      
+
       <ScrollView
         style={styles.content}
         refreshControl={
@@ -388,7 +407,7 @@ const ReportsDashboardScreen: React.FC<ReportsDashboardScreenProps> = ({ navigat
           <Text style={styles.reportsSectionTitle}>
             Available Reports ({filteredReports.length})
           </Text>
-          
+
           {filteredReports.map(renderReportCard)}
         </View>
 
@@ -396,10 +415,10 @@ const ReportsDashboardScreen: React.FC<ReportsDashboardScreenProps> = ({ navigat
         <View style={styles.helpCard}>
           <Text style={styles.helpTitle}>Need Help?</Text>
           <Text style={styles.helpText}>
-            • Reports are generated based on your current data{'\n'}
-            • Export options include PDF, CSV, and Excel formats{'\n'}
-            • Custom date ranges can be selected for each report{'\n'}
-            • Reports can be scheduled for automatic generation
+            • Reports are generated based on your current data{'\n'}• Export
+            options include PDF, CSV, and Excel formats{'\n'}• Custom date
+            ranges can be selected for each report{'\n'}• Reports can be
+            scheduled for automatic generation
           </Text>
           <TouchableOpacity style={styles.helpButton}>
             <Text style={styles.helpButtonText}>View Documentation</Text>
@@ -613,4 +632,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default ReportsDashboardScreen; 
+export default ReportsDashboardScreen;

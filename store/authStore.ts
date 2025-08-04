@@ -15,8 +15,14 @@ interface AuthActions {
   setUser: (user: UserWithRole | null) => void;
   setSession: (session: any | null) => void;
   setLoading: (loading: boolean) => void;
-  signIn: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
-  signUp: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
+  signIn: (
+    email: string,
+    password: string
+  ) => Promise<{ success: boolean; error?: string }>;
+  signUp: (
+    email: string,
+    password: string
+  ) => Promise<{ success: boolean; error?: string }>;
   signOut: () => Promise<void>;
   checkAuth: () => Promise<void>;
   checkUser: () => Promise<void>;
@@ -32,9 +38,9 @@ const useAuthStore = create<AuthState & AuthActions>()(
       isAuthenticated: false,
       userRole: null,
 
-      setUser: (user) => set({ user, isAuthenticated: !!user }),
-      setSession: (session) => set({ session }),
-      setLoading: (loading) => set({ loading }),
+      setUser: user => set({ user, isAuthenticated: !!user }),
+      setSession: session => set({ session }),
+      setLoading: loading => set({ loading }),
 
       signIn: async (email, password) => {
         try {
@@ -70,12 +76,10 @@ const useAuthStore = create<AuthState & AuthActions>()(
 
           if (data.user) {
             // Create default role for new user
-            const { error: roleError } = await supabase
-              .from('roles')
-              .insert({
-                user_id: data.user.id,
-                role_type: 'staff', // Default role
-              });
+            const { error: roleError } = await supabase.from('roles').insert({
+              user_id: data.user.id,
+              role_type: 'staff', // Default role
+            });
 
             if (roleError) throw roleError;
 
@@ -93,7 +97,12 @@ const useAuthStore = create<AuthState & AuthActions>()(
       signOut: async () => {
         try {
           await supabase.auth.signOut();
-          set({ user: null, session: null, isAuthenticated: false, userRole: null });
+          set({
+            user: null,
+            session: null,
+            isAuthenticated: false,
+            userRole: null,
+          });
         } catch (error) {
           console.error('Sign out error:', error);
         }
@@ -102,8 +111,10 @@ const useAuthStore = create<AuthState & AuthActions>()(
       checkAuth: async () => {
         try {
           set({ loading: true });
-          const { data: { session } } = await supabase.auth.getSession();
-          
+          const {
+            data: { session },
+          } = await supabase.auth.getSession();
+
           if (session) {
             set({ session, isAuthenticated: true });
             await get().getUserRole();
@@ -121,9 +132,13 @@ const useAuthStore = create<AuthState & AuthActions>()(
       checkUser: async () => {
         try {
           set({ loading: true });
-          const { data: { user } } = await supabase.auth.getUser();
-          const { data: { session } } = await supabase.auth.getSession();
-          
+          const {
+            data: { user },
+          } = await supabase.auth.getUser();
+          const {
+            data: { session },
+          } = await supabase.auth.getSession();
+
           if (user && session) {
             // Create a UserWithRole object by fetching the role
             const { data: roleData } = await supabase
@@ -131,7 +146,7 @@ const useAuthStore = create<AuthState & AuthActions>()(
               .select('*')
               .eq('user_id', user.id)
               .single();
-            
+
             const userWithRole: UserWithRole = {
               ...user,
               email: user.email || '',
@@ -140,18 +155,28 @@ const useAuthStore = create<AuthState & AuthActions>()(
                 user_id: user.id,
                 role_type: 'staff',
                 created_at: new Date().toISOString(),
-                updated_at: new Date().toISOString()
-              }
+                updated_at: new Date().toISOString(),
+              },
             };
-            
+
             set({ user: userWithRole, session, isAuthenticated: true });
             await get().getUserRole();
           } else {
-            set({ user: null, session: null, isAuthenticated: false, userRole: null });
+            set({
+              user: null,
+              session: null,
+              isAuthenticated: false,
+              userRole: null,
+            });
           }
         } catch (error) {
           console.error('User check error:', error);
-          set({ user: null, session: null, isAuthenticated: false, userRole: null });
+          set({
+            user: null,
+            session: null,
+            isAuthenticated: false,
+            userRole: null,
+          });
         } finally {
           set({ loading: false });
         }
@@ -159,7 +184,9 @@ const useAuthStore = create<AuthState & AuthActions>()(
 
       getUserRole: async () => {
         try {
-          const { data: { user } } = await supabase.auth.getUser();
+          const {
+            data: { user },
+          } = await supabase.auth.getUser();
           if (!user) return;
 
           const { data: roleData, error } = await supabase
@@ -180,11 +207,11 @@ const useAuthStore = create<AuthState & AuthActions>()(
     {
       name: 'auth-storage',
       storage: createJSONStorage(() => AsyncStorage),
-      partialize: (state) => ({ 
-        user: state.user, 
-        session: state.session, 
+      partialize: state => ({
+        user: state.user,
+        session: state.session,
         isAuthenticated: state.isAuthenticated,
-        userRole: state.userRole 
+        userRole: state.userRole,
       }),
     }
   )

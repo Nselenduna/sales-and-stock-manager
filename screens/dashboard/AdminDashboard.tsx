@@ -33,11 +33,13 @@ const AdminDashboard = ({ navigation }: { navigation: any }) => {
             // Handle the scanned barcode result
             // You can navigate to inventory or product detail based on the result
             if (result.product) {
-              navigation.navigate('ProductDetail', { productId: result.product.id });
+              navigation.navigate('ProductDetail', {
+                productId: result.product.id,
+              });
             } else {
               navigation.navigate('Inventory');
             }
-          }
+          },
         });
         break;
       case 'create-sale':
@@ -75,7 +77,7 @@ const AdminDashboard = ({ navigation }: { navigation: any }) => {
             <Text style={styles.cardDescription}>
               Manage customers, view purchase history, and track customer data
             </Text>
-            <TouchableOpacity 
+            <TouchableOpacity
               style={styles.cardButton}
               onPress={() => navigation.navigate('CustomerManagement')}
             >
@@ -86,9 +88,10 @@ const AdminDashboard = ({ navigation }: { navigation: any }) => {
           <View style={styles.card}>
             <Text style={styles.cardTitle}>Sales</Text>
             <Text style={styles.cardDescription}>
-              Process sales transactions, scan barcodes, and manage customer purchases.
+              Process sales transactions, scan barcodes, and manage customer
+              purchases.
             </Text>
-            <TouchableOpacity 
+            <TouchableOpacity
               style={styles.cardButton}
               onPress={() => navigation.navigate('Sales')}
             >
@@ -96,57 +99,57 @@ const AdminDashboard = ({ navigation }: { navigation: any }) => {
             </TouchableOpacity>
           </View>
 
-                     <View style={styles.card}>
-             <Text style={styles.cardTitle}>Sales Analytics</Text>
-             <Text style={styles.cardDescription}>
-               View comprehensive sales reports and analytics
-             </Text>
-             <TouchableOpacity 
-               style={styles.cardButton}
-               onPress={() => navigation.navigate('SalesAnalytics')}
-             >
-               <Text style={styles.cardButtonText}>View Analytics</Text>
-             </TouchableOpacity>
-           </View>
+          <View style={styles.card}>
+            <Text style={styles.cardTitle}>Sales Analytics</Text>
+            <Text style={styles.cardDescription}>
+              View comprehensive sales reports and analytics
+            </Text>
+            <TouchableOpacity
+              style={styles.cardButton}
+              onPress={() => navigation.navigate('SalesAnalytics')}
+            >
+              <Text style={styles.cardButtonText}>View Analytics</Text>
+            </TouchableOpacity>
+          </View>
 
-           <View style={styles.card}>
-             <Text style={styles.cardTitle}>Sales Forecasting</Text>
-             <Text style={styles.cardDescription}>
-               Predictive analytics for inventory planning and demand forecasting
-             </Text>
-             <TouchableOpacity 
-               style={styles.cardButton}
-               onPress={() => navigation.navigate('SalesForecasting')}
-             >
-               <Text style={styles.cardButtonText}>View Forecast</Text>
-             </TouchableOpacity>
-           </View>
+          <View style={styles.card}>
+            <Text style={styles.cardTitle}>Sales Forecasting</Text>
+            <Text style={styles.cardDescription}>
+              Predictive analytics for inventory planning and demand forecasting
+            </Text>
+            <TouchableOpacity
+              style={styles.cardButton}
+              onPress={() => navigation.navigate('SalesForecasting')}
+            >
+              <Text style={styles.cardButtonText}>View Forecast</Text>
+            </TouchableOpacity>
+          </View>
 
-                     <View style={styles.card}>
-             <Text style={styles.cardTitle}>Inventory Management</Text>
-             <Text style={styles.cardDescription}>
-               Manage stock levels and inventory
-             </Text>
-             <TouchableOpacity 
-               style={styles.cardButton}
-               onPress={() => navigation.navigate('Inventory')}
-             >
-               <Text style={styles.cardButtonText}>Manage Inventory</Text>
-             </TouchableOpacity>
-           </View>
+          <View style={styles.card}>
+            <Text style={styles.cardTitle}>Inventory Management</Text>
+            <Text style={styles.cardDescription}>
+              Manage stock levels and inventory
+            </Text>
+            <TouchableOpacity
+              style={styles.cardButton}
+              onPress={() => navigation.navigate('Inventory')}
+            >
+              <Text style={styles.cardButtonText}>Manage Inventory</Text>
+            </TouchableOpacity>
+          </View>
 
-           <View style={styles.card}>
-             <Text style={styles.cardTitle}>Inventory Analytics</Text>
-             <Text style={styles.cardDescription}>
-               Advanced analytics, turnover analysis, and performance insights
-             </Text>
-             <TouchableOpacity 
-               style={styles.cardButton}
-               onPress={() => navigation.navigate('InventoryAnalytics')}
-             >
-               <Text style={styles.cardButtonText}>View Analytics</Text>
-             </TouchableOpacity>
-           </View>
+          <View style={styles.card}>
+            <Text style={styles.cardTitle}>Inventory Analytics</Text>
+            <Text style={styles.cardDescription}>
+              Advanced analytics, turnover analysis, and performance insights
+            </Text>
+            <TouchableOpacity
+              style={styles.cardButton}
+              onPress={() => navigation.navigate('InventoryAnalytics')}
+            >
+              <Text style={styles.cardButtonText}>View Analytics</Text>
+            </TouchableOpacity>
+          </View>
 
           <View style={styles.card}>
             <Text style={styles.cardTitle}>Stock Alerts</Text>
@@ -154,7 +157,7 @@ const AdminDashboard = ({ navigation }: { navigation: any }) => {
               Monitor low stock items and receive alerts when products need
               restocking.
             </Text>
-            <TouchableOpacity 
+            <TouchableOpacity
               style={styles.cardButton}
               onPress={handleStockAlerts}
             >
@@ -167,7 +170,7 @@ const AdminDashboard = ({ navigation }: { navigation: any }) => {
             <Text style={styles.cardDescription}>
               Quick access to common tasks and frequently used features.
             </Text>
-            <TouchableOpacity 
+            <TouchableOpacity
               style={styles.cardButton}
               onPress={handleQuickActions}
             >
@@ -175,96 +178,98 @@ const AdminDashboard = ({ navigation }: { navigation: any }) => {
             </TouchableOpacity>
           </View>
 
-                     <View style={styles.card}>
-             <Text style={styles.cardTitle}>Reports & Analytics</Text>
-             <Text style={styles.cardDescription}>
-               Generate comprehensive business reports and export data
-             </Text>
-             <TouchableOpacity 
-               style={styles.cardButton}
-               onPress={() => navigation.navigate('ReportsDashboard')}
-             >
-               <Text style={styles.cardButtonText}>View Reports</Text>
-             </TouchableOpacity>
-           </View>
+          <View style={styles.card}>
+            <Text style={styles.cardTitle}>Reports & Analytics</Text>
+            <Text style={styles.cardDescription}>
+              Generate comprehensive business reports and export data
+            </Text>
+            <TouchableOpacity
+              style={styles.cardButton}
+              onPress={() => navigation.navigate('ReportsDashboard')}
+            >
+              <Text style={styles.cardButtonText}>View Reports</Text>
+            </TouchableOpacity>
+          </View>
 
-           <View style={styles.card}>
-             <Text style={styles.cardTitle}>User Management</Text>
-             <Text style={styles.cardDescription}>
-               Manage users, roles, and permissions
-             </Text>
-             <TouchableOpacity 
-               style={styles.cardButton}
-               onPress={() => navigation.navigate('UserManagement')}
-             >
-               <Text style={styles.cardButtonText}>Manage Users</Text>
-             </TouchableOpacity>
-           </View>
+          <View style={styles.card}>
+            <Text style={styles.cardTitle}>User Management</Text>
+            <Text style={styles.cardDescription}>
+              Manage users, roles, and permissions
+            </Text>
+            <TouchableOpacity
+              style={styles.cardButton}
+              onPress={() => navigation.navigate('UserManagement')}
+            >
+              <Text style={styles.cardButtonText}>Manage Users</Text>
+            </TouchableOpacity>
+          </View>
 
-           <View style={styles.card}>
-             <Text style={styles.cardTitle}>User Activity Log</Text>
-             <Text style={styles.cardDescription}>
-               Monitor user activities and system events
-             </Text>
-             <TouchableOpacity 
-               style={styles.cardButton}
-               onPress={() => navigation.navigate('UserActivity')}
-             >
-               <Text style={styles.cardButtonText}>View Activity</Text>
-             </TouchableOpacity>
-           </View>
+          <View style={styles.card}>
+            <Text style={styles.cardTitle}>User Activity Log</Text>
+            <Text style={styles.cardDescription}>
+              Monitor user activities and system events
+            </Text>
+            <TouchableOpacity
+              style={styles.cardButton}
+              onPress={() => navigation.navigate('UserActivity')}
+            >
+              <Text style={styles.cardButtonText}>View Activity</Text>
+            </TouchableOpacity>
+          </View>
 
-           <View style={styles.card}>
-             <Text style={styles.cardTitle}>Permission Management</Text>
-             <Text style={styles.cardDescription}>
-               Configure role-based access controls and permissions
-             </Text>
-             <TouchableOpacity 
-               style={styles.cardButton}
-               onPress={() => navigation.navigate('PermissionManagement')}
-             >
-               <Text style={styles.cardButtonText}>Manage Permissions</Text>
-             </TouchableOpacity>
-           </View>
+          <View style={styles.card}>
+            <Text style={styles.cardTitle}>Permission Management</Text>
+            <Text style={styles.cardDescription}>
+              Configure role-based access controls and permissions
+            </Text>
+            <TouchableOpacity
+              style={styles.cardButton}
+              onPress={() => navigation.navigate('PermissionManagement')}
+            >
+              <Text style={styles.cardButtonText}>Manage Permissions</Text>
+            </TouchableOpacity>
+          </View>
 
-           <View style={styles.card}>
-             <Text style={styles.cardTitle}>Security Settings</Text>
-             <Text style={styles.cardDescription}>
-               Configure security policies, password requirements, and access controls
-             </Text>
-             <TouchableOpacity 
-               style={styles.cardButton}
-               onPress={() => navigation.navigate('SecuritySettings')}
-             >
-               <Text style={styles.cardButtonText}>Security Settings</Text>
-             </TouchableOpacity>
-           </View>
+          <View style={styles.card}>
+            <Text style={styles.cardTitle}>Security Settings</Text>
+            <Text style={styles.cardDescription}>
+              Configure security policies, password requirements, and access
+              controls
+            </Text>
+            <TouchableOpacity
+              style={styles.cardButton}
+              onPress={() => navigation.navigate('SecuritySettings')}
+            >
+              <Text style={styles.cardButtonText}>Security Settings</Text>
+            </TouchableOpacity>
+          </View>
 
-           <View style={styles.card}>
-             <Text style={styles.cardTitle}>Advanced Analytics</Text>
-             <Text style={styles.cardDescription}>
-               Real-time business intelligence, predictive analytics, and performance insights
-             </Text>
-             <TouchableOpacity 
-               style={styles.cardButton}
-               onPress={() => navigation.navigate('AdvancedAnalytics')}
-             >
-               <Text style={styles.cardButtonText}>View Analytics</Text>
-             </TouchableOpacity>
-           </View>
+          <View style={styles.card}>
+            <Text style={styles.cardTitle}>Advanced Analytics</Text>
+            <Text style={styles.cardDescription}>
+              Real-time business intelligence, predictive analytics, and
+              performance insights
+            </Text>
+            <TouchableOpacity
+              style={styles.cardButton}
+              onPress={() => navigation.navigate('AdvancedAnalytics')}
+            >
+              <Text style={styles.cardButtonText}>View Analytics</Text>
+            </TouchableOpacity>
+          </View>
 
-           <View style={styles.card}>
-             <Text style={styles.cardTitle}>System Settings</Text>
-             <Text style={styles.cardDescription}>
-               Configure system-wide settings
-             </Text>
-             <TouchableOpacity 
-               style={styles.cardButton}
-               onPress={() => navigation.navigate('SystemSettings')}
-             >
-               <Text style={styles.cardButtonText}>Settings</Text>
-             </TouchableOpacity>
-           </View>
+          <View style={styles.card}>
+            <Text style={styles.cardTitle}>System Settings</Text>
+            <Text style={styles.cardDescription}>
+              Configure system-wide settings
+            </Text>
+            <TouchableOpacity
+              style={styles.cardButton}
+              onPress={() => navigation.navigate('SystemSettings')}
+            >
+              <Text style={styles.cardButtonText}>Settings</Text>
+            </TouchableOpacity>
+          </View>
         </View>
 
         <TouchableOpacity style={styles.signOutButton} onPress={handleSignOut}>

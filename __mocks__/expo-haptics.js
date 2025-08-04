@@ -11,4 +11,4 @@ const mockHaptics = {
   selectionAsync: jest.fn(() => Promise.resolve()),
 };
 
-export default mockHaptics; 
+export default mockHaptics;

@@ -11,7 +11,11 @@ import {
   RefreshControl,
   ScrollView,
 } from 'react-native';
-import { supabase, SalesTransaction, SalesHistoryFilters } from '../../lib/supabase';
+import {
+  supabase,
+  SalesTransaction,
+  SalesHistoryFilters,
+} from '../../lib/supabase';
 import Icon from '../../components/Icon';
 import { formatCurrency, formatDate } from '../../lib/utils';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -22,16 +26,22 @@ interface SalesHistoryScreenProps {
   navigation: any;
 }
 
-const SalesHistoryScreen: React.FC<SalesHistoryScreenProps> = ({ navigation }) => {
+const SalesHistoryScreen: React.FC<SalesHistoryScreenProps> = ({
+  navigation,
+}) => {
   const [transactions, setTransactions] = useState<SalesTransaction[]>([]);
-  const [filteredTransactions, setFilteredTransactions] = useState<SalesTransaction[]>([]);
+  const [filteredTransactions, setFilteredTransactions] = useState<
+    SalesTransaction[]
+  >([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [filters, setFilters] = useState<SalesHistoryFilters>({
     limit: 50,
     offset: 0,
   });
-  const [statusFilter, setStatusFilter] = useState<'all' | 'queued' | 'synced' | 'failed'>('all');
+  const [statusFilter, setStatusFilter] = useState<
+    'all' | 'queued' | 'synced' | 'failed'
+  >('all');
 
   useEffect(() => {
     loadTransactions();
@@ -46,7 +56,7 @@ const SalesHistoryScreen: React.FC<SalesHistoryScreenProps> = ({ navigation }) =
     try {
       // Load from local storage first
       const localTransactions = await loadLocalTransactions();
-      
+
       // Try to load from Supabase
       let remoteTransactions: SalesTransaction[] = [];
       try {
@@ -55,7 +65,10 @@ const SalesHistoryScreen: React.FC<SalesHistoryScreenProps> = ({ navigation }) =
           .select('*')
           .order('created_at', { ascending: false })
           .limit(filters.limit || 50)
-          .range(filters.offset || 0, (filters.offset || 0) + (filters.limit || 50) - 1);
+          .range(
+            filters.offset || 0,
+            (filters.offset || 0) + (filters.limit || 50) - 1
+          );
 
         if (error) throw error;
         remoteTransactions = data || [];
@@ -64,7 +77,10 @@ const SalesHistoryScreen: React.FC<SalesHistoryScreenProps> = ({ navigation }) =
       }
 
       // Merge local and remote transactions
-      const mergedTransactions = mergeTransactions(localTransactions, remoteTransactions);
+      const mergedTransactions = mergeTransactions(
+        localTransactions,
+        remoteTransactions
+      );
       setTransactions(mergedTransactions);
     } catch (error) {
       console.error('Failed to load transactions:', error);
@@ -84,9 +100,12 @@ const SalesHistoryScreen: React.FC<SalesHistoryScreenProps> = ({ navigation }) =
     }
   };
 
-  const mergeTransactions = (local: SalesTransaction[], remote: SalesTransaction[]): SalesTransaction[] => {
+  const mergeTransactions = (
+    local: SalesTransaction[],
+    remote: SalesTransaction[]
+  ): SalesTransaction[] => {
     const merged = [...local, ...remote];
-    
+
     // Remove duplicates based on ID
     const uniqueMap = new Map();
     merged.forEach(transaction => {
@@ -94,10 +113,11 @@ const SalesHistoryScreen: React.FC<SalesHistoryScreenProps> = ({ navigation }) =
         uniqueMap.set(transaction.id, transaction);
       }
     });
-    
+
     // Sort by created_at descending
-    return Array.from(uniqueMap.values()).sort((a, b) => 
-      new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    return Array.from(uniqueMap.values()).sort(
+      (a, b) =>
+        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
     );
   };
 
@@ -105,7 +125,9 @@ const SalesHistoryScreen: React.FC<SalesHistoryScreenProps> = ({ navigation }) =
     let filtered = transactions;
 
     if (statusFilter !== 'all') {
-      filtered = filtered.filter(transaction => transaction.status === statusFilter);
+      filtered = filtered.filter(
+        transaction => transaction.status === statusFilter
+      );
     }
 
     setFilteredTransactions(filtered);
@@ -149,7 +171,7 @@ const SalesHistoryScreen: React.FC<SalesHistoryScreenProps> = ({ navigation }) =
       'Total (formatted)',
       'Status',
       'Items Count',
-      'Items JSON'
+      'Items JSON',
     ];
 
     const rows = transactions.map(transaction => [
@@ -159,7 +181,7 @@ const SalesHistoryScreen: React.FC<SalesHistoryScreenProps> = ({ navigation }) =
       formatCurrency(transaction.total),
       transaction.status,
       transaction.items.length.toString(),
-      JSON.stringify(transaction.items)
+      JSON.stringify(transaction.items),
     ]);
 
     const csvContent = [headers, ...rows]
@@ -200,18 +222,23 @@ const SalesHistoryScreen: React.FC<SalesHistoryScreenProps> = ({ navigation }) =
       style={styles.transactionItem}
       onPress={() => {
         // TODO: Navigate to transaction details
-        Alert.alert('Transaction Details', `ID: ${item.id}\nTotal: ${formatCurrency(item.total)}`);
+        Alert.alert(
+          'Transaction Details',
+          `ID: ${item.id}\nTotal: ${formatCurrency(item.total)}`
+        );
       }}
     >
       <View style={styles.transactionHeader}>
         <Text style={styles.transactionId}>{item.id.slice(0, 8)}...</Text>
         <View style={styles.statusContainer}>
-          <Icon 
-            name={getStatusIcon(item.status)} 
-            size={16} 
-            color={getStatusColor(item.status)} 
+          <Icon
+            name={getStatusIcon(item.status)}
+            size={16}
+            color={getStatusColor(item.status)}
           />
-          <Text style={[styles.statusText, { color: getStatusColor(item.status) }]}>
+          <Text
+            style={[styles.statusText, { color: getStatusColor(item.status) }]}
+          >
             {item.status}
           </Text>
         </View>
@@ -231,25 +258,33 @@ const SalesHistoryScreen: React.FC<SalesHistoryScreenProps> = ({ navigation }) =
           {item.items.length} item{item.items.length !== 1 ? 's' : ''}
         </Text>
         <Text style={styles.itemsPreview}>
-          {item.items.slice(0, 2).map(item => item.product_name).join(', ')}
+          {item.items
+            .slice(0, 2)
+            .map(item => item.product_name)
+            .join(', ')}
           {item.items.length > 2 && '...'}
         </Text>
       </View>
     </TouchableOpacity>
   );
 
-  const renderFilterButton = (status: 'all' | 'queued' | 'synced' | 'failed', label: string) => (
+  const renderFilterButton = (
+    status: 'all' | 'queued' | 'synced' | 'failed',
+    label: string
+  ) => (
     <TouchableOpacity
       style={[
         styles.filterButton,
-        statusFilter === status && styles.filterButtonActive
+        statusFilter === status && styles.filterButtonActive,
       ]}
       onPress={() => setStatusFilter(status)}
     >
-      <Text style={[
-        styles.filterButtonText,
-        statusFilter === status && styles.filterButtonTextActive
-      ]}>
+      <Text
+        style={[
+          styles.filterButtonText,
+          statusFilter === status && styles.filterButtonTextActive,
+        ]}
+      >
         {label}
       </Text>
     </TouchableOpacity>
@@ -259,7 +294,7 @@ const SalesHistoryScreen: React.FC<SalesHistoryScreenProps> = ({ navigation }) =
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#007AFF" />
+          <ActivityIndicator size='large' color='#007AFF' />
           <Text style={styles.loadingText}>Loading sales history...</Text>
         </View>
       </SafeAreaView>
@@ -274,14 +309,11 @@ const SalesHistoryScreen: React.FC<SalesHistoryScreenProps> = ({ navigation }) =
           style={styles.backButton}
           onPress={() => navigation.goBack()}
         >
-          <Icon name="arrow-back" size={24} color="#007AFF" />
+          <Icon name='arrow-back' size={24} color='#007AFF' />
         </TouchableOpacity>
         <Text style={styles.title}>Sales History</Text>
-        <TouchableOpacity
-          style={styles.exportButton}
-          onPress={exportToCSV}
-        >
-          <Icon name="download" size={24} color="#007AFF" />
+        <TouchableOpacity style={styles.exportButton} onPress={exportToCSV}>
+          <Icon name='download' size={24} color='#007AFF' />
         </TouchableOpacity>
       </View>
 
@@ -299,7 +331,7 @@ const SalesHistoryScreen: React.FC<SalesHistoryScreenProps> = ({ navigation }) =
       <FlatList
         data={filteredTransactions}
         renderItem={renderTransaction}
-        keyExtractor={(item) => item.id}
+        keyExtractor={item => item.id}
         style={styles.transactionsList}
         refreshControl={
           <RefreshControl
@@ -310,13 +342,12 @@ const SalesHistoryScreen: React.FC<SalesHistoryScreenProps> = ({ navigation }) =
         }
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
-            <Icon name="receipt" size={48} color="#C7C7CC" />
+            <Icon name='receipt' size={48} color='#C7C7CC' />
             <Text style={styles.emptyText}>No transactions found</Text>
             <Text style={styles.emptySubtext}>
-              {statusFilter === 'all' 
+              {statusFilter === 'all'
                 ? 'No sales transactions yet'
-                : `No ${statusFilter} transactions found`
-              }
+                : `No ${statusFilter} transactions found`}
             </Text>
           </View>
         }
@@ -471,4 +502,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default SalesHistoryScreen; 
+export default SalesHistoryScreen;

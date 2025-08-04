@@ -4,6 +4,7 @@ import { createStackNavigator } from '@react-navigation/stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Text } from 'react-native';
 import { useAuthStore } from '../store/authStore';
+import { ErrorBoundary } from '../components/ErrorBoundaryComponents';
 
 // Auth Screens
 import LoginScreen from '../screens/auth/LoginScreen';
@@ -82,93 +83,111 @@ const TabIcon = ({
 // Admin Tab Navigator
 const AdminTabNavigator = () => {
   return (
-    <Tab.Navigator
-      screenOptions={({ route }) => ({
-        tabBarIcon: ({ focused: _focused, color, size }) => {
-          let iconName = 'settings';
-          if (route.name === 'Inventory') {
-            iconName = 'cube';
-          }
-          return <TabIcon name={iconName} size={size} color={color} />;
-        },
-        tabBarActiveTintColor: '#007AFF',
-        tabBarInactiveTintColor: 'gray',
-        headerShown: false,
-      })}
+    <ErrorBoundary
+      errorTitle='Dashboard Error'
+      errorMessage='There was an issue loading the admin dashboard. Please try again.'
+      onError={error => console.error('Admin dashboard error:', error)}
     >
-      <Tab.Screen
-        name='Admin'
-        component={AdminDashboard}
-        options={{ title: 'Admin' }}
-      />
-      <Tab.Screen
-        name='Inventory'
-        component={InventoryListScreen}
-        options={{ title: 'Inventory' }}
-      />
-    </Tab.Navigator>
+      <Tab.Navigator
+        screenOptions={({ route }) => ({
+          tabBarIcon: ({ focused: _focused, color, size }) => {
+            let iconName = 'settings';
+            if (route.name === 'Inventory') {
+              iconName = 'cube';
+            }
+            return <TabIcon name={iconName} size={size} color={color} />;
+          },
+          tabBarActiveTintColor: '#007AFF',
+          tabBarInactiveTintColor: 'gray',
+          headerShown: false,
+        })}
+      >
+        <Tab.Screen
+          name='Admin'
+          component={AdminDashboard}
+          options={{ title: 'Admin' }}
+        />
+        <Tab.Screen
+          name='Inventory'
+          component={InventoryListScreen}
+          options={{ title: 'Inventory' }}
+        />
+      </Tab.Navigator>
+    </ErrorBoundary>
   );
 };
 
 // Staff Tab Navigator
 const StaffTabNavigator = () => {
   return (
-    <Tab.Navigator
-      screenOptions={({ route }) => ({
-        tabBarIcon: ({ focused: _focused, color, size }) => {
-          let iconName = 'person';
-          if (route.name === 'Inventory') {
-            iconName = 'cube';
-          }
-          return <TabIcon name={iconName} size={size} color={color} />;
-        },
-        tabBarActiveTintColor: '#007AFF',
-        tabBarInactiveTintColor: 'gray',
-        headerShown: false,
-      })}
+    <ErrorBoundary
+      errorTitle='Dashboard Error'
+      errorMessage='There was an issue loading the staff dashboard. Please try again.'
+      onError={error => console.error('Staff dashboard error:', error)}
     >
-      <Tab.Screen
-        name='Staff'
-        component={StaffDashboard}
-        options={{ title: 'Staff' }}
-      />
-      <Tab.Screen
-        name='Inventory'
-        component={InventoryListScreen}
-        options={{ title: 'Inventory' }}
-      />
-    </Tab.Navigator>
+      <Tab.Navigator
+        screenOptions={({ route }) => ({
+          tabBarIcon: ({ focused: _focused, color, size }) => {
+            let iconName = 'person';
+            if (route.name === 'Inventory') {
+              iconName = 'cube';
+            }
+            return <TabIcon name={iconName} size={size} color={color} />;
+          },
+          tabBarActiveTintColor: '#007AFF',
+          tabBarInactiveTintColor: 'gray',
+          headerShown: false,
+        })}
+      >
+        <Tab.Screen
+          name='Staff'
+          component={StaffDashboard}
+          options={{ title: 'Staff' }}
+        />
+        <Tab.Screen
+          name='Inventory'
+          component={InventoryListScreen}
+          options={{ title: 'Inventory' }}
+        />
+      </Tab.Navigator>
+    </ErrorBoundary>
   );
 };
 
 // Viewer Tab Navigator
 const ViewerTabNavigator = () => {
   return (
-    <Tab.Navigator
-      screenOptions={({ route }) => ({
-        tabBarIcon: ({ focused: _focused, color, size }) => {
-          let iconName = 'eye';
-          if (route.name === 'Inventory') {
-            iconName = 'cube';
-          }
-          return <TabIcon name={iconName} size={size} color={color} />;
-        },
-        tabBarActiveTintColor: '#007AFF',
-        tabBarInactiveTintColor: 'gray',
-        headerShown: false,
-      })}
+    <ErrorBoundary
+      errorTitle='Dashboard Error'
+      errorMessage='There was an issue loading the viewer dashboard. Please try again.'
+      onError={error => console.error('Viewer dashboard error:', error)}
     >
-      <Tab.Screen
-        name='Viewer'
-        component={ViewerDashboard}
-        options={{ title: 'Viewer' }}
-      />
-      <Tab.Screen
-        name='Inventory'
-        component={InventoryListScreen}
-        options={{ title: 'Inventory' }}
-      />
-    </Tab.Navigator>
+      <Tab.Navigator
+        screenOptions={({ route }) => ({
+          tabBarIcon: ({ focused: _focused, color, size }) => {
+            let iconName = 'eye';
+            if (route.name === 'Inventory') {
+              iconName = 'cube';
+            }
+            return <TabIcon name={iconName} size={size} color={color} />;
+          },
+          tabBarActiveTintColor: '#007AFF',
+          tabBarInactiveTintColor: 'gray',
+          headerShown: false,
+        })}
+      >
+        <Tab.Screen
+          name='Viewer'
+          component={ViewerDashboard}
+          options={{ title: 'Viewer' }}
+        />
+        <Tab.Screen
+          name='Inventory'
+          component={InventoryListScreen}
+          options={{ title: 'Inventory' }}
+        />
+      </Tab.Navigator>
+    </ErrorBoundary>
   );
 };
 
@@ -192,176 +211,182 @@ const AppNavigator = () => {
   }
 
   return (
-    <NavigationContainer>
-      <Stack.Navigator screenOptions={{ headerShown: false }}>
-        {/* Main role-based screens */}
-        {userRole === 'admin' && (
-          <Stack.Screen name='AdminMain' component={AdminTabNavigator} />
-        )}
-        {userRole === 'staff' && (
-          <Stack.Screen name='StaffMain' component={StaffTabNavigator} />
-        )}
-        {userRole === 'viewer' && (
-          <Stack.Screen name='ViewerMain' component={ViewerTabNavigator} />
-        )}
+    <ErrorBoundary
+      errorTitle='Navigation Error'
+      errorMessage='There was an issue with navigation. Please restart the app if the problem persists.'
+      onError={error => console.error('Navigation error:', error)}
+    >
+      <NavigationContainer>
+        <Stack.Navigator screenOptions={{ headerShown: false }}>
+          {/* Main role-based screens */}
+          {userRole === 'admin' && (
+            <Stack.Screen name='AdminMain' component={AdminTabNavigator} />
+          )}
+          {userRole === 'staff' && (
+            <Stack.Screen name='StaffMain' component={StaffTabNavigator} />
+          )}
+          {userRole === 'viewer' && (
+            <Stack.Screen name='ViewerMain' component={ViewerTabNavigator} />
+          )}
 
-        {/* Inventory screens - accessible from any role */}
-        <Stack.Screen
-          name='AddProduct'
-          component={InventoryFormScreen}
-          options={{
-            headerShown: true,
-            title: 'Add Product',
-            headerBackTitle: 'Back',
-          }}
-        />
-        <Stack.Screen
-          name='EditProduct'
-          component={InventoryFormScreen}
-          options={{
-            headerShown: true,
-            title: 'Edit Product',
-            headerBackTitle: 'Back',
-          }}
-        />
-        <Stack.Screen
-          name='ProductDetail'
-          component={InventoryDetailScreen}
-          options={{
-            headerShown: true,
-            title: 'Product Details',
-            headerBackTitle: 'Back',
-          }}
-        />
-        <Stack.Screen
-          name='BarcodeScanner'
-          component={BarcodeScannerScreen}
-          options={{
-            headerShown: false,
-            presentation: 'modal',
-          }}
-        />
-        <Stack.Screen
-          name='StockAlerts'
-          component={StockAlertScreen}
-          options={{
-            headerShown: false,
-          }}
-        />
-        <Stack.Screen
-          name='Sales'
-          component={SalesScreen}
-          options={{
-            headerShown: false,
-          }}
-        />
-        <Stack.Screen
-          name='SalesHistory'
-          component={SalesHistoryScreen}
-          options={{
-            headerShown: false,
-          }}
-        />
-        <Stack.Screen
-          name='SalesAnalytics'
-          component={SalesAnalyticsScreen}
-          options={{
-            headerShown: false,
-          }}
-        />
-        <Stack.Screen
-          name='CustomerManagement'
-          component={CustomerManagementScreen}
-          options={{
-            headerShown: false,
-          }}
-        />
-        <Stack.Screen
-          name='InventoryAnalytics'
-          component={InventoryAnalyticsScreen}
-          options={{
-            headerShown: false,
-          }}
-        />
-        <Stack.Screen
-          name='SalesForecasting'
-          component={SalesForecastingScreen}
-          options={{
-            headerShown: false,
-          }}
-        />
-        <Stack.Screen
-          name='ReportsDashboard'
-          component={ReportsDashboardScreen}
-          options={{
-            headerShown: false,
-          }}
-        />
-        <Stack.Screen
-          name='UserManagement'
-          component={UserManagementScreen}
-          options={{
-            headerShown: false,
-          }}
-        />
-        <Stack.Screen
-          name='UserActivity'
-          component={UserActivityScreen}
-          options={{
-            headerShown: false,
-          }}
-        />
-        <Stack.Screen
-          name='PermissionManagement'
-          component={PermissionManagementScreen}
-          options={{
-            headerShown: false,
-          }}
-        />
-        <Stack.Screen
-          name='SecuritySettings'
-          component={SecuritySettingsScreen}
-          options={{
-            headerShown: false,
-          }}
-        />
-        <Stack.Screen
-          name='SystemSettings'
-          component={SystemSettingsScreen}
-          options={{
-            headerShown: false,
-          }}
-        />
-        <Stack.Screen
-          name='AdvancedAnalytics'
-          component={AdvancedAnalyticsScreen}
-          options={{
-            headerShown: false,
-          }}
-        />
-        <Stack.Screen
-          name='RealTimeDashboard'
-          component={RealTimeDashboardScreen}
-          options={{
-            headerShown: false,
-          }}
-        />
-        <Stack.Screen
-          name='Reports'
-          component={ReportsDashboardScreen}
-          options={{
-            headerShown: false,
-          }}
-        />
-        <Stack.Screen
-          name='Settings'
-          component={SecuritySettingsScreen}
-          options={{
-            headerShown: false,
-          }}
-        />
-      </Stack.Navigator>
-    </NavigationContainer>
+          {/* Inventory screens - accessible from any role */}
+          <Stack.Screen
+            name='AddProduct'
+            component={InventoryFormScreen}
+            options={{
+              headerShown: true,
+              title: 'Add Product',
+              headerBackTitle: 'Back',
+            }}
+          />
+          <Stack.Screen
+            name='EditProduct'
+            component={InventoryFormScreen}
+            options={{
+              headerShown: true,
+              title: 'Edit Product',
+              headerBackTitle: 'Back',
+            }}
+          />
+          <Stack.Screen
+            name='ProductDetail'
+            component={InventoryDetailScreen}
+            options={{
+              headerShown: true,
+              title: 'Product Details',
+              headerBackTitle: 'Back',
+            }}
+          />
+          <Stack.Screen
+            name='BarcodeScanner'
+            component={BarcodeScannerScreen}
+            options={{
+              headerShown: false,
+              presentation: 'modal',
+            }}
+          />
+          <Stack.Screen
+            name='StockAlerts'
+            component={StockAlertScreen}
+            options={{
+              headerShown: false,
+            }}
+          />
+          <Stack.Screen
+            name='Sales'
+            component={SalesScreen}
+            options={{
+              headerShown: false,
+            }}
+          />
+          <Stack.Screen
+            name='SalesHistory'
+            component={SalesHistoryScreen}
+            options={{
+              headerShown: false,
+            }}
+          />
+          <Stack.Screen
+            name='SalesAnalytics'
+            component={SalesAnalyticsScreen}
+            options={{
+              headerShown: false,
+            }}
+          />
+          <Stack.Screen
+            name='CustomerManagement'
+            component={CustomerManagementScreen}
+            options={{
+              headerShown: false,
+            }}
+          />
+          <Stack.Screen
+            name='InventoryAnalytics'
+            component={InventoryAnalyticsScreen}
+            options={{
+              headerShown: false,
+            }}
+          />
+          <Stack.Screen
+            name='SalesForecasting'
+            component={SalesForecastingScreen}
+            options={{
+              headerShown: false,
+            }}
+          />
+          <Stack.Screen
+            name='ReportsDashboard'
+            component={ReportsDashboardScreen}
+            options={{
+              headerShown: false,
+            }}
+          />
+          <Stack.Screen
+            name='UserManagement'
+            component={UserManagementScreen}
+            options={{
+              headerShown: false,
+            }}
+          />
+          <Stack.Screen
+            name='UserActivity'
+            component={UserActivityScreen}
+            options={{
+              headerShown: false,
+            }}
+          />
+          <Stack.Screen
+            name='PermissionManagement'
+            component={PermissionManagementScreen}
+            options={{
+              headerShown: false,
+            }}
+          />
+          <Stack.Screen
+            name='SecuritySettings'
+            component={SecuritySettingsScreen}
+            options={{
+              headerShown: false,
+            }}
+          />
+          <Stack.Screen
+            name='SystemSettings'
+            component={SystemSettingsScreen}
+            options={{
+              headerShown: false,
+            }}
+          />
+          <Stack.Screen
+            name='AdvancedAnalytics'
+            component={AdvancedAnalyticsScreen}
+            options={{
+              headerShown: false,
+            }}
+          />
+          <Stack.Screen
+            name='RealTimeDashboard'
+            component={RealTimeDashboardScreen}
+            options={{
+              headerShown: false,
+            }}
+          />
+          <Stack.Screen
+            name='Reports'
+            component={ReportsDashboardScreen}
+            options={{
+              headerShown: false,
+            }}
+          />
+          <Stack.Screen
+            name='Settings'
+            component={SecuritySettingsScreen}
+            options={{
+              headerShown: false,
+            }}
+          />
+        </Stack.Navigator>
+      </NavigationContainer>
+    </ErrorBoundary>
   );
 };
 

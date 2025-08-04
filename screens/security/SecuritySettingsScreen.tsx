@@ -30,7 +30,8 @@ const SecuritySettingsScreen: React.FC<SecuritySettingsScreenProps> = ({
   const [settings, setSettings] = useState<SecuritySetting[]>([]);
   const [loading, setLoading] = useState(true);
   const [showEditModal, setShowEditModal] = useState(false);
-  const [selectedSetting, setSelectedSetting] = useState<SecuritySetting | null>(null);
+  const [selectedSetting, setSelectedSetting] =
+    useState<SecuritySetting | null>(null);
   const [editValue, setEditValue] = useState('');
 
   useEffect(() => {
@@ -60,7 +61,10 @@ const SecuritySettingsScreen: React.FC<SecuritySettingsScreenProps> = ({
     }
   };
 
-  const handleSettingToggle = async (setting: SecuritySetting, newValue: string) => {
+  const handleSettingToggle = async (
+    setting: SecuritySetting,
+    newValue: string
+  ) => {
     try {
       const { error } = await supabase
         .from('security_settings')
@@ -73,9 +77,9 @@ const SecuritySettingsScreen: React.FC<SecuritySettingsScreenProps> = ({
       }
 
       // Update local state
-      setSettings(prev => 
-        prev.map(s => 
-          s.setting_key === setting.setting_key 
+      setSettings(prev =>
+        prev.map(s =>
+          s.setting_key === setting.setting_key
             ? { ...s, setting_value: newValue }
             : s
         )
@@ -109,9 +113,9 @@ const SecuritySettingsScreen: React.FC<SecuritySettingsScreenProps> = ({
       }
 
       // Update local state
-      setSettings(prev => 
-        prev.map(s => 
-          s.setting_key === selectedSetting.setting_key 
+      setSettings(prev =>
+        prev.map(s =>
+          s.setting_key === selectedSetting.setting_key
             ? { ...s, setting_value: editValue }
             : s
         )
@@ -130,7 +134,8 @@ const SecuritySettingsScreen: React.FC<SecuritySettingsScreenProps> = ({
   const getSettingCategory = (key: string) => {
     if (key.startsWith('password_')) return 'Password Policy';
     if (key.startsWith('session_')) return 'Session Management';
-    if (key.startsWith('max_') || key.startsWith('block_')) return 'Login Security';
+    if (key.startsWith('max_') || key.startsWith('block_'))
+      return 'Login Security';
     if (key.startsWith('require_2fa')) return 'Two-Factor Authentication';
     if (key.startsWith('api_rate_')) return 'API Security';
     return 'General';
@@ -155,46 +160,65 @@ const SecuritySettingsScreen: React.FC<SecuritySettingsScreenProps> = ({
   };
 
   const isBooleanSetting = (key: string) => {
-    return key.includes('require_') || key.includes('enable_') || key.includes('allow_');
+    return (
+      key.includes('require_') ||
+      key.includes('enable_') ||
+      key.includes('allow_')
+    );
   };
 
   const isNumericSetting = (key: string) => {
-    return key.includes('length') || key.includes('timeout') || key.includes('attempts') || 
-           key.includes('duration') || key.includes('limit') || key.includes('window');
+    return (
+      key.includes('length') ||
+      key.includes('timeout') ||
+      key.includes('attempts') ||
+      key.includes('duration') ||
+      key.includes('limit') ||
+      key.includes('window')
+    );
   };
 
-  const groupedSettings = settings.reduce((acc, setting) => {
-    const category = getSettingCategory(setting.setting_key);
-    if (!acc[category]) {
-      acc[category] = [];
-    }
-    acc[category].push(setting);
-    return acc;
-  }, {} as { [key: string]: SecuritySetting[] });
+  const groupedSettings = settings.reduce(
+    (acc, setting) => {
+      const category = getSettingCategory(setting.setting_key);
+      if (!acc[category]) {
+        acc[category] = [];
+      }
+      acc[category].push(setting);
+      return acc;
+    },
+    {} as { [key: string]: SecuritySetting[] }
+  );
 
   const renderSettingItem = (setting: SecuritySetting) => (
     <View key={setting.setting_key} style={styles.settingItem}>
       <View style={styles.settingInfo}>
         <View style={styles.settingHeader}>
-          <Icon 
-            name={getSettingIcon(setting.setting_key)} 
-            size={20} 
-            color={getSettingColor(setting.setting_key)} 
+          <Icon
+            name={getSettingIcon(setting.setting_key)}
+            size={20}
+            color={getSettingColor(setting.setting_key)}
           />
           <Text style={styles.settingKey}>
-            {setting.setting_key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+            {setting.setting_key
+              .replace(/_/g, ' ')
+              .replace(/\b\w/g, l => l.toUpperCase())}
           </Text>
         </View>
         <Text style={styles.settingDescription}>{setting.description}</Text>
       </View>
-      
+
       <View style={styles.settingControl}>
         {isBooleanSetting(setting.setting_key) ? (
           <Switch
             value={setting.setting_value === 'true'}
-            onValueChange={(value) => handleSettingToggle(setting, value.toString())}
+            onValueChange={value =>
+              handleSettingToggle(setting, value.toString())
+            }
             trackColor={{ false: '#e2e8f0', true: '#2563eb' }}
-            thumbColor={setting.setting_value === 'true' ? '#ffffff' : '#f4f3f4'}
+            thumbColor={
+              setting.setting_value === 'true' ? '#ffffff' : '#f4f3f4'
+            }
           />
         ) : (
           <TouchableOpacity
@@ -202,7 +226,9 @@ const SecuritySettingsScreen: React.FC<SecuritySettingsScreenProps> = ({
             onPress={() => handleEditSetting(setting)}
           >
             <Text style={styles.editButtonText}>
-              {isNumericSetting(setting.setting_key) ? setting.setting_value : 'Edit'}
+              {isNumericSetting(setting.setting_key)
+                ? setting.setting_value
+                : 'Edit'}
             </Text>
           </TouchableOpacity>
         )}
@@ -210,11 +236,16 @@ const SecuritySettingsScreen: React.FC<SecuritySettingsScreenProps> = ({
     </View>
   );
 
-  const renderCategorySection = (category: string, categorySettings: SecuritySetting[]) => (
+  const renderCategorySection = (
+    category: string,
+    categorySettings: SecuritySetting[]
+  ) => (
     <View key={category} style={styles.categorySection}>
       <View style={styles.categoryHeader}>
         <Text style={styles.categoryTitle}>{category}</Text>
-        <Text style={styles.categoryCount}>{categorySettings.length} settings</Text>
+        <Text style={styles.categoryCount}>
+          {categorySettings.length} settings
+        </Text>
       </View>
       {categorySettings.map(renderSettingItem)}
     </View>
@@ -227,14 +258,14 @@ const SecuritySettingsScreen: React.FC<SecuritySettingsScreenProps> = ({
           style={styles.backButton}
           onPress={() => navigation.goBack()}
         >
-          <Icon name="arrow-back" size={24} color="white" />
+          <Icon name='arrow-back' size={24} color='white' />
         </TouchableOpacity>
         <Text style={styles.title}>Security Settings</Text>
         <TouchableOpacity
           style={styles.refreshButton}
           onPress={fetchSecuritySettings}
         >
-          <Icon name="sync" size={24} color="white" />
+          <Icon name='sync' size={24} color='white' />
         </TouchableOpacity>
       </View>
 
@@ -264,34 +295,36 @@ const SecuritySettingsScreen: React.FC<SecuritySettingsScreenProps> = ({
       </ScrollView>
 
       {/* Edit Setting Modal */}
-      <Modal
-        visible={showEditModal}
-        animationType="slide"
-        transparent={true}
-      >
+      <Modal visible={showEditModal} animationType='slide' transparent={true}>
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>Edit Setting</Text>
-            
+
             {selectedSetting && (
               <>
                 <Text style={styles.settingLabel}>
-                  {selectedSetting.setting_key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                  {selectedSetting.setting_key
+                    .replace(/_/g, ' ')
+                    .replace(/\b\w/g, l => l.toUpperCase())}
                 </Text>
                 <Text style={styles.settingDescription}>
                   {selectedSetting.description}
                 </Text>
-                
+
                 <TextInput
                   style={styles.input}
                   value={editValue}
                   onChangeText={setEditValue}
-                  placeholder="Enter new value"
-                  keyboardType={isNumericSetting(selectedSetting.setting_key) ? 'numeric' : 'default'}
+                  placeholder='Enter new value'
+                  keyboardType={
+                    isNumericSetting(selectedSetting.setting_key)
+                      ? 'numeric'
+                      : 'default'
+                  }
                 />
               </>
             )}
-            
+
             <View style={styles.modalActions}>
               <TouchableOpacity
                 style={styles.cancelButton}
@@ -521,4 +554,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default SecuritySettingsScreen; 
+export default SecuritySettingsScreen;

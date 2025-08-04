@@ -61,8 +61,10 @@ const UserManagementScreen: React.FC<UserManagementScreenProps> = ({
   const fetchUsers = async () => {
     try {
       setLoading(true);
-      const { data: { user } } = await supabase.auth.getUser();
-      
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
       if (!user) {
         Alert.alert('Error', 'You must be logged in to manage users');
         return;
@@ -100,7 +102,7 @@ const UserManagementScreen: React.FC<UserManagementScreenProps> = ({
           is_active: true,
           created_at: new Date(Date.now() - 172800000).toISOString(),
           last_login: new Date(Date.now() - 7200000).toISOString(),
-        }
+        },
       ];
 
       setUsers(mockUsers);
@@ -139,7 +141,10 @@ const UserManagementScreen: React.FC<UserManagementScreenProps> = ({
       };
 
       setUsers(prev => [...prev, mockNewUser]);
-      Alert.alert('Success', 'User created successfully (mock data). In production, they would receive an email to set their password.');
+      Alert.alert(
+        'Success',
+        'User created successfully (mock data). In production, they would receive an email to set their password.'
+      );
       setShowAddUserModal(false);
       setNewUser({ email: '', full_name: '', phone: '', role: 'staff' });
     } catch (error) {
@@ -180,7 +185,10 @@ const UserManagementScreen: React.FC<UserManagementScreenProps> = ({
         return;
       }
 
-      Alert.alert('Success', `User ${isActive ? 'activated' : 'deactivated'} successfully`);
+      Alert.alert(
+        'Success',
+        `User ${isActive ? 'activated' : 'deactivated'} successfully`
+      );
       fetchUsers();
     } catch (error) {
       console.error('Error updating user status:', error);
@@ -188,10 +196,11 @@ const UserManagementScreen: React.FC<UserManagementScreenProps> = ({
     }
   };
 
-  const filteredUsers = users.filter(user =>
-    user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    user.full_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    user.role.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredUsers = users.filter(
+    user =>
+      user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      user.full_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      user.role.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const getRoleColor = (role: string) => {
@@ -209,7 +218,12 @@ const UserManagementScreen: React.FC<UserManagementScreenProps> = ({
       <View style={styles.userInfo}>
         <View style={styles.userHeader}>
           <Text style={styles.userName}>{item.full_name || 'No name'}</Text>
-          <View style={[styles.roleBadge, { backgroundColor: getRoleColor(item.role) }]}>
+          <View
+            style={[
+              styles.roleBadge,
+              { backgroundColor: getRoleColor(item.role) },
+            ]}
+          >
             <Text style={styles.roleText}>{getRoleLabel(item.role)}</Text>
           </View>
         </View>
@@ -224,17 +238,20 @@ const UserManagementScreen: React.FC<UserManagementScreenProps> = ({
           </Text>
         )}
       </View>
-      
+
       <View style={styles.userActions}>
         <TouchableOpacity
-          style={[styles.statusButton, { backgroundColor: item.is_active ? '#059669' : '#dc2626' }]}
+          style={[
+            styles.statusButton,
+            { backgroundColor: item.is_active ? '#059669' : '#dc2626' },
+          ]}
           onPress={() => handleToggleUserStatus(item.id, !item.is_active)}
         >
           <Text style={styles.statusButtonText}>
             {item.is_active ? 'Active' : 'Inactive'}
           </Text>
         </TouchableOpacity>
-        
+
         <TouchableOpacity
           style={styles.editButton}
           onPress={() => {
@@ -242,7 +259,7 @@ const UserManagementScreen: React.FC<UserManagementScreenProps> = ({
             setShowEditUserModal(true);
           }}
         >
-          <Icon name="edit" size={16} color="#2563eb" />
+          <Icon name='edit' size={16} color='#2563eb' />
         </TouchableOpacity>
       </View>
     </View>
@@ -255,22 +272,22 @@ const UserManagementScreen: React.FC<UserManagementScreenProps> = ({
           style={styles.backButton}
           onPress={() => navigation.goBack()}
         >
-          <Icon name="arrow-back" size={24} color="white" />
+          <Icon name='arrow-back' size={24} color='white' />
         </TouchableOpacity>
         <Text style={styles.title}>User Management</Text>
         <TouchableOpacity
           style={styles.addButton}
           onPress={() => setShowAddUserModal(true)}
         >
-          <Icon name="add" size={24} color="white" />
+          <Icon name='add' size={24} color='white' />
         </TouchableOpacity>
       </View>
 
       <View style={styles.searchContainer}>
-        <Icon name="search" size={20} color="#6b7280" />
+        <Icon name='search' size={20} color='#6b7280' />
         <TextInput
           style={styles.searchInput}
-          placeholder="Search users..."
+          placeholder='Search users...'
           value={searchQuery}
           onChangeText={setSearchQuery}
         />
@@ -298,14 +315,14 @@ const UserManagementScreen: React.FC<UserManagementScreenProps> = ({
       <FlatList
         data={filteredUsers}
         renderItem={renderUserItem}
-        keyExtractor={(item) => item.id}
+        keyExtractor={item => item.id}
         style={styles.userList}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
         ListEmptyComponent={
           <View style={styles.emptyState}>
-            <Icon name="users" size={48} color="#9ca3af" />
+            <Icon name='users' size={48} color='#9ca3af' />
             <Text style={styles.emptyText}>No users found</Text>
           </View>
         }
@@ -314,60 +331,65 @@ const UserManagementScreen: React.FC<UserManagementScreenProps> = ({
       {/* Add User Modal */}
       <Modal
         visible={showAddUserModal}
-        animationType="slide"
+        animationType='slide'
         transparent={true}
       >
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>Add New User</Text>
-            
+
             <TextInput
               style={styles.input}
-              placeholder="Email"
+              placeholder='Email'
               value={newUser.email}
-              onChangeText={(text) => setNewUser({ ...newUser, email: text })}
-              keyboardType="email-address"
-              autoCapitalize="none"
+              onChangeText={text => setNewUser({ ...newUser, email: text })}
+              keyboardType='email-address'
+              autoCapitalize='none'
             />
-            
+
             <TextInput
               style={styles.input}
-              placeholder="Full Name"
+              placeholder='Full Name'
               value={newUser.full_name}
-              onChangeText={(text) => setNewUser({ ...newUser, full_name: text })}
+              onChangeText={text => setNewUser({ ...newUser, full_name: text })}
             />
-            
+
             <TextInput
               style={styles.input}
-              placeholder="Phone (optional)"
+              placeholder='Phone (optional)'
               value={newUser.phone}
-              onChangeText={(text) => setNewUser({ ...newUser, phone: text })}
-              keyboardType="phone-pad"
+              onChangeText={text => setNewUser({ ...newUser, phone: text })}
+              keyboardType='phone-pad'
             />
-            
+
             <Text style={styles.label}>Role:</Text>
             <ScrollView horizontal showsHorizontalScrollIndicator={false}>
               <View style={styles.roleSelector}>
-                {roles.map((role) => (
+                {roles.map(role => (
                   <TouchableOpacity
                     key={role.key}
                     style={[
                       styles.roleOption,
                       newUser.role === role.key && styles.roleOptionSelected,
                     ]}
-                    onPress={() => setNewUser({ ...newUser, role: role.key as any })}
+                    onPress={() =>
+                      setNewUser({ ...newUser, role: role.key as any })
+                    }
                   >
-                    <Text style={[
-                      styles.roleOptionText,
-                      newUser.role === role.key && styles.roleOptionTextSelected,
-                    ]}>
+                    <Text
+                      style={[
+                        styles.roleOptionText,
+                        newUser.role === role.key &&
+                          styles.roleOptionTextSelected,
+                      ]}
+                    >
                       {role.label}
                     </Text>
                   </TouchableOpacity>
                 ))}
               </View>
             </ScrollView>
-            
+
             <View style={styles.modalActions}>
               <TouchableOpacity
                 style={styles.cancelButton}
@@ -389,37 +411,45 @@ const UserManagementScreen: React.FC<UserManagementScreenProps> = ({
       {/* Edit User Modal */}
       <Modal
         visible={showEditUserModal}
-        animationType="slide"
+        animationType='slide'
         transparent={true}
       >
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>Edit User Role</Text>
-            
+
             {selectedUser && (
               <>
                 <Text style={styles.userInfoText}>
                   {selectedUser.full_name} ({selectedUser.email})
                 </Text>
-                
-                <Text style={styles.label}>Current Role: {getRoleLabel(selectedUser.role)}</Text>
-                
+
+                <Text style={styles.label}>
+                  Current Role: {getRoleLabel(selectedUser.role)}
+                </Text>
+
                 <Text style={styles.label}>Change to:</Text>
                 <ScrollView horizontal showsHorizontalScrollIndicator={false}>
                   <View style={styles.roleSelector}>
-                    {roles.map((role) => (
+                    {roles.map(role => (
                       <TouchableOpacity
                         key={role.key}
                         style={[
                           styles.roleOption,
-                          selectedUser.role === role.key && styles.roleOptionSelected,
+                          selectedUser.role === role.key &&
+                            styles.roleOptionSelected,
                         ]}
-                        onPress={() => handleUpdateUserRole(selectedUser.id, role.key)}
+                        onPress={() =>
+                          handleUpdateUserRole(selectedUser.id, role.key)
+                        }
                       >
-                        <Text style={[
-                          styles.roleOptionText,
-                          selectedUser.role === role.key && styles.roleOptionTextSelected,
-                        ]}>
+                        <Text
+                          style={[
+                            styles.roleOptionText,
+                            selectedUser.role === role.key &&
+                              styles.roleOptionTextSelected,
+                          ]}
+                        >
                           {role.label}
                         </Text>
                       </TouchableOpacity>
@@ -428,7 +458,7 @@ const UserManagementScreen: React.FC<UserManagementScreenProps> = ({
                 </ScrollView>
               </>
             )}
-            
+
             <View style={styles.modalActions}>
               <TouchableOpacity
                 style={styles.cancelButton}
@@ -706,4 +736,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default UserManagementScreen; 
+export default UserManagementScreen;

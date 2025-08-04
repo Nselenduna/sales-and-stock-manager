@@ -29,7 +29,9 @@ const ConflictResolutionModal: React.FC<ConflictResolutionModalProps> = ({
   onResolve,
   conflict,
 }) => {
-  const [selectedResolution, setSelectedResolution] = useState<'local' | 'remote' | 'merged'>('merged');
+  const [selectedResolution, setSelectedResolution] = useState<
+    'local' | 'remote' | 'merged'
+  >('merged');
 
   const handleResolve = () => {
     Alert.alert(
@@ -54,7 +56,9 @@ const ConflictResolutionModal: React.FC<ConflictResolutionModalProps> = ({
 
     return (
       <View key={field} style={styles.fieldContainer}>
-        <Text style={styles.fieldName}>{field.charAt(0).toUpperCase() + field.slice(1)}</Text>
+        <Text style={styles.fieldName}>
+          {field.charAt(0).toUpperCase() + field.slice(1)}
+        </Text>
         <View style={styles.valueContainer}>
           <View style={styles.valueBox}>
             <Text style={styles.valueLabel}>Local</Text>
@@ -72,7 +76,7 @@ const ConflictResolutionModal: React.FC<ConflictResolutionModalProps> = ({
   return (
     <Modal
       visible={visible}
-      animationType="slide"
+      animationType='slide'
       transparent={true}
       onRequestClose={onClose}
     >
@@ -81,7 +85,8 @@ const ConflictResolutionModal: React.FC<ConflictResolutionModalProps> = ({
           <View style={styles.header}>
             <Text style={styles.title}>Conflict Resolution</Text>
             <Text style={styles.subtitle}>
-              Changes to "{conflict.product.name}" conflict with the server version
+              Changes to "{conflict.product.name}" conflict with the server
+              version
             </Text>
           </View>
 
@@ -91,7 +96,7 @@ const ConflictResolutionModal: React.FC<ConflictResolutionModalProps> = ({
 
             <View style={styles.resolutionSection}>
               <Text style={styles.sectionTitle}>Choose Resolution:</Text>
-              
+
               <TouchableOpacity
                 style={[
                   styles.optionButton,
@@ -137,7 +142,10 @@ const ConflictResolutionModal: React.FC<ConflictResolutionModalProps> = ({
             <TouchableOpacity style={styles.cancelButton} onPress={onClose}>
               <Text style={styles.cancelButtonText}>Cancel</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.resolveButton} onPress={handleResolve}>
+            <TouchableOpacity
+              style={styles.resolveButton}
+              onPress={handleResolve}
+            >
               <Text style={styles.resolveButtonText}>Resolve Conflict</Text>
             </TouchableOpacity>
           </View>
@@ -271,4 +279,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default ConflictResolutionModal; 
+export default ConflictResolutionModal;

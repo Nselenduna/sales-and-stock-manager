@@ -9,7 +9,10 @@ import {
   Alert,
   RefreshControl,
 } from 'react-native';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from 'react-native-safe-area-context';
 import { supabase } from '../../lib/supabase';
 import Icon from '../../components/Icon';
 import { formatCurrency } from '../../lib/utils';
@@ -31,7 +34,9 @@ interface SalesAnalyticsScreenProps {
   navigation: any;
 }
 
-const SalesAnalyticsScreen: React.FC<SalesAnalyticsScreenProps> = ({ navigation }) => {
+const SalesAnalyticsScreen: React.FC<SalesAnalyticsScreenProps> = ({
+  navigation,
+}) => {
   const [metrics, setMetrics] = useState<SalesMetrics>({
     totalRevenue: 0,
     totalSales: 0,
@@ -41,7 +46,9 @@ const SalesAnalyticsScreen: React.FC<SalesAnalyticsScreenProps> = ({ navigation 
   });
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [timeRange, setTimeRange] = useState<'today' | 'week' | 'month'>('today');
+  const [timeRange, setTimeRange] = useState<'today' | 'week' | 'month'>(
+    'today'
+  );
   const insets = useSafeAreaInsets();
 
   useEffect(() => {
@@ -52,7 +59,7 @@ const SalesAnalyticsScreen: React.FC<SalesAnalyticsScreenProps> = ({ navigation 
     setIsLoading(true);
     try {
       const startDate = getStartDate(timeRange);
-      
+
       // Get sales transactions for the time range
       const { data: transactions, error } = await supabase
         .from('sales')
@@ -63,22 +70,28 @@ const SalesAnalyticsScreen: React.FC<SalesAnalyticsScreenProps> = ({ navigation 
       if (error) throw error;
 
       const salesData = transactions || [];
-      
+
       // Calculate metrics
-      const totalRevenue = salesData.reduce((sum, sale) => sum + (sale.total || 0), 0);
+      const totalRevenue = salesData.reduce(
+        (sum, sale) => sum + (sale.total || 0),
+        0
+      );
       const totalSales = salesData.length;
       const averageOrderValue = totalSales > 0 ? totalRevenue / totalSales : 0;
-      
+
       // Get top selling product
-      const productSales = new Map<string, { name: string; quantity: number; revenue: number }>();
-      
+      const productSales = new Map<
+        string,
+        { name: string; quantity: number; revenue: number }
+      >();
+
       salesData.forEach(sale => {
         if (sale.items && Array.isArray(sale.items)) {
           sale.items.forEach((item: any) => {
-            const existing = productSales.get(item.product_id) || { 
-              name: item.product_name || 'Unknown', 
-              quantity: 0, 
-              revenue: 0 
+            const existing = productSales.get(item.product_id) || {
+              name: item.product_name || 'Unknown',
+              quantity: 0,
+              revenue: 0,
             };
             existing.quantity += item.quantity || 0;
             existing.revenue += (item.unit_price || 0) * (item.quantity || 0);
@@ -87,14 +100,16 @@ const SalesAnalyticsScreen: React.FC<SalesAnalyticsScreenProps> = ({ navigation 
         }
       });
 
-      const topProduct = Array.from(productSales.values())
-        .sort((a, b) => b.quantity - a.quantity)[0] || null;
+      const topProduct =
+        Array.from(productSales.values()).sort(
+          (a, b) => b.quantity - a.quantity
+        )[0] || null;
 
       // Get recent transactions (last 24 hours)
       const yesterday = new Date();
       yesterday.setDate(yesterday.getDate() - 1);
-      const recentTransactions = salesData.filter(sale => 
-        new Date(sale.created_at) > yesterday
+      const recentTransactions = salesData.filter(
+        sale => new Date(sale.created_at) > yesterday
       ).length;
 
       setMetrics({
@@ -134,49 +149,72 @@ const SalesAnalyticsScreen: React.FC<SalesAnalyticsScreenProps> = ({ navigation 
     setIsRefreshing(false);
   };
 
-  const renderMetricCard = (title: string, value: string, subtitle?: string, icon?: string, color?: string) => (
+  const renderMetricCard = (
+    title: string,
+    value: string,
+    subtitle?: string,
+    icon?: string,
+    color?: string
+  ) => (
     <View style={[styles.metricCard, { borderLeftColor: color || '#007AFF' }]}>
       <View style={styles.metricHeader}>
         {icon && <Icon name={icon} size={20} color={color || '#007AFF'} />}
         <Text style={styles.metricTitle}>{title}</Text>
       </View>
-      <Text style={[styles.metricValue, { color: color || '#007AFF' }]}>{value}</Text>
+      <Text style={[styles.metricValue, { color: color || '#007AFF' }]}>
+        {value}
+      </Text>
       {subtitle && <Text style={styles.metricSubtitle}>{subtitle}</Text>}
     </View>
   );
 
-  const renderTimeRangeButton = (range: 'today' | 'week' | 'month', label: string) => (
+  const renderTimeRangeButton = (
+    range: 'today' | 'week' | 'month',
+    label: string
+  ) => (
     <TouchableOpacity
-      style={[styles.timeRangeButton, timeRange === range && styles.timeRangeButtonActive]}
+      style={[
+        styles.timeRangeButton,
+        timeRange === range && styles.timeRangeButtonActive,
+      ]}
       onPress={() => setTimeRange(range)}
     >
-      <Text style={[styles.timeRangeButtonText, timeRange === range && styles.timeRangeButtonTextActive]}>
+      <Text
+        style={[
+          styles.timeRangeButtonText,
+          timeRange === range && styles.timeRangeButtonTextActive,
+        ]}
+      >
         {label}
       </Text>
     </TouchableOpacity>
   );
 
   const renderHeader = () => (
-    <View 
+    <View
       style={[
         styles.header,
-        isUIPolishEnabled('safeAreaInsets') && { paddingTop: insets.top + 10 }
+        isUIPolishEnabled('safeAreaInsets') && { paddingTop: insets.top + 10 },
       ]}
     >
       <View style={styles.headerContent}>
         <Text style={styles.headerTitle}>Sales Analytics</Text>
         <Text style={styles.headerSubtitle}>
-          {timeRange === 'today' ? 'Today' : timeRange === 'week' ? 'Last 7 Days' : 'Last 30 Days'}
+          {timeRange === 'today'
+            ? 'Today'
+            : timeRange === 'week'
+              ? 'Last 7 Days'
+              : 'Last 30 Days'}
         </Text>
       </View>
       <TouchableOpacity
         style={styles.backButton}
         onPress={() => navigation.goBack()}
         accessible={true}
-        accessibilityLabel="Go back"
-        accessibilityRole="button"
+        accessibilityLabel='Go back'
+        accessibilityRole='button'
       >
-        <Icon name="arrow-back" size={24} color="white" />
+        <Icon name='arrow-back' size={24} color='white' />
       </TouchableOpacity>
     </View>
   );
@@ -186,7 +224,7 @@ const SalesAnalyticsScreen: React.FC<SalesAnalyticsScreenProps> = ({ navigation 
       <SafeAreaView style={styles.container}>
         {renderHeader()}
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#007AFF" />
+          <ActivityIndicator size='large' color='#007AFF' />
           <Text style={styles.loadingText}>Loading analytics...</Text>
         </View>
       </SafeAreaView>
@@ -196,7 +234,7 @@ const SalesAnalyticsScreen: React.FC<SalesAnalyticsScreenProps> = ({ navigation 
   return (
     <SafeAreaView style={styles.container}>
       {renderHeader()}
-      
+
       <ScrollView
         style={styles.content}
         refreshControl={
@@ -219,7 +257,7 @@ const SalesAnalyticsScreen: React.FC<SalesAnalyticsScreenProps> = ({ navigation 
             'receipt',
             '#34C759'
           )}
-          
+
           {renderMetricCard(
             'Total Sales',
             metrics.totalSales.toString(),
@@ -227,7 +265,7 @@ const SalesAnalyticsScreen: React.FC<SalesAnalyticsScreenProps> = ({ navigation 
             'shopping-cart',
             '#007AFF'
           )}
-          
+
           {renderMetricCard(
             'Average Order',
             formatCurrency(metrics.averageOrderValue),
@@ -235,7 +273,7 @@ const SalesAnalyticsScreen: React.FC<SalesAnalyticsScreenProps> = ({ navigation 
             'price',
             '#FF9500'
           )}
-          
+
           {renderMetricCard(
             'Recent Sales',
             metrics.recentTransactions.toString(),
@@ -249,18 +287,22 @@ const SalesAnalyticsScreen: React.FC<SalesAnalyticsScreenProps> = ({ navigation 
         {metrics.topProduct && (
           <View style={styles.topProductCard}>
             <View style={styles.topProductHeader}>
-              <Icon name="cube" size={24} color="#FF3B30" />
+              <Icon name='cube' size={24} color='#FF3B30' />
               <Text style={styles.topProductTitle}>Top Selling Product</Text>
             </View>
             <Text style={styles.topProductName}>{metrics.topProduct.name}</Text>
             <View style={styles.topProductStats}>
               <View style={styles.topProductStat}>
                 <Text style={styles.topProductStatLabel}>Quantity Sold</Text>
-                <Text style={styles.topProductStatValue}>{metrics.topProduct.quantity}</Text>
+                <Text style={styles.topProductStatValue}>
+                  {metrics.topProduct.quantity}
+                </Text>
               </View>
               <View style={styles.topProductStat}>
                 <Text style={styles.topProductStatLabel}>Revenue</Text>
-                <Text style={styles.topProductStatValue}>{formatCurrency(metrics.topProduct.revenue)}</Text>
+                <Text style={styles.topProductStatValue}>
+                  {formatCurrency(metrics.topProduct.revenue)}
+                </Text>
               </View>
             </View>
           </View>
@@ -274,31 +316,31 @@ const SalesAnalyticsScreen: React.FC<SalesAnalyticsScreenProps> = ({ navigation 
               style={styles.quickActionButton}
               onPress={() => navigation.navigate('Sales')}
             >
-              <Icon name="shopping-cart" size={24} color="#007AFF" />
+              <Icon name='shopping-cart' size={24} color='#007AFF' />
               <Text style={styles.quickActionText}>New Sale</Text>
             </TouchableOpacity>
-            
+
             <TouchableOpacity
               style={styles.quickActionButton}
               onPress={() => navigation.navigate('SalesHistory')}
             >
-              <Icon name="history" size={24} color="#FF9500" />
+              <Icon name='history' size={24} color='#FF9500' />
               <Text style={styles.quickActionText}>Sales History</Text>
             </TouchableOpacity>
-            
+
             <TouchableOpacity
               style={styles.quickActionButton}
               onPress={() => navigation.navigate('StockAlerts')}
             >
-              <Icon name="alert-circle" size={24} color="#FF3B30" />
+              <Icon name='alert-circle' size={24} color='#FF3B30' />
               <Text style={styles.quickActionText}>Stock Alerts</Text>
             </TouchableOpacity>
-            
+
             <TouchableOpacity
               style={styles.quickActionButton}
               onPress={() => navigation.navigate('Inventory')}
             >
-              <Icon name="list" size={24} color="#34C759" />
+              <Icon name='list' size={24} color='#34C759' />
               <Text style={styles.quickActionText}>Inventory</Text>
             </TouchableOpacity>
           </View>
@@ -504,4 +546,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default SalesAnalyticsScreen; 
+export default SalesAnalyticsScreen;

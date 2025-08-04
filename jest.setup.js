@@ -55,7 +55,9 @@ jest.mock('@supabase/supabase-js', () => ({
 
 // Mock NetInfo
 jest.mock('@react-native-community/netinfo', () => ({
-  fetch: jest.fn(() => Promise.resolve({ isConnected: true, isInternetReachable: true })),
+  fetch: jest.fn(() =>
+    Promise.resolve({ isConnected: true, isInternetReachable: true })
+  ),
   addEventListener: jest.fn(),
   removeEventListener: jest.fn(),
 }));

@@ -1,5 +1,12 @@
 import React, { useState, useCallback } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Image, ActivityIndicator } from 'react-native';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  Image,
+  ActivityIndicator,
+} from 'react-native';
 import Icon from './Icon';
 import { Product } from '../lib/supabase';
 
@@ -97,32 +104,29 @@ const ProductCard: React.FC<ProductCardProps> = ({
           <View style={styles.imageContainer}>
             {!imageLoaded && !imageError && (
               <View style={styles.imagePlaceholder}>
-                <ActivityIndicator size="small" color="#007AFF" />
+                <ActivityIndicator size='small' color='#007AFF' />
               </View>
             )}
             {!imageError && (
               <Image
                 source={{ uri: product.image_url }}
-                style={[
-                  styles.productImage,
-                  { opacity: imageLoaded ? 1 : 0 }
-                ]}
+                style={[styles.productImage, { opacity: imageLoaded ? 1 : 0 }]}
                 onLoad={handleImageLoad}
                 onError={handleImageError}
                 accessible={true}
                 accessibilityLabel={`Product image for ${product.name}`}
-                resizeMode="cover"
+                resizeMode='cover'
               />
             )}
             {imageError && (
               <View style={styles.imagePlaceholder}>
-                <Icon name="image" size={24} color="#ccc" />
+                <Icon name='image' size={24} color='#ccc' />
                 <Text style={styles.imageErrorText}>Image unavailable</Text>
               </View>
             )}
           </View>
         )}
-        
+
         <View style={styles.stockInfo}>
           <View
             style={[styles.stockIndicator, { backgroundColor: stockColor }]}

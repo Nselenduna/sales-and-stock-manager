@@ -68,7 +68,7 @@ export const generateReceipt = (saleData: ReceiptData): string => {
   receipt += `Sale ID: ${sale_id}\n`;
   receipt += `Date: ${formatDate(date)}\n`;
   receipt += `Payment: ${formatPaymentMethod(payment_method)}\n`;
-  
+
   if (customer_name) {
     receipt += `Customer: ${customer_name}\n`;
   }
@@ -78,30 +78,30 @@ export const generateReceipt = (saleData: ReceiptData): string => {
   if (customer_phone) {
     receipt += `Phone: ${customer_phone}\n`;
   }
-  
+
   receipt += '\n';
 
   // Items
   receipt += 'ITEMS:\n';
   receipt += '-'.repeat(40) + '\n';
-  
+
   items.forEach((item, index) => {
     const itemNumber = (index + 1).toString().padStart(2, '0');
     const quantity = item.quantity.toString().padStart(3, ' ');
     const name = item.name.padEnd(20, ' ');
     const unitPrice = formatCurrency(item.unit_price).padStart(8, ' ');
     const totalPrice = formatCurrency(item.total_price).padStart(10, ' ');
-    
+
     receipt += `${itemNumber}. ${quantity}x ${name} ${unitPrice} ${totalPrice}\n`;
   });
-  
+
   receipt += '-'.repeat(40) + '\n';
 
   // Totals
   receipt += `Subtotal:${formatCurrency(subtotal).padStart(27, ' ')}\n`;
   receipt += `Tax:${formatCurrency(tax).padStart(31, ' ')}\n`;
   receipt += `TOTAL:${formatCurrency(total).padStart(29, ' ')}\n`;
-  
+
   receipt += '='.repeat(40) + '\n';
 
   // Notes
@@ -153,7 +153,9 @@ export const generateReceiptHTML = (saleData: ReceiptData): string => {
     return methodMap[method] || method;
   };
 
-  const itemsHTML = items.map((item, index) => `
+  const itemsHTML = items
+    .map(
+      (item, index) => `
     <tr>
       <td>${(index + 1).toString().padStart(2, '0')}</td>
       <td>${item.name}</td>
@@ -161,7 +163,9 @@ export const generateReceiptHTML = (saleData: ReceiptData): string => {
       <td>${formatCurrency(item.unit_price)}</td>
       <td>${formatCurrency(item.total_price)}</td>
     </tr>
-  `).join('');
+  `
+    )
+    .join('');
 
   return `
     <!DOCTYPE html>
@@ -267,12 +271,16 @@ export const generateReceiptHTML = (saleData: ReceiptData): string => {
         <div class="total"><strong>TOTAL:</strong> ${formatCurrency(total)}</div>
       </div>
       
-      ${notes ? `
+      ${
+        notes
+          ? `
         <div class="notes">
           <strong>Notes:</strong><br>
           ${notes}
         </div>
-      ` : ''}
+      `
+          : ''
+      }
       
       <div class="footer">
         <p>Thank you for your purchase!</p>
@@ -283,7 +291,9 @@ export const generateReceiptHTML = (saleData: ReceiptData): string => {
   `;
 };
 
-export const generateReceiptAccessibleText = (saleData: ReceiptData): string => {
+export const generateReceiptAccessibleText = (
+  saleData: ReceiptData
+): string => {
   const {
     sale_id,
     date,
@@ -317,8 +327,9 @@ export const generateReceiptAccessibleText = (saleData: ReceiptData): string => 
 
   let accessibleText = 'Receipt for sale ' + sale_id + '. ';
   accessibleText += 'Date: ' + formatDate(date) + '. ';
-  accessibleText += 'Payment method: ' + formatPaymentMethod(payment_method) + '. ';
-  
+  accessibleText +=
+    'Payment method: ' + formatPaymentMethod(payment_method) + '. ';
+
   if (customer_name) {
     accessibleText += 'Customer: ' + customer_name + '. ';
   }
@@ -334,4 +345,4 @@ export const generateReceiptAccessibleText = (saleData: ReceiptData): string => 
   accessibleText += 'Thank you for your purchase.';
 
   return accessibleText;
-}; 
+};

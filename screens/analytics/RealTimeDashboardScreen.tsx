@@ -144,12 +144,14 @@ const RealTimeDashboardScreen: React.FC = () => {
   };
 
   const updateLiveMetrics = () => {
-    setLiveMetrics(prev => prev.map(metric => ({
-      ...metric,
-      value: generateRandomValue(metric.title),
-      change: generateRandomChange(),
-      trend: generateRandomTrend(),
-    })));
+    setLiveMetrics(prev =>
+      prev.map(metric => ({
+        ...metric,
+        value: generateRandomValue(metric.title),
+        change: generateRandomChange(),
+        trend: generateRandomTrend(),
+      }))
+    );
   };
 
   const generateRandomValue = (title: string): string | number => {
@@ -179,8 +181,8 @@ const RealTimeDashboardScreen: React.FC = () => {
   };
 
   const markNotificationAsRead = (notificationId: string) => {
-    setNotifications(prev => 
-      prev.map(notif => 
+    setNotifications(prev =>
+      prev.map(notif =>
         notif.id === notificationId ? { ...notif, read: true } : notif
       )
     );
@@ -242,7 +244,7 @@ const RealTimeDashboardScreen: React.FC = () => {
     const now = new Date();
     const diffMs = now.getTime() - timestamp.getTime();
     const diffMins = Math.floor(diffMs / (1000 * 60));
-    
+
     if (diffMins < 1) return 'Just now';
     if (diffMins < 60) return `${diffMins}m ago`;
     const diffHours = Math.floor(diffMins / 60);
@@ -310,20 +312,23 @@ const RealTimeDashboardScreen: React.FC = () => {
       <View style={styles.header}>
         <View style={styles.headerTop}>
           <View style={styles.headerLeft}>
-            <TouchableOpacity style={styles.backButton} onPress={handleBackPress}>
-              <Icon name="arrow-back" size={24} color="#007AFF" />
+            <TouchableOpacity
+              style={styles.backButton}
+              onPress={handleBackPress}
+            >
+              <Icon name='arrow-back' size={24} color='#007AFF' />
             </TouchableOpacity>
             <Text style={styles.headerTitle}>Real-Time Dashboard</Text>
           </View>
           <View style={styles.statusIndicator}>
-            <Animated.View 
+            <Animated.View
               style={[
-                styles.statusDot, 
-                { 
+                styles.statusDot,
+                {
                   backgroundColor: isConnected ? '#4CAF50' : '#F44336',
-                  transform: [{ scale: pulseAnim }]
-                }
-              ]} 
+                  transform: [{ scale: pulseAnim }],
+                },
+              ]}
             />
             <Text style={styles.statusText}>
               {isConnected ? 'Live' : 'Offline'}
@@ -333,18 +338,24 @@ const RealTimeDashboardScreen: React.FC = () => {
         <Text style={styles.lastUpdate}>
           Last updated: {lastUpdate.toLocaleTimeString()}
         </Text>
-        
+
         {/* Navigation to other analytics screens */}
         <View style={styles.navigationRow}>
-          <TouchableOpacity style={styles.navButton} onPress={navigateToAdvancedAnalytics}>
-            <Icon name="analytics" size={20} color="#007AFF" />
+          <TouchableOpacity
+            style={styles.navButton}
+            onPress={navigateToAdvancedAnalytics}
+          >
+            <Icon name='analytics' size={20} color='#007AFF' />
             <Text style={styles.navButtonText}>Advanced Analytics</Text>
-            <Icon name="chevron-right" size={16} color="#007AFF" />
+            <Icon name='chevron-right' size={16} color='#007AFF' />
           </TouchableOpacity>
-          <TouchableOpacity style={styles.navButton} onPress={navigateToReports}>
-            <Icon name="reports" size={20} color="#007AFF" />
+          <TouchableOpacity
+            style={styles.navButton}
+            onPress={navigateToReports}
+          >
+            <Icon name='reports' size={20} color='#007AFF' />
             <Text style={styles.navButtonText}>Reports</Text>
-            <Icon name="chevron-right" size={16} color="#007AFF" />
+            <Icon name='chevron-right' size={16} color='#007AFF' />
           </TouchableOpacity>
         </View>
       </View>
@@ -354,29 +365,32 @@ const RealTimeDashboardScreen: React.FC = () => {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Live Metrics</Text>
           <View style={styles.metricsGrid}>
-            {liveMetrics.map((metric) => (
-              <TouchableOpacity 
-                key={metric.id} 
+            {liveMetrics.map(metric => (
+              <TouchableOpacity
+                key={metric.id}
                 style={styles.metricCard}
                 onPress={() => handleMetricPress(metric.id)}
               >
                 <View style={styles.metricHeader}>
                   <Text style={styles.metricTitle}>{metric.title}</Text>
-                  <Icon 
-                    name={getTrendIcon(metric.trend)} 
-                    size={16} 
-                    color={getTrendColor(metric.trend)} 
+                  <Icon
+                    name={getTrendIcon(metric.trend)}
+                    size={16}
+                    color={getTrendColor(metric.trend)}
                   />
                 </View>
                 <Text style={styles.metricValue}>{metric.value}</Text>
-                <Text style={[
-                  styles.metricChange,
-                  { color: getTrendColor(metric.trend) }
-                ]}>
-                  {metric.change > 0 ? '+' : ''}{metric.change.toFixed(1)}%
+                <Text
+                  style={[
+                    styles.metricChange,
+                    { color: getTrendColor(metric.trend) },
+                  ]}
+                >
+                  {metric.change > 0 ? '+' : ''}
+                  {metric.change.toFixed(1)}%
                 </Text>
                 <View style={styles.metricNavigation}>
-                  <Icon name="chevron-right" size={16} color="#007AFF" />
+                  <Icon name='chevron-right' size={16} color='#007AFF' />
                 </View>
               </TouchableOpacity>
             ))}
@@ -392,32 +406,34 @@ const RealTimeDashboardScreen: React.FC = () => {
             </TouchableOpacity>
           </View>
           <View style={styles.notificationsContainer}>
-            {notifications.map((notification) => (
+            {notifications.map(notification => (
               <TouchableOpacity
                 key={notification.id}
                 style={[
                   styles.notificationCard,
-                  !notification.read && styles.unreadNotification
+                  !notification.read && styles.unreadNotification,
                 ]}
                 onPress={() => markNotificationAsRead(notification.id)}
               >
                 <View style={styles.notificationIcon}>
-                  <Icon 
-                    name={getNotificationIcon(notification.type)} 
-                    size={20} 
-                    color={getNotificationColor(notification.type)} 
+                  <Icon
+                    name={getNotificationIcon(notification.type)}
+                    size={20}
+                    color={getNotificationColor(notification.type)}
                   />
                 </View>
                 <View style={styles.notificationContent}>
-                  <Text style={styles.notificationTitle}>{notification.title}</Text>
-                  <Text style={styles.notificationMessage}>{notification.message}</Text>
+                  <Text style={styles.notificationTitle}>
+                    {notification.title}
+                  </Text>
+                  <Text style={styles.notificationMessage}>
+                    {notification.message}
+                  </Text>
                   <Text style={styles.notificationTime}>
                     {formatTimeAgo(notification.timestamp)}
                   </Text>
                 </View>
-                {!notification.read && (
-                  <View style={styles.unreadDot} />
-                )}
+                {!notification.read && <View style={styles.unreadDot} />}
               </TouchableOpacity>
             ))}
           </View>
@@ -427,20 +443,32 @@ const RealTimeDashboardScreen: React.FC = () => {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Quick Actions</Text>
           <View style={styles.quickActionsGrid}>
-            <TouchableOpacity style={styles.quickActionButton} onPress={() => handleQuickAction('refresh')}>
-              <Icon name="refresh" size={24} color="#007AFF" />
+            <TouchableOpacity
+              style={styles.quickActionButton}
+              onPress={() => handleQuickAction('refresh')}
+            >
+              <Icon name='refresh' size={24} color='#007AFF' />
               <Text style={styles.quickActionText}>Refresh Data</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.quickActionButton} onPress={() => handleQuickAction('settings')}>
-              <Icon name="settings" size={24} color="#007AFF" />
+            <TouchableOpacity
+              style={styles.quickActionButton}
+              onPress={() => handleQuickAction('settings')}
+            >
+              <Icon name='settings' size={24} color='#007AFF' />
               <Text style={styles.quickActionText}>Settings</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.quickActionButton} onPress={() => handleQuickAction('export')}>
-              <Icon name="download" size={24} color="#007AFF" />
+            <TouchableOpacity
+              style={styles.quickActionButton}
+              onPress={() => handleQuickAction('export')}
+            >
+              <Icon name='download' size={24} color='#007AFF' />
               <Text style={styles.quickActionText}>Export</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.quickActionButton} onPress={() => handleQuickAction('help')}>
-              <Icon name="help" size={24} color="#007AFF" />
+            <TouchableOpacity
+              style={styles.quickActionButton}
+              onPress={() => handleQuickAction('help')}
+            >
+              <Icon name='help' size={24} color='#007AFF' />
               <Text style={styles.quickActionText}>Help</Text>
             </TouchableOpacity>
           </View>
@@ -658,4 +686,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default RealTimeDashboardScreen; 
+export default RealTimeDashboardScreen;

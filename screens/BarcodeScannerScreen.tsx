@@ -11,6 +11,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { barcodeScanner, BarcodeScanResult } from '../lib/barcodeScanner';
 import Icon from '../components/Icon';
+import { withErrorBoundary } from '../components/ErrorBoundaryComponents';
 
 // Conditional imports to prevent crashes during development
 let BarCodeScanner: any;
@@ -446,4 +447,16 @@ const styles = StyleSheet.create({
   },
 });
 
-export default BarcodeScannerScreen;
+export default withErrorBoundary(BarcodeScannerScreen, {
+  errorTitle: 'Scanner Error',
+  errorMessage:
+    'There was an issue with the barcode scanner. Please check camera permissions and try again.',
+  onError: (error, errorInfo) => {
+    console.error('Barcode scanner error:', {
+      error: error.message,
+      stack: error.stack,
+      componentStack: errorInfo.componentStack,
+    });
+    // TODO: Send to crash reporting service
+  },
+});

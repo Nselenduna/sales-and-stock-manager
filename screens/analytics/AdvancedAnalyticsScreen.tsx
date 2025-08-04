@@ -38,12 +38,18 @@ interface ChartData {
 
 const AdvancedAnalyticsScreen: React.FC = () => {
   const navigation = useNavigation();
-  const [analyticsData, setAnalyticsData] = useState<AnalyticsData | null>(null);
+  const [analyticsData, setAnalyticsData] = useState<AnalyticsData | null>(
+    null
+  );
   const [salesChartData, setSalesChartData] = useState<ChartData | null>(null);
-  const [productChartData, setProductChartData] = useState<ChartData | null>(null);
+  const [productChartData, setProductChartData] = useState<ChartData | null>(
+    null
+  );
   const [isLoading, setIsLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [selectedPeriod, setSelectedPeriod] = useState<'7d' | '30d' | '90d'>('30d');
+  const [selectedPeriod, setSelectedPeriod] = useState<'7d' | '30d' | '90d'>(
+    '30d'
+  );
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -53,11 +59,13 @@ const AdvancedAnalyticsScreen: React.FC = () => {
   const loadAnalyticsData = async () => {
     setIsLoading(true);
     setError(null);
-    
+
     try {
       // Get sales metrics from database
-      const { data: salesMetrics, error: salesError } = await supabase
-        .rpc('get_sales_metrics', { start_date: getStartDate() });
+      const { data: salesMetrics, error: salesError } = await supabase.rpc(
+        'get_sales_metrics',
+        { start_date: getStartDate() }
+      );
 
       if (salesError) {
         console.error('Error fetching sales metrics:', salesError);
@@ -65,16 +73,19 @@ const AdvancedAnalyticsScreen: React.FC = () => {
       }
 
       // Get inventory turnover data
-      const { data: turnoverData, error: turnoverError } = await supabase
-        .rpc('get_inventory_turnover', { start_date: getStartDate() });
+      const { data: turnoverData, error: turnoverError } = await supabase.rpc(
+        'get_inventory_turnover',
+        { start_date: getStartDate() }
+      );
 
       if (turnoverError) {
         console.error('Error fetching inventory turnover:', turnoverError);
       }
 
       // Get customer data
-      const { data: customerData, error: customerError } = await supabase
-        .rpc('get_customers_from_sales');
+      const { data: customerData, error: customerError } = await supabase.rpc(
+        'get_customers_from_sales'
+      );
 
       if (customerError) {
         console.error('Error fetching customer data:', customerError);
@@ -100,16 +111,16 @@ const AdvancedAnalyticsScreen: React.FC = () => {
       } else {
         // Use mock data as fallback
         const mockData: AnalyticsData = {
-          totalRevenue: 12500.00,
+          totalRevenue: 12500.0,
           totalSales: 45,
           averageOrderValue: 277.78,
           topProduct: 'Laptop',
-          topProductRevenue: 4500.00,
+          topProductRevenue: 4500.0,
           growthRate: 12.5,
           customerRetention: 78.3,
           inventoryTurnover: 4.2,
           profitMargin: 23.5,
-          salesForecast: 14200.00,
+          salesForecast: 14200.0,
         };
         setAnalyticsData(mockData);
         generateMockChartData();
@@ -143,15 +154,22 @@ const AdvancedAnalyticsScreen: React.FC = () => {
 
   const calculateCustomerRetention = (customerData?: any[]): number => {
     if (customerData && customerData.length > 0) {
-      const repeatCustomers = customerData.filter(c => (c.total_orders || 0) > 1).length;
-      return customerData.length > 0 ? (repeatCustomers / customerData.length) * 100 : 0;
+      const repeatCustomers = customerData.filter(
+        c => (c.total_orders || 0) > 1
+      ).length;
+      return customerData.length > 0
+        ? (repeatCustomers / customerData.length) * 100
+        : 0;
     }
     return Math.random() * 30 + 60; // 60-90% retention
   };
 
   const calculateInventoryTurnover = (turnoverData?: any[]): number => {
     if (turnoverData && turnoverData.length > 0) {
-      const avgTurnover = turnoverData.reduce((sum, item) => sum + (item.turnover_rate || 0), 0);
+      const avgTurnover = turnoverData.reduce(
+        (sum, item) => sum + (item.turnover_rate || 0),
+        0
+      );
       return turnoverData.length > 0 ? avgTurnover / turnoverData.length : 0;
     }
     return Math.random() * 5 + 2; // 2-7 times per year
@@ -166,27 +184,36 @@ const AdvancedAnalyticsScreen: React.FC = () => {
     if (analyticsData) {
       return analyticsData.totalRevenue * (1 + analyticsData.growthRate / 100);
     }
-    return 14200.00;
+    return 14200.0;
   };
 
   const generateChartData = (metrics: any) => {
     // Generate sales trend data
     const salesTrend: ChartData = {
       labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
-      datasets: [{
-        data: [metrics.total_revenue * 0.2, metrics.total_revenue * 0.25, metrics.total_revenue * 0.3, metrics.total_revenue * 0.25],
-        color: '#4CAF50'
-      }]
+      datasets: [
+        {
+          data: [
+            metrics.total_revenue * 0.2,
+            metrics.total_revenue * 0.25,
+            metrics.total_revenue * 0.3,
+            metrics.total_revenue * 0.25,
+          ],
+          color: '#4CAF50',
+        },
+      ],
     };
     setSalesChartData(salesTrend);
 
     // Generate product performance data
     const productPerformance: ChartData = {
       labels: ['Laptops', 'Phones', 'Tablets', 'Accessories'],
-      datasets: [{
-        data: [45, 30, 20, 15],
-        color: '#2196F3'
-      }]
+      datasets: [
+        {
+          data: [45, 30, 20, 15],
+          color: '#2196F3',
+        },
+      ],
     };
     setProductChartData(productPerformance);
   };
@@ -194,19 +221,23 @@ const AdvancedAnalyticsScreen: React.FC = () => {
   const generateMockChartData = () => {
     const salesTrend: ChartData = {
       labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
-      datasets: [{
-        data: [2500, 3100, 2800, 3600],
-        color: '#4CAF50'
-      }]
+      datasets: [
+        {
+          data: [2500, 3100, 2800, 3600],
+          color: '#4CAF50',
+        },
+      ],
     };
     setSalesChartData(salesTrend);
 
     const productPerformance: ChartData = {
       labels: ['Laptops', 'Phones', 'Tablets', 'Accessories'],
-      datasets: [{
-        data: [45, 30, 20, 15],
-        color: '#2196F3'
-      }]
+      datasets: [
+        {
+          data: [45, 30, 20, 15],
+          color: '#2196F3',
+        },
+      ],
     };
     setProductChartData(productPerformance);
   };
@@ -229,12 +260,15 @@ const AdvancedAnalyticsScreen: React.FC = () => {
     navigation.navigate('ReportDetail', {
       reportId: 'advanced-analytics',
       reportTitle: 'Advanced Analytics Report',
-      reportType: 'analytics'
+      reportType: 'analytics',
     });
   };
 
   const handleSettingsPress = () => {
-    Alert.alert('Analytics Settings', 'Analytics configuration options coming soon!');
+    Alert.alert(
+      'Analytics Settings',
+      'Analytics configuration options coming soon!'
+    );
   };
 
   const handleMetricPress = (title: string) => {
@@ -243,32 +277,35 @@ const AdvancedAnalyticsScreen: React.FC = () => {
         navigation.navigate('ReportDetail', {
           reportId: 'revenue-analysis',
           reportTitle: 'Revenue Analysis',
-          reportType: 'sales'
+          reportType: 'sales',
         });
         break;
       case 'Total Sales':
         navigation.navigate('ReportDetail', {
           reportId: 'sales-analysis',
           reportTitle: 'Sales Analysis',
-          reportType: 'sales'
+          reportType: 'sales',
         });
         break;
       case 'Customer Retention':
         navigation.navigate('ReportDetail', {
           reportId: 'customer-retention',
           reportTitle: 'Customer Retention Analysis',
-          reportType: 'analytics'
+          reportType: 'analytics',
         });
         break;
       case 'Inventory Turnover':
         navigation.navigate('ReportDetail', {
           reportId: 'inventory-turnover',
           reportTitle: 'Inventory Turnover Analysis',
-          reportType: 'inventory'
+          reportType: 'inventory',
         });
         break;
       default:
-        Alert.alert('Metric Details', `${title} detailed analysis coming soon!`);
+        Alert.alert(
+          'Metric Details',
+          `${title} detailed analysis coming soon!`
+        );
     }
   };
 
@@ -288,17 +325,27 @@ const AdvancedAnalyticsScreen: React.FC = () => {
     }
   };
 
-  const renderMetricCard = (title: string, value: string | number, subtitle?: string, color: string = '#4CAF50') => (
-    <TouchableOpacity style={styles.metricCard} onPress={() => handleMetricPress(title)}>
+  const renderMetricCard = (
+    title: string,
+    value: string | number,
+    subtitle?: string,
+    color: string = '#4CAF50'
+  ) => (
+    <TouchableOpacity
+      style={styles.metricCard}
+      onPress={() => handleMetricPress(title)}
+    >
       <View style={styles.metricContent}>
         <Text style={styles.metricTitle}>{title}</Text>
         <Text style={[styles.metricValue, { color }]}>
-          {typeof value === 'number' && title.includes('Revenue') ? formatCurrency(value) : value}
+          {typeof value === 'number' && title.includes('Revenue')
+            ? formatCurrency(value)
+            : value}
         </Text>
         {subtitle && <Text style={styles.metricSubtitle}>{subtitle}</Text>}
       </View>
       <View style={styles.metricNavigation}>
-        <Icon name="chevron-right" size={16} color="#007AFF" />
+        <Icon name='chevron-right' size={16} color='#007AFF' />
       </View>
     </TouchableOpacity>
   );
@@ -310,14 +357,17 @@ const AdvancedAnalyticsScreen: React.FC = () => {
         <View style={styles.chartContainer}>
           {data.labels.map((label, index) => (
             <View key={index} style={styles.chartBar}>
-              <View 
+              <View
                 style={[
-                  styles.bar, 
-                  { 
-                    height: (data.datasets[0].data[index] / Math.max(...data.datasets[0].data)) * 100,
-                    backgroundColor: data.datasets[0].color 
-                  }
-                ]} 
+                  styles.bar,
+                  {
+                    height:
+                      (data.datasets[0].data[index] /
+                        Math.max(...data.datasets[0].data)) *
+                      100,
+                    backgroundColor: data.datasets[0].color,
+                  },
+                ]}
               />
               <Text style={styles.barLabel}>{label}</Text>
             </View>
@@ -336,7 +386,7 @@ const AdvancedAnalyticsScreen: React.FC = () => {
           <Text style={styles.headerTitle}>Advanced Analytics</Text>
         </View>
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#007AFF" />
+          <ActivityIndicator size='large' color='#007AFF' />
           <Text style={styles.loadingText}>Loading analytics...</Text>
         </View>
       </SafeAreaView>
@@ -348,44 +398,58 @@ const AdvancedAnalyticsScreen: React.FC = () => {
       <View style={styles.header}>
         <View style={styles.headerTop}>
           <View style={styles.headerLeft}>
-            <TouchableOpacity style={styles.backButton} onPress={handleBackPress}>
-              <Icon name="arrow-back" size={24} color="#007AFF" />
+            <TouchableOpacity
+              style={styles.backButton}
+              onPress={handleBackPress}
+            >
+              <Icon name='arrow-back' size={24} color='#007AFF' />
             </TouchableOpacity>
             <Text style={styles.headerTitle}>Advanced Analytics</Text>
           </View>
-          <TouchableOpacity style={styles.settingsButton} onPress={handleSettingsPress}>
-            <Icon name="settings" size={24} color="#007AFF" />
+          <TouchableOpacity
+            style={styles.settingsButton}
+            onPress={handleSettingsPress}
+          >
+            <Icon name='settings' size={24} color='#007AFF' />
           </TouchableOpacity>
         </View>
-        
+
         {/* Navigation to other analytics screens */}
         <View style={styles.navigationRow}>
-          <TouchableOpacity style={styles.navButton} onPress={navigateToRealTimeDashboard}>
-            <Icon name="dashboard" size={20} color="#007AFF" />
+          <TouchableOpacity
+            style={styles.navButton}
+            onPress={navigateToRealTimeDashboard}
+          >
+            <Icon name='dashboard' size={20} color='#007AFF' />
             <Text style={styles.navButtonText}>Real-Time Dashboard</Text>
-            <Icon name="chevron-right" size={16} color="#007AFF" />
+            <Icon name='chevron-right' size={16} color='#007AFF' />
           </TouchableOpacity>
-          <TouchableOpacity style={styles.navButton} onPress={navigateToReports}>
-            <Icon name="reports" size={20} color="#007AFF" />
+          <TouchableOpacity
+            style={styles.navButton}
+            onPress={navigateToReports}
+          >
+            <Icon name='reports' size={20} color='#007AFF' />
             <Text style={styles.navButtonText}>Reports</Text>
-            <Icon name="chevron-right" size={16} color="#007AFF" />
+            <Icon name='chevron-right' size={16} color='#007AFF' />
           </TouchableOpacity>
         </View>
-        
+
         <View style={styles.periodSelector}>
-          {(['7d', '30d', '90d'] as const).map((period) => (
+          {(['7d', '30d', '90d'] as const).map(period => (
             <TouchableOpacity
               key={period}
               style={[
                 styles.periodButton,
-                selectedPeriod === period && styles.periodButtonActive
+                selectedPeriod === period && styles.periodButtonActive,
               ]}
               onPress={() => setSelectedPeriod(period)}
             >
-              <Text style={[
-                styles.periodButtonText,
-                selectedPeriod === period && styles.periodButtonTextActive
-              ]}>
+              <Text
+                style={[
+                  styles.periodButtonText,
+                  selectedPeriod === period && styles.periodButtonTextActive,
+                ]}
+              >
                 {period}
               </Text>
             </TouchableOpacity>
@@ -395,12 +459,12 @@ const AdvancedAnalyticsScreen: React.FC = () => {
 
       {error && (
         <View style={styles.errorBanner}>
-          <Icon name="alert-circle" size={16} color="#FF3B30" />
+          <Icon name='alert-circle' size={16} color='#FF3B30' />
           <Text style={styles.errorText}>{error}</Text>
         </View>
       )}
 
-      <ScrollView 
+      <ScrollView
         style={styles.content}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
@@ -410,18 +474,55 @@ const AdvancedAnalyticsScreen: React.FC = () => {
           <>
             {/* Key Metrics */}
             <View style={styles.metricsGrid}>
-              {renderMetricCard('Total Revenue', analyticsData.totalRevenue, 'Last 30 days')}
-              {renderMetricCard('Total Sales', analyticsData.totalSales, 'Orders')}
-              {renderMetricCard('Avg Order Value', formatCurrency(analyticsData.averageOrderValue), 'Per transaction')}
-              {renderMetricCard('Growth Rate', `${analyticsData.growthRate.toFixed(1)}%`, 'vs last period', '#FF9800')}
+              {renderMetricCard(
+                'Total Revenue',
+                analyticsData.totalRevenue,
+                'Last 30 days'
+              )}
+              {renderMetricCard(
+                'Total Sales',
+                analyticsData.totalSales,
+                'Orders'
+              )}
+              {renderMetricCard(
+                'Avg Order Value',
+                formatCurrency(analyticsData.averageOrderValue),
+                'Per transaction'
+              )}
+              {renderMetricCard(
+                'Growth Rate',
+                `${analyticsData.growthRate.toFixed(1)}%`,
+                'vs last period',
+                '#FF9800'
+              )}
             </View>
 
             {/* Performance Metrics */}
             <View style={styles.metricsGrid}>
-              {renderMetricCard('Customer Retention', `${analyticsData.customerRetention.toFixed(1)}%`, 'Repeat customers', '#9C27B0')}
-              {renderMetricCard('Inventory Turnover', analyticsData.inventoryTurnover.toFixed(1), 'Times per year', '#607D8B')}
-              {renderMetricCard('Profit Margin', `${analyticsData.profitMargin.toFixed(1)}%`, 'Net profit', '#4CAF50')}
-              {renderMetricCard('Sales Forecast', formatCurrency(analyticsData.salesForecast), 'Next period', '#2196F3')}
+              {renderMetricCard(
+                'Customer Retention',
+                `${analyticsData.customerRetention.toFixed(1)}%`,
+                'Repeat customers',
+                '#9C27B0'
+              )}
+              {renderMetricCard(
+                'Inventory Turnover',
+                analyticsData.inventoryTurnover.toFixed(1),
+                'Times per year',
+                '#607D8B'
+              )}
+              {renderMetricCard(
+                'Profit Margin',
+                `${analyticsData.profitMargin.toFixed(1)}%`,
+                'Net profit',
+                '#4CAF50'
+              )}
+              {renderMetricCard(
+                'Sales Forecast',
+                formatCurrency(analyticsData.salesForecast),
+                'Next period',
+                '#2196F3'
+              )}
             </View>
 
             {/* Charts */}
@@ -432,21 +533,24 @@ const AdvancedAnalyticsScreen: React.FC = () => {
             <View style={styles.insightsCard}>
               <Text style={styles.insightsTitle}>Key Insights</Text>
               <View style={styles.insightItem}>
-                <Icon name="trending-up" size={16} color="#4CAF50" />
+                <Icon name='trending-up' size={16} color='#4CAF50' />
                 <Text style={styles.insightText}>
-                  Revenue grew {analyticsData.growthRate.toFixed(1)}% compared to last period
+                  Revenue grew {analyticsData.growthRate.toFixed(1)}% compared
+                  to last period
                 </Text>
               </View>
               <View style={styles.insightItem}>
-                <Icon name="users" size={16} color="#2196F3" />
+                <Icon name='users' size={16} color='#2196F3' />
                 <Text style={styles.insightText}>
-                  {analyticsData.customerRetention.toFixed(1)}% of customers made repeat purchases
+                  {analyticsData.customerRetention.toFixed(1)}% of customers
+                  made repeat purchases
                 </Text>
               </View>
               <View style={styles.insightItem}>
-                <Icon name="package" size={16} color="#FF9800" />
+                <Icon name='package' size={16} color='#FF9800' />
                 <Text style={styles.insightText}>
-                  Inventory turns over {analyticsData.inventoryTurnover.toFixed(1)} times per year
+                  Inventory turns over{' '}
+                  {analyticsData.inventoryTurnover.toFixed(1)} times per year
                 </Text>
               </View>
             </View>
@@ -459,31 +563,31 @@ const AdvancedAnalyticsScreen: React.FC = () => {
                   style={styles.quickActionButton}
                   onPress={() => handleQuickAction('export')}
                 >
-                  <Icon name="download" size={24} color="#007AFF" />
+                  <Icon name='download' size={24} color='#007AFF' />
                   <Text style={styles.quickActionText}>Export Data</Text>
                 </TouchableOpacity>
-                
+
                 <TouchableOpacity
                   style={styles.quickActionButton}
                   onPress={() => handleQuickAction('schedule')}
                 >
-                  <Icon name="calendar" size={24} color="#FF9800" />
+                  <Icon name='calendar' size={24} color='#FF9800' />
                   <Text style={styles.quickActionText}>Schedule Report</Text>
                 </TouchableOpacity>
-                
+
                 <TouchableOpacity
                   style={styles.quickActionButton}
                   onPress={() => handleQuickAction('share')}
                 >
-                  <Icon name="share" size={24} color="#4CAF50" />
+                  <Icon name='share' size={24} color='#4CAF50' />
                   <Text style={styles.quickActionText}>Share Analytics</Text>
                 </TouchableOpacity>
-                
+
                 <TouchableOpacity
                   style={styles.quickActionButton}
                   onPress={() => navigation.navigate('SalesForecasting')}
                 >
-                  <Icon name="trending-up" size={24} color="#9C27B0" />
+                  <Icon name='trending-up' size={24} color='#9C27B0' />
                   <Text style={styles.quickActionText}>Sales Forecast</Text>
                 </TouchableOpacity>
               </View>
@@ -747,4 +851,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default AdvancedAnalyticsScreen; 
+export default AdvancedAnalyticsScreen;

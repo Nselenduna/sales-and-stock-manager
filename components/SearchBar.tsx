@@ -1,5 +1,11 @@
 import React from 'react';
-import { View, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
+import {
+  View,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  ActivityIndicator,
+} from 'react-native';
 import Icon from './Icon';
 
 interface SearchBarProps {
@@ -19,9 +25,18 @@ const SearchBar: React.FC<SearchBarProps> = ({
     <View style={styles.container}>
       <View style={styles.searchBar}>
         {isSearching ? (
-          <ActivityIndicator size='small' color='#007AFF' style={styles.searchIcon} />
+          <ActivityIndicator
+            size='small'
+            color='#007AFF'
+            style={styles.searchIcon}
+          />
         ) : (
-          <Icon name='search' size={20} color='#666' style={styles.searchIcon} />
+          <Icon
+            name='search'
+            size={20}
+            color='#666'
+            style={styles.searchIcon}
+          />
         )}
         <TextInput
           style={styles.searchInput}

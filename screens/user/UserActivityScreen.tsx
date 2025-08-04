@@ -36,7 +36,9 @@ const UserActivityScreen: React.FC<UserActivityScreenProps> = ({
   const [activities, setActivities] = useState<ActivityLog[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [filter, setFilter] = useState<'all' | 'info' | 'warning' | 'error' | 'critical'>('all');
+  const [filter, setFilter] = useState<
+    'all' | 'info' | 'warning' | 'error' | 'critical'
+  >('all');
 
   useEffect(() => {
     fetchActivityLogs();
@@ -45,7 +47,7 @@ const UserActivityScreen: React.FC<UserActivityScreenProps> = ({
   const fetchActivityLogs = async () => {
     try {
       setLoading(true);
-      
+
       // For now, we'll create mock activity data since we don't have a real activity log table
       // In a real implementation, you would query a user_activity_logs table
       const mockActivities: ActivityLog[] = [
@@ -215,8 +217,8 @@ const UserActivityScreen: React.FC<UserActivityScreenProps> = ({
     }
   };
 
-  const filteredActivities = activities.filter(activity => 
-    filter === 'all' || activity.severity === filter
+  const filteredActivities = activities.filter(
+    activity => filter === 'all' || activity.severity === filter
   );
 
   const renderActivityItem = ({ item }: { item: ActivityLog }) => (
@@ -227,23 +229,34 @@ const UserActivityScreen: React.FC<UserActivityScreenProps> = ({
             <Text style={styles.userName}>{item.user_name}</Text>
             <Text style={styles.userEmail}>{item.user_email}</Text>
           </View>
-          <View style={[styles.severityBadge, { backgroundColor: getSeverityColor(item.severity) }]}>
-            <Icon name={getSeverityIcon(item.severity)} size={12} color="white" />
-            <Text style={styles.severityText}>{item.severity.toUpperCase()}</Text>
+          <View
+            style={[
+              styles.severityBadge,
+              { backgroundColor: getSeverityColor(item.severity) },
+            ]}
+          >
+            <Icon
+              name={getSeverityIcon(item.severity)}
+              size={12}
+              color='white'
+            />
+            <Text style={styles.severityText}>
+              {item.severity.toUpperCase()}
+            </Text>
           </View>
         </View>
         <Text style={styles.timestamp}>
           {new Date(item.created_at).toLocaleString()}
         </Text>
       </View>
-      
+
       <View style={styles.activityContent}>
         <View style={styles.actionContainer}>
-          <Icon name={getActionIcon(item.action)} size={16} color="#64748b" />
+          <Icon name={getActionIcon(item.action)} size={16} color='#64748b' />
           <Text style={styles.actionText}>{item.action.replace('_', ' ')}</Text>
         </View>
         <Text style={styles.detailsText}>{item.details}</Text>
-        
+
         {item.ip_address && (
           <View style={styles.metaInfo}>
             <Text style={styles.metaText}>IP: {item.ip_address}</Text>
@@ -253,20 +266,28 @@ const UserActivityScreen: React.FC<UserActivityScreenProps> = ({
     </View>
   );
 
-  const FilterButton = ({ 
-    title, 
-    value, 
-    onPress 
-  }: { 
-    title: string; 
-    value: 'all' | 'info' | 'warning' | 'error' | 'critical'; 
-    onPress: () => void; 
+  const FilterButton = ({
+    title,
+    value,
+    onPress,
+  }: {
+    title: string;
+    value: 'all' | 'info' | 'warning' | 'error' | 'critical';
+    onPress: () => void;
   }) => (
     <TouchableOpacity
-      style={[styles.filterButton, filter === value && styles.filterButtonActive]}
+      style={[
+        styles.filterButton,
+        filter === value && styles.filterButtonActive,
+      ]}
       onPress={onPress}
     >
-      <Text style={[styles.filterButtonText, filter === value && styles.filterButtonTextActive]}>
+      <Text
+        style={[
+          styles.filterButtonText,
+          filter === value && styles.filterButtonTextActive,
+        ]}
+      >
         {title}
       </Text>
     </TouchableOpacity>
@@ -279,14 +300,16 @@ const UserActivityScreen: React.FC<UserActivityScreenProps> = ({
           style={styles.backButton}
           onPress={() => navigation.goBack()}
         >
-          <Icon name="arrow-back" size={24} color="white" />
+          <Icon name='arrow-back' size={24} color='white' />
         </TouchableOpacity>
         <Text style={styles.title}>User Activity Log</Text>
         <TouchableOpacity
           style={styles.exportButton}
-          onPress={() => Alert.alert('Export', 'Export functionality coming soon')}
+          onPress={() =>
+            Alert.alert('Export', 'Export functionality coming soon')
+          }
         >
-          <Icon name="download" size={24} color="white" />
+          <Icon name='download' size={24} color='white' />
         </TouchableOpacity>
       </View>
 
@@ -297,7 +320,11 @@ const UserActivityScreen: React.FC<UserActivityScreenProps> = ({
         </View>
         <View style={styles.statCard}>
           <Text style={styles.statNumber}>
-            {activities.filter(a => a.severity === 'error' || a.severity === 'critical').length}
+            {
+              activities.filter(
+                a => a.severity === 'error' || a.severity === 'critical'
+              ).length
+            }
           </Text>
           <Text style={styles.statLabel}>Errors</Text>
         </View>
@@ -311,25 +338,45 @@ const UserActivityScreen: React.FC<UserActivityScreenProps> = ({
 
       <View style={styles.filterContainer}>
         <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-          <FilterButton title="All" value="all" onPress={() => setFilter('all')} />
-          <FilterButton title="Info" value="info" onPress={() => setFilter('info')} />
-          <FilterButton title="Warning" value="warning" onPress={() => setFilter('warning')} />
-          <FilterButton title="Error" value="error" onPress={() => setFilter('error')} />
-          <FilterButton title="Critical" value="critical" onPress={() => setFilter('critical')} />
+          <FilterButton
+            title='All'
+            value='all'
+            onPress={() => setFilter('all')}
+          />
+          <FilterButton
+            title='Info'
+            value='info'
+            onPress={() => setFilter('info')}
+          />
+          <FilterButton
+            title='Warning'
+            value='warning'
+            onPress={() => setFilter('warning')}
+          />
+          <FilterButton
+            title='Error'
+            value='error'
+            onPress={() => setFilter('error')}
+          />
+          <FilterButton
+            title='Critical'
+            value='critical'
+            onPress={() => setFilter('critical')}
+          />
         </ScrollView>
       </View>
 
       <FlatList
         data={filteredActivities}
         renderItem={renderActivityItem}
-        keyExtractor={(item) => item.id}
+        keyExtractor={item => item.id}
         style={styles.activityList}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
         ListEmptyComponent={
           <View style={styles.emptyState}>
-            <Icon name="activity" size={48} color="#9ca3af" />
+            <Icon name='activity' size={48} color='#9ca3af' />
             <Text style={styles.emptyText}>No activity logs found</Text>
           </View>
         }
@@ -514,4 +561,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default UserActivityScreen; 
+export default UserActivityScreen;

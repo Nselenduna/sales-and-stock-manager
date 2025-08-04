@@ -11,8 +11,10 @@ const mockCamera = {
     auto: 'auto',
     torch: 'torch',
   },
-  requestCameraPermissionsAsync: jest.fn(() => Promise.resolve({ status: 'granted' })),
+  requestCameraPermissionsAsync: jest.fn(() =>
+    Promise.resolve({ status: 'granted' })
+  ),
   openSettingsAsync: jest.fn(() => Promise.resolve()),
 };
 
-export default mockCamera; 
+export default mockCamera;

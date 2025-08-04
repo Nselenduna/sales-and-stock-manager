@@ -6,4 +6,4 @@ module.exports = {
   removeListener: jest.fn(),
   removeAllListeners: jest.fn(),
   emit: jest.fn(),
-}; 
+};

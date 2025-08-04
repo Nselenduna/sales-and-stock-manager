@@ -52,35 +52,140 @@ const PermissionManagementScreen: React.FC<PermissionManagementScreenProps> = ({
     // Define all available permissions
     const allPermissions: Permission[] = [
       // Sales permissions
-      { id: 'sales_view', name: 'View Sales', description: 'View sales records and history', category: 'sales' },
-      { id: 'sales_create', name: 'Create Sales', description: 'Create new sales transactions', category: 'sales' },
-      { id: 'sales_edit', name: 'Edit Sales', description: 'Modify existing sales records', category: 'sales' },
-      { id: 'sales_delete', name: 'Delete Sales', description: 'Delete sales records', category: 'sales' },
-      { id: 'sales_refund', name: 'Process Refunds', description: 'Process customer refunds', category: 'sales' },
-      
+      {
+        id: 'sales_view',
+        name: 'View Sales',
+        description: 'View sales records and history',
+        category: 'sales',
+      },
+      {
+        id: 'sales_create',
+        name: 'Create Sales',
+        description: 'Create new sales transactions',
+        category: 'sales',
+      },
+      {
+        id: 'sales_edit',
+        name: 'Edit Sales',
+        description: 'Modify existing sales records',
+        category: 'sales',
+      },
+      {
+        id: 'sales_delete',
+        name: 'Delete Sales',
+        description: 'Delete sales records',
+        category: 'sales',
+      },
+      {
+        id: 'sales_refund',
+        name: 'Process Refunds',
+        description: 'Process customer refunds',
+        category: 'sales',
+      },
+
       // Inventory permissions
-      { id: 'inventory_view', name: 'View Inventory', description: 'View product inventory', category: 'inventory' },
-      { id: 'inventory_create', name: 'Add Products', description: 'Add new products to inventory', category: 'inventory' },
-      { id: 'inventory_edit', name: 'Edit Products', description: 'Modify product information', category: 'inventory' },
-      { id: 'inventory_delete', name: 'Delete Products', description: 'Remove products from inventory', category: 'inventory' },
-      { id: 'inventory_adjust', name: 'Adjust Stock', description: 'Adjust product quantities', category: 'inventory' },
-      
+      {
+        id: 'inventory_view',
+        name: 'View Inventory',
+        description: 'View product inventory',
+        category: 'inventory',
+      },
+      {
+        id: 'inventory_create',
+        name: 'Add Products',
+        description: 'Add new products to inventory',
+        category: 'inventory',
+      },
+      {
+        id: 'inventory_edit',
+        name: 'Edit Products',
+        description: 'Modify product information',
+        category: 'inventory',
+      },
+      {
+        id: 'inventory_delete',
+        name: 'Delete Products',
+        description: 'Remove products from inventory',
+        category: 'inventory',
+      },
+      {
+        id: 'inventory_adjust',
+        name: 'Adjust Stock',
+        description: 'Adjust product quantities',
+        category: 'inventory',
+      },
+
       // User management permissions
-      { id: 'users_view', name: 'View Users', description: 'View user list and profiles', category: 'users' },
-      { id: 'users_create', name: 'Create Users', description: 'Create new user accounts', category: 'users' },
-      { id: 'users_edit', name: 'Edit Users', description: 'Modify user information and roles', category: 'users' },
-      { id: 'users_delete', name: 'Delete Users', description: 'Remove user accounts', category: 'users' },
-      { id: 'users_permissions', name: 'Manage Permissions', description: 'Manage user permissions and roles', category: 'users' },
-      
+      {
+        id: 'users_view',
+        name: 'View Users',
+        description: 'View user list and profiles',
+        category: 'users',
+      },
+      {
+        id: 'users_create',
+        name: 'Create Users',
+        description: 'Create new user accounts',
+        category: 'users',
+      },
+      {
+        id: 'users_edit',
+        name: 'Edit Users',
+        description: 'Modify user information and roles',
+        category: 'users',
+      },
+      {
+        id: 'users_delete',
+        name: 'Delete Users',
+        description: 'Remove user accounts',
+        category: 'users',
+      },
+      {
+        id: 'users_permissions',
+        name: 'Manage Permissions',
+        description: 'Manage user permissions and roles',
+        category: 'users',
+      },
+
       // Reports permissions
-      { id: 'reports_view', name: 'View Reports', description: 'Access to view reports and analytics', category: 'reports' },
-      { id: 'reports_export', name: 'Export Reports', description: 'Export reports to various formats', category: 'reports' },
-      { id: 'reports_create', name: 'Create Reports', description: 'Create custom reports', category: 'reports' },
-      
+      {
+        id: 'reports_view',
+        name: 'View Reports',
+        description: 'Access to view reports and analytics',
+        category: 'reports',
+      },
+      {
+        id: 'reports_export',
+        name: 'Export Reports',
+        description: 'Export reports to various formats',
+        category: 'reports',
+      },
+      {
+        id: 'reports_create',
+        name: 'Create Reports',
+        description: 'Create custom reports',
+        category: 'reports',
+      },
+
       // System permissions
-      { id: 'system_settings', name: 'System Settings', description: 'Access to system configuration', category: 'system' },
-      { id: 'system_backup', name: 'System Backup', description: 'Perform system backups', category: 'system' },
-      { id: 'system_logs', name: 'View Logs', description: 'Access system and activity logs', category: 'system' },
+      {
+        id: 'system_settings',
+        name: 'System Settings',
+        description: 'Access to system configuration',
+        category: 'system',
+      },
+      {
+        id: 'system_backup',
+        name: 'System Backup',
+        description: 'Perform system backups',
+        category: 'system',
+      },
+      {
+        id: 'system_logs',
+        name: 'View Logs',
+        description: 'Access system and activity logs',
+        category: 'system',
+      },
     ];
 
     setPermissions(allPermissions);
@@ -88,36 +193,52 @@ const PermissionManagementScreen: React.FC<PermissionManagementScreenProps> = ({
     // Initialize role permissions with default values
     const defaultRolePermissions: RolePermission[] = roles.map(role => ({
       role: role.key,
-      permissions: allPermissions.reduce((acc, permission) => {
-        // Set default permissions based on role
-        switch (role.key) {
-          case 'admin':
-            acc[permission.id] = true; // Admins have all permissions
-            break;
-          case 'manager':
-            acc[permission.id] = [
-              'sales_view', 'sales_create', 'sales_edit', 'sales_refund',
-              'inventory_view', 'inventory_create', 'inventory_edit', 'inventory_adjust',
-              'users_view', 'reports_view', 'reports_export', 'system_logs'
-            ].includes(permission.id);
-            break;
-          case 'staff':
-            acc[permission.id] = [
-              'sales_view', 'sales_create',
-              'inventory_view', 'inventory_adjust',
-              'reports_view'
-            ].includes(permission.id);
-            break;
-          case 'viewer':
-            acc[permission.id] = [
-              'sales_view', 'inventory_view', 'reports_view'
-            ].includes(permission.id);
-            break;
-          default:
-            acc[permission.id] = false;
-        }
-        return acc;
-      }, {} as { [key: string]: boolean })
+      permissions: allPermissions.reduce(
+        (acc, permission) => {
+          // Set default permissions based on role
+          switch (role.key) {
+            case 'admin':
+              acc[permission.id] = true; // Admins have all permissions
+              break;
+            case 'manager':
+              acc[permission.id] = [
+                'sales_view',
+                'sales_create',
+                'sales_edit',
+                'sales_refund',
+                'inventory_view',
+                'inventory_create',
+                'inventory_edit',
+                'inventory_adjust',
+                'users_view',
+                'reports_view',
+                'reports_export',
+                'system_logs',
+              ].includes(permission.id);
+              break;
+            case 'staff':
+              acc[permission.id] = [
+                'sales_view',
+                'sales_create',
+                'inventory_view',
+                'inventory_adjust',
+                'reports_view',
+              ].includes(permission.id);
+              break;
+            case 'viewer':
+              acc[permission.id] = [
+                'sales_view',
+                'inventory_view',
+                'reports_view',
+              ].includes(permission.id);
+              break;
+            default:
+              acc[permission.id] = false;
+          }
+          return acc;
+        },
+        {} as { [key: string]: boolean }
+      ),
     }));
 
     setRolePermissions(defaultRolePermissions);
@@ -125,15 +246,15 @@ const PermissionManagementScreen: React.FC<PermissionManagementScreenProps> = ({
   };
 
   const handlePermissionToggle = (permissionId: string, enabled: boolean) => {
-    setRolePermissions(prev => 
-      prev.map(rolePerm => 
-        rolePerm.role === selectedRole 
+    setRolePermissions(prev =>
+      prev.map(rolePerm =>
+        rolePerm.role === selectedRole
           ? {
               ...rolePerm,
               permissions: {
                 ...rolePerm.permissions,
-                [permissionId]: enabled
-              }
+                [permissionId]: enabled,
+              },
             }
           : rolePerm
       )
@@ -144,11 +265,9 @@ const PermissionManagementScreen: React.FC<PermissionManagementScreenProps> = ({
     try {
       // In a real implementation, you would save these to your database
       // For now, we'll just show a success message
-      Alert.alert(
-        'Success', 
-        'Permissions updated successfully!',
-        [{ text: 'OK' }]
-      );
+      Alert.alert('Success', 'Permissions updated successfully!', [
+        { text: 'OK' },
+      ]);
     } catch (error) {
       console.error('Error saving permissions:', error);
       Alert.alert('Error', 'Failed to save permissions');
@@ -206,15 +325,19 @@ const PermissionManagementScreen: React.FC<PermissionManagementScreenProps> = ({
     }
   };
 
-  const currentRolePermissions = rolePermissions.find(rp => rp.role === selectedRole)?.permissions || {};
+  const currentRolePermissions =
+    rolePermissions.find(rp => rp.role === selectedRole)?.permissions || {};
 
-  const groupedPermissions = permissions.reduce((acc, permission) => {
-    if (!acc[permission.category]) {
-      acc[permission.category] = [];
-    }
-    acc[permission.category].push(permission);
-    return acc;
-  }, {} as { [key: string]: Permission[] });
+  const groupedPermissions = permissions.reduce(
+    (acc, permission) => {
+      if (!acc[permission.category]) {
+        acc[permission.category] = [];
+      }
+      acc[permission.category].push(permission);
+      return acc;
+    },
+    {} as { [key: string]: Permission[] }
+  );
 
   const renderPermissionItem = ({ item }: { item: Permission }) => (
     <View style={styles.permissionItem}>
@@ -224,22 +347,27 @@ const PermissionManagementScreen: React.FC<PermissionManagementScreenProps> = ({
       </View>
       <Switch
         value={currentRolePermissions[item.id] || false}
-        onValueChange={(value) => handlePermissionToggle(item.id, value)}
+        onValueChange={value => handlePermissionToggle(item.id, value)}
         trackColor={{ false: '#e2e8f0', true: '#2563eb' }}
         thumbColor={currentRolePermissions[item.id] ? '#ffffff' : '#f4f3f4'}
       />
     </View>
   );
 
-  const renderCategorySection = (category: string, categoryPermissions: Permission[]) => (
+  const renderCategorySection = (
+    category: string,
+    categoryPermissions: Permission[]
+  ) => (
     <View key={category} style={styles.categorySection}>
       <View style={styles.categoryHeader}>
-        <Icon 
-          name={getCategoryIcon(category)} 
-          size={20} 
-          color={getCategoryColor(category)} 
+        <Icon
+          name={getCategoryIcon(category)}
+          size={20}
+          color={getCategoryColor(category)}
         />
-        <Text style={[styles.categoryTitle, { color: getCategoryColor(category) }]}>
+        <Text
+          style={[styles.categoryTitle, { color: getCategoryColor(category) }]}
+        >
           {getCategoryLabel(category)}
         </Text>
       </View>
@@ -247,13 +375,19 @@ const PermissionManagementScreen: React.FC<PermissionManagementScreenProps> = ({
         <View key={permission.id} style={styles.permissionItem}>
           <View style={styles.permissionInfo}>
             <Text style={styles.permissionName}>{permission.name}</Text>
-            <Text style={styles.permissionDescription}>{permission.description}</Text>
+            <Text style={styles.permissionDescription}>
+              {permission.description}
+            </Text>
           </View>
           <Switch
             value={currentRolePermissions[permission.id] || false}
-            onValueChange={(value) => handlePermissionToggle(permission.id, value)}
+            onValueChange={value =>
+              handlePermissionToggle(permission.id, value)
+            }
             trackColor={{ false: '#e2e8f0', true: '#2563eb' }}
-            thumbColor={currentRolePermissions[permission.id] ? '#ffffff' : '#f4f3f4'}
+            thumbColor={
+              currentRolePermissions[permission.id] ? '#ffffff' : '#f4f3f4'
+            }
           />
         </View>
       ))}
@@ -267,34 +401,33 @@ const PermissionManagementScreen: React.FC<PermissionManagementScreenProps> = ({
           style={styles.backButton}
           onPress={() => navigation.goBack()}
         >
-          <Icon name="arrow-back" size={24} color="white" />
+          <Icon name='arrow-back' size={24} color='white' />
         </TouchableOpacity>
         <Text style={styles.title}>Permission Management</Text>
-        <TouchableOpacity
-          style={styles.saveButton}
-          onPress={savePermissions}
-        >
-          <Icon name="save" size={24} color="white" />
+        <TouchableOpacity style={styles.saveButton} onPress={savePermissions}>
+          <Icon name='save' size={24} color='white' />
         </TouchableOpacity>
       </View>
 
       <View style={styles.roleSelector}>
         <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-          {roles.map((role) => (
+          {roles.map(role => (
             <TouchableOpacity
               key={role.key}
               style={[
                 styles.roleButton,
                 selectedRole === role.key && styles.roleButtonActive,
-                { borderColor: role.color }
+                { borderColor: role.color },
               ]}
               onPress={() => setSelectedRole(role.key)}
             >
-              <Text style={[
-                styles.roleButtonText,
-                selectedRole === role.key && styles.roleButtonTextActive,
-                { color: selectedRole === role.key ? 'white' : role.color }
-              ]}>
+              <Text
+                style={[
+                  styles.roleButtonText,
+                  selectedRole === role.key && styles.roleButtonTextActive,
+                  { color: selectedRole === role.key ? 'white' : role.color },
+                ]}
+              >
                 {role.label}
               </Text>
             </TouchableOpacity>
@@ -310,9 +443,7 @@ const PermissionManagementScreen: React.FC<PermissionManagementScreenProps> = ({
           <Text style={styles.statLabel}>Active Permissions</Text>
         </View>
         <View style={styles.statCard}>
-          <Text style={styles.statNumber}>
-            {permissions.length}
-          </Text>
+          <Text style={styles.statNumber}>{permissions.length}</Text>
           <Text style={styles.statLabel}>Total Permissions</Text>
         </View>
         <View style={styles.statCard}>
@@ -324,8 +455,9 @@ const PermissionManagementScreen: React.FC<PermissionManagementScreenProps> = ({
       </View>
 
       <ScrollView style={styles.permissionsContainer}>
-        {Object.entries(groupedPermissions).map(([category, categoryPermissions]) =>
-          renderCategorySection(category, categoryPermissions)
+        {Object.entries(groupedPermissions).map(
+          ([category, categoryPermissions]) =>
+            renderCategorySection(category, categoryPermissions)
         )}
       </ScrollView>
     </SafeAreaView>
@@ -464,4 +596,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default PermissionManagementScreen; 
+export default PermissionManagementScreen;

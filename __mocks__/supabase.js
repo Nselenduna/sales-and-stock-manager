@@ -2,12 +2,25 @@
 
 const mockSupabase = {
   auth: {
-    signInWithPassword: jest.fn(() => Promise.resolve({ data: { user: { id: 'test-user' } }, error: null })),
-    signUp: jest.fn(() => Promise.resolve({ data: { user: { id: 'test-user' } }, error: null })),
+    signInWithPassword: jest.fn(() =>
+      Promise.resolve({ data: { user: { id: 'test-user' } }, error: null })
+    ),
+    signUp: jest.fn(() =>
+      Promise.resolve({ data: { user: { id: 'test-user' } }, error: null })
+    ),
     signOut: jest.fn(() => Promise.resolve({ error: null })),
-    getUser: jest.fn(() => Promise.resolve({ data: { user: { id: 'test-user' } }, error: null })),
-    getSession: jest.fn(() => Promise.resolve({ data: { session: { user: { id: 'test-user' } } }, error: null })),
-    onAuthStateChange: jest.fn(() => ({ data: { subscription: { unsubscribe: jest.fn() } } })),
+    getUser: jest.fn(() =>
+      Promise.resolve({ data: { user: { id: 'test-user' } }, error: null })
+    ),
+    getSession: jest.fn(() =>
+      Promise.resolve({
+        data: { session: { user: { id: 'test-user' } } },
+        error: null,
+      })
+    ),
+    onAuthStateChange: jest.fn(() => ({
+      data: { subscription: { unsubscribe: jest.fn() } },
+    })),
   },
   from: jest.fn(() => ({
     select: jest.fn(() => ({
@@ -43,4 +56,4 @@ const mockSupabase = {
   },
 };
 
-export default mockSupabase; 
+export default mockSupabase;

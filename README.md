@@ -69,6 +69,7 @@ A comprehensive React Native mobile application for inventory management, sales 
 - **Testing**: Jest + React Native Testing Library
 - **Performance**: FlashList for virtualization
 - **Offline**: SQLite with sync queue management
+- **Error Handling**: React ErrorBoundary with crash protection
 
 ## 📱 Key Features
 
@@ -92,6 +93,7 @@ A comprehensive React Native mobile application for inventory management, sales 
 - **Sales Interface**: Intuitive cart management and checkout process
 - **Sync Feedback**: Real-time status updates
 - **Accessibility**: WCAG 2.1 AA compliant interface
+- **Error Boundaries**: Graceful error handling with recovery options
 
 ## 🧪 Testing
 
@@ -113,6 +115,7 @@ A comprehensive React Native mobile application for inventory management, sales 
 - **Data Privacy**: GDPR-compliant offline data handling
 - **Authentication**: Secure role-based access control
 - **Error Handling**: Graceful fallbacks for all failure scenarios
+- **Crash Protection**: React ErrorBoundary components prevent app crashes
 
 ## 🚀 Getting Started
 
@@ -139,6 +142,9 @@ A comprehensive React Native mobile application for inventory management, sales 
 
 ```
 ├── components/          # Reusable UI components
+│   ├── ErrorBoundary.tsx           # Error boundary component
+│   ├── withErrorBoundary.tsx       # Higher-order component for error handling
+│   └── ErrorBoundaryComponents.ts  # Error boundary exports
 ├── screens/            # Screen components
 │   ├── sales/         # Sales module screens
 │   ├── inventory/     # Inventory management screens
@@ -149,11 +155,58 @@ A comprehensive React Native mobile application for inventory management, sales 
 ├── hooks/             # Custom React hooks
 ├── store/             # Zustand state management
 ├── __tests__/         # Test files
+│   ├── components/    # Component tests including ErrorBoundary
 │   └── sales/         # Sales module tests
 ├── modules/           # Feature documentation and specs
 └── docs/              # Project documentation
 │   └── sales/         # Sales module documentation
 ```
+
+## 🛡️ Error Handling & Crash Protection
+
+The app implements comprehensive error boundaries to prevent crashes and provide graceful error recovery:
+
+### ErrorBoundary Component
+```typescript
+import { ErrorBoundary } from './components/ErrorBoundaryComponents';
+
+<ErrorBoundary
+  errorTitle="Custom Error Title"
+  errorMessage="Custom error message"
+  onError={(error, errorInfo) => {
+    // Custom error handling
+    console.error('Error:', error);
+  }}
+>
+  <YourComponent />
+</ErrorBoundary>
+```
+
+### withErrorBoundary HOC
+```typescript
+import { withErrorBoundary } from './components/ErrorBoundaryComponents';
+
+const ProtectedComponent = withErrorBoundary(YourComponent, {
+  errorTitle: 'Component Error',
+  errorMessage: 'Please try again.'
+});
+```
+
+### Implementation Coverage
+- **App Level**: Root-level ErrorBoundary catches all unhandled errors
+- **Navigation**: Each tab navigator wrapped with ErrorBoundary
+- **Critical Screens**: Inventory, Sales, and Scanner screens protected
+- **Error Logging**: Structured logging for debugging and monitoring
+- **User Experience**: Friendly error messages with recovery options
+
+### Features
+- ✅ TypeScript support with full type safety
+- ✅ Custom fallback UI components
+- ✅ Error logging with structured data
+- ✅ Reset functionality for error recovery
+- ✅ Development mode error details
+- ✅ Configurable error messages and titles
+- ✅ Integration with external error reporting services
 
 ## 🤝 Contributing
 

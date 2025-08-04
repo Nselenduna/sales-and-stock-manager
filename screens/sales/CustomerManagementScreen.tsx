@@ -31,7 +31,9 @@ interface CustomerManagementScreenProps {
   navigation: any;
 }
 
-const CustomerManagementScreen: React.FC<CustomerManagementScreenProps> = ({ navigation }) => {
+const CustomerManagementScreen: React.FC<CustomerManagementScreenProps> = ({
+  navigation,
+}) => {
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [filteredCustomers, setFilteredCustomers] = useState<Customer[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -56,9 +58,10 @@ const CustomerManagementScreen: React.FC<CustomerManagementScreenProps> = ({ nav
     setIsLoading(true);
     try {
       // First try to get customers using the database function
-      const { data: functionData, error: functionError } = await supabase
-        .rpc('get_customers_from_sales');
-      
+      const { data: functionData, error: functionError } = await supabase.rpc(
+        'get_customers_from_sales'
+      );
+
       if (!functionError && functionData) {
         // Transform function data to match our Customer interface
         const customersList = functionData.map((customer: any) => ({
@@ -71,7 +74,7 @@ const CustomerManagementScreen: React.FC<CustomerManagementScreenProps> = ({ nav
           last_order_date: customer.last_order_date,
           created_at: customer.last_order_date,
         }));
-        
+
         setCustomers(customersList);
         return;
       }
@@ -91,7 +94,7 @@ const CustomerManagementScreen: React.FC<CustomerManagementScreenProps> = ({ nav
             name: 'John Doe',
             email: 'john.doe@example.com',
             phone: '+1234567890',
-            total_spent: 150.00,
+            total_spent: 150.0,
             total_orders: 1,
             last_order_date: new Date(Date.now() - 86400000).toISOString(),
             created_at: new Date(Date.now() - 86400000).toISOString(),
@@ -101,11 +104,11 @@ const CustomerManagementScreen: React.FC<CustomerManagementScreenProps> = ({ nav
             name: 'Jane Smith',
             email: 'jane.smith@example.com',
             phone: '+1234567891',
-            total_spent: 275.50,
+            total_spent: 275.5,
             total_orders: 2,
             last_order_date: new Date(Date.now() - 172800000).toISOString(),
             created_at: new Date(Date.now() - 172800000).toISOString(),
-          }
+          },
         ];
         setCustomers(mockCustomers);
         return;
@@ -113,13 +116,13 @@ const CustomerManagementScreen: React.FC<CustomerManagementScreenProps> = ({ nav
 
       // Process sales data to extract customer information
       const customerMap = new Map<string, Customer>();
-      
+
       salesData?.forEach(sale => {
         // Handle both old and new schema
         const customerName = sale.customer_name || 'Walk-in Customer';
         const customerEmail = sale.customer_email || '';
         const customerPhone = sale.customer_phone || '';
-        
+
         if (!customerMap.has(customerName)) {
           customerMap.set(customerName, {
             id: customerName,
@@ -132,11 +135,11 @@ const CustomerManagementScreen: React.FC<CustomerManagementScreenProps> = ({ nav
             created_at: sale.created_at,
           });
         }
-        
+
         const customer = customerMap.get(customerName)!;
         customer.total_spent += (sale.total || 0) / 100; // Convert pence to dollars
         customer.total_orders += 1;
-        
+
         if (new Date(sale.created_at) > new Date(customer.last_order_date)) {
           customer.last_order_date = sale.created_at;
         }
@@ -145,7 +148,7 @@ const CustomerManagementScreen: React.FC<CustomerManagementScreenProps> = ({ nav
       const customersList = Array.from(customerMap.values())
         .filter(customer => customer.name !== 'Walk-in Customer') // Filter out walk-in customers
         .sort((a, b) => b.total_spent - a.total_spent);
-      
+
       setCustomers(customersList);
     } catch (error) {
       console.error('Failed to load customers:', error);
@@ -156,11 +159,11 @@ const CustomerManagementScreen: React.FC<CustomerManagementScreenProps> = ({ nav
           name: 'John Doe',
           email: 'john.doe@example.com',
           phone: '+1234567890',
-          total_spent: 150.00,
+          total_spent: 150.0,
           total_orders: 1,
           last_order_date: new Date(Date.now() - 86400000).toISOString(),
           created_at: new Date(Date.now() - 86400000).toISOString(),
-        }
+        },
       ];
       setCustomers(mockCustomers);
     } finally {
@@ -174,10 +177,11 @@ const CustomerManagementScreen: React.FC<CustomerManagementScreenProps> = ({ nav
       return;
     }
 
-    const filtered = customers.filter(customer =>
-      customer.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      customer.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      customer.phone.includes(searchQuery)
+    const filtered = customers.filter(
+      customer =>
+        customer.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        customer.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        customer.phone.includes(searchQuery)
     );
     setFilteredCustomers(filtered);
   };
@@ -220,7 +224,9 @@ const CustomerManagementScreen: React.FC<CustomerManagementScreenProps> = ({ nav
   const renderCustomerItem = ({ item }: { item: Customer }) => (
     <TouchableOpacity
       style={styles.customerCard}
-      onPress={() => navigation.navigate('CustomerDetail', { customerId: item.id })}
+      onPress={() =>
+        navigation.navigate('CustomerDetail', { customerId: item.id })
+      }
     >
       <View style={styles.customerHeader}>
         <View style={styles.customerInfo}>
@@ -229,16 +235,18 @@ const CustomerManagementScreen: React.FC<CustomerManagementScreenProps> = ({ nav
           {item.phone && <Text style={styles.customerPhone}>{item.phone}</Text>}
         </View>
         <View style={styles.customerStats}>
-          <Text style={styles.customerSpent}>{formatCurrency(item.total_spent)}</Text>
+          <Text style={styles.customerSpent}>
+            {formatCurrency(item.total_spent)}
+          </Text>
           <Text style={styles.customerOrders}>{item.total_orders} orders</Text>
         </View>
       </View>
-      
+
       <View style={styles.customerFooter}>
         <Text style={styles.customerDate}>
           Last order: {formatDate(item.last_order_date)}
         </Text>
-        <Icon name="chevron-right" size={16} color="#666" />
+        <Icon name='chevron-right' size={16} color='#666' />
       </View>
     </TouchableOpacity>
   );
@@ -255,10 +263,10 @@ const CustomerManagementScreen: React.FC<CustomerManagementScreenProps> = ({ nav
         style={styles.backButton}
         onPress={() => navigation.goBack()}
         accessible={true}
-        accessibilityLabel="Go back"
-        accessibilityRole="button"
+        accessibilityLabel='Go back'
+        accessibilityRole='button'
       >
-        <Icon name="arrow-back" size={24} color="white" />
+        <Icon name='arrow-back' size={24} color='white' />
       </TouchableOpacity>
     </View>
   );
@@ -266,7 +274,7 @@ const CustomerManagementScreen: React.FC<CustomerManagementScreenProps> = ({ nav
   const renderAddCustomerModal = () => (
     <Modal
       visible={showAddCustomer}
-      animationType="slide"
+      animationType='slide'
       transparent={true}
       onRequestClose={() => setShowAddCustomer(false)}
     >
@@ -278,33 +286,39 @@ const CustomerManagementScreen: React.FC<CustomerManagementScreenProps> = ({ nav
               onPress={() => setShowAddCustomer(false)}
               style={styles.modalCloseButton}
             >
-              <Icon name="x" size={24} color="#666" />
+              <Icon name='x' size={24} color='#666' />
             </TouchableOpacity>
           </View>
-          
+
           <View style={styles.modalContent}>
             <TextInput
               style={styles.input}
-              placeholder="Customer Name *"
+              placeholder='Customer Name *'
               value={newCustomer.name}
-              onChangeText={(text) => setNewCustomer(prev => ({ ...prev, name: text }))}
+              onChangeText={text =>
+                setNewCustomer(prev => ({ ...prev, name: text }))
+              }
             />
             <TextInput
               style={styles.input}
-              placeholder="Email (optional)"
+              placeholder='Email (optional)'
               value={newCustomer.email}
-              onChangeText={(text) => setNewCustomer(prev => ({ ...prev, email: text }))}
-              keyboardType="email-address"
+              onChangeText={text =>
+                setNewCustomer(prev => ({ ...prev, email: text }))
+              }
+              keyboardType='email-address'
             />
             <TextInput
               style={styles.input}
-              placeholder="Phone (optional)"
+              placeholder='Phone (optional)'
               value={newCustomer.phone}
-              onChangeText={(text) => setNewCustomer(prev => ({ ...prev, phone: text }))}
-              keyboardType="phone-pad"
+              onChangeText={text =>
+                setNewCustomer(prev => ({ ...prev, phone: text }))
+              }
+              keyboardType='phone-pad'
             />
           </View>
-          
+
           <View style={styles.modalFooter}>
             <TouchableOpacity
               style={styles.modalButton}
@@ -316,7 +330,9 @@ const CustomerManagementScreen: React.FC<CustomerManagementScreenProps> = ({ nav
               style={[styles.modalButton, styles.modalButtonPrimary]}
               onPress={handleAddCustomer}
             >
-              <Text style={[styles.modalButtonText, styles.modalButtonTextPrimary]}>
+              <Text
+                style={[styles.modalButtonText, styles.modalButtonTextPrimary]}
+              >
                 Add Customer
               </Text>
             </TouchableOpacity>
@@ -331,7 +347,7 @@ const CustomerManagementScreen: React.FC<CustomerManagementScreenProps> = ({ nav
       <SafeAreaView style={styles.container}>
         {renderHeader()}
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#007AFF" />
+          <ActivityIndicator size='large' color='#007AFF' />
           <Text style={styles.loadingText}>Loading customers...</Text>
         </View>
       </SafeAreaView>
@@ -341,14 +357,14 @@ const CustomerManagementScreen: React.FC<CustomerManagementScreenProps> = ({ nav
   return (
     <SafeAreaView style={styles.container}>
       {renderHeader()}
-      
+
       {/* Search Bar */}
       <View style={styles.searchContainer}>
         <View style={styles.searchBar}>
-          <Icon name="search" size={20} color="#666" />
+          <Icon name='search' size={20} color='#666' />
           <TextInput
             style={styles.searchInput}
-            placeholder="Search customers..."
+            placeholder='Search customers...'
             value={searchQuery}
             onChangeText={setSearchQuery}
           />
@@ -357,7 +373,7 @@ const CustomerManagementScreen: React.FC<CustomerManagementScreenProps> = ({ nav
           style={styles.addButton}
           onPress={() => setShowAddCustomer(true)}
         >
-          <Icon name="plus" size={20} color="white" />
+          <Icon name='plus' size={20} color='white' />
         </TouchableOpacity>
       </View>
 
@@ -365,7 +381,7 @@ const CustomerManagementScreen: React.FC<CustomerManagementScreenProps> = ({ nav
       <FlatList
         data={filteredCustomers}
         renderItem={renderCustomerItem}
-        keyExtractor={(item) => item.id}
+        keyExtractor={item => item.id}
         contentContainerStyle={styles.listContainer}
         showsVerticalScrollIndicator={false}
         refreshControl={
@@ -373,10 +389,12 @@ const CustomerManagementScreen: React.FC<CustomerManagementScreenProps> = ({ nav
         }
         ListEmptyComponent={
           <View style={styles.emptyState}>
-            <Icon name="person" size={64} color="#ccc" />
+            <Icon name='person' size={64} color='#ccc' />
             <Text style={styles.emptyStateTitle}>No Customers Found</Text>
             <Text style={styles.emptyStateDescription}>
-              {searchQuery ? 'Try adjusting your search terms' : 'Start by adding your first customer'}
+              {searchQuery
+                ? 'Try adjusting your search terms'
+                : 'Start by adding your first customer'}
             </Text>
           </View>
         }
@@ -617,4 +635,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default CustomerManagementScreen; 
+export default CustomerManagementScreen;

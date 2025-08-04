@@ -100,7 +100,7 @@ export function useSyncFeedback(): UseSyncFeedbackReturn {
 
     // Calculate exponential backoff delay
     const delay = INITIAL_RETRY_DELAY * Math.pow(2, syncState.retryCount);
-    
+
     setSyncState(prev => ({
       ...prev,
       status: 'syncing',
@@ -127,4 +127,4 @@ export function useSyncFeedback(): UseSyncFeedbackReturn {
     reset,
     retry,
   };
-} 
+}
