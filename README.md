@@ -109,10 +109,43 @@ A comprehensive React Native mobile application for inventory management, sales 
 
 ## 🔐 Security & Compliance
 
-- **Input Sanitization**: XSS protection and SQL injection prevention
-- **Data Privacy**: GDPR-compliant offline data handling
-- **Authentication**: Secure role-based access control
-- **Error Handling**: Graceful fallbacks for all failure scenarios
+### Authentication & Authorization
+- **Rate Limiting**: Protection against brute force attacks
+  - 5 attempts per hour with 15-minute lockout
+  - Exponential backoff for repeated failures
+- **Password Security**:
+  - Minimum 12 characters with mixed case, numbers, and special characters
+  - 90-day expiration policy
+  - Prevention of password reuse (last 5 passwords)
+  - Secure password history management
+- **Session Management**:
+  - 24-hour session duration
+  - Automatic renewal within the last hour
+  - Secure session storage with encryption
+
+### Infrastructure Security
+- **HTTPS Enforcement**:
+  - Mandatory HTTPS in production
+  - Automatic HTTP to HTTPS redirection
+  - Allowed hosts validation
+- **Input Sanitization**: 
+  - XSS protection
+  - SQL injection prevention
+  - Data validation
+- **Error Handling**:
+  - Graceful fallbacks
+  - Secure error messages
+  - Comprehensive logging
+
+### Compliance
+- **Data Privacy**:
+  - GDPR-compliant data handling
+  - Secure offline storage
+  - Data encryption at rest
+- **Access Control**:
+  - Role-based permissions
+  - Principle of least privilege
+  - Audit logging
 
 ## 🚀 Getting Started
 
