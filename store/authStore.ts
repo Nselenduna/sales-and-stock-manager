@@ -2,6 +2,8 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { supabase, UserWithRole } from '../lib/supabase';
+import { checkLoginRateLimit, checkRegisterRateLimit, formatRateLimitMessage } from '../lib/security/rateLimiter';
+import { securityManager } from '../lib/security/securityManager';
 
 interface AuthState {
   user: UserWithRole | null;
@@ -39,15 +41,46 @@ const useAuthStore = create<AuthState & AuthActions>()(
       signIn: async (email, password) => {
         try {
           set({ loading: true });
+
+          // Check rate limiting
+          const rateLimitResult = await checkLoginRateLimit(email);
+          if (!rateLimitResult.allowed) {
+            const message = formatRateLimitMessage(rateLimitResult, 'login');
+            await securityManager.logSecurityEvent({
+              type: 'rate_limit',
+              timestamp: Date.now(),
+              email,
+              details: 'Login rate limit exceeded',
+            });
+            return { success: false, error: message };
+          }
+
           const { data, error } = await supabase.auth.signInWithPassword({
             email,
             password,
           });
 
-          if (error) throw error;
+          if (error) {
+            // Log failed login attempt
+            await securityManager.logSecurityEvent({
+              type: 'failed_login',
+              timestamp: Date.now(),
+              email,
+              details: error.message,
+            });
+            throw error;
+          }
 
           if (data.user) {
             await get().getUserRole();
+            
+            // Log successful login
+            await securityManager.logSecurityEvent({
+              type: 'login',
+              timestamp: Date.now(),
+              userId: data.user.id,
+              email: data.user.email,
+            });
           }
 
           return { success: true };
@@ -61,6 +94,29 @@ const useAuthStore = create<AuthState & AuthActions>()(
       signUp: async (email, password) => {
         try {
           set({ loading: true });
+
+          // Check rate limiting
+          const rateLimitResult = await checkRegisterRateLimit(email);
+          if (!rateLimitResult.allowed) {
+            const message = formatRateLimitMessage(rateLimitResult, 'registration');
+            await securityManager.logSecurityEvent({
+              type: 'rate_limit',
+              timestamp: Date.now(),
+              email,
+              details: 'Registration rate limit exceeded',
+            });
+            return { success: false, error: message };
+          }
+
+          // Validate password strength if security manager is available
+          const passwordValidation = securityManager.validatePasswordStrength(password);
+          if (!passwordValidation.isValid) {
+            return { 
+              success: false, 
+              error: `Password requirements not met: ${passwordValidation.suggestions.join(', ')}` 
+            };
+          }
+
           const { data, error } = await supabase.auth.signUp({
             email,
             password,
@@ -80,6 +136,15 @@ const useAuthStore = create<AuthState & AuthActions>()(
             if (roleError) throw roleError;
 
             await get().getUserRole();
+
+            // Log successful registration
+            await securityManager.logSecurityEvent({
+              type: 'login',
+              timestamp: Date.now(),
+              userId: data.user.id,
+              email: data.user.email,
+              details: 'New user registration',
+            });
           }
 
           return { success: true };
@@ -92,6 +157,17 @@ const useAuthStore = create<AuthState & AuthActions>()(
 
       signOut: async () => {
         try {
+          // Log logout event
+          const { data: { user } } = await supabase.auth.getUser();
+          if (user) {
+            await securityManager.logSecurityEvent({
+              type: 'logout',
+              timestamp: Date.now(),
+              userId: user.id,
+              email: user.email,
+            });
+          }
+
           await supabase.auth.signOut();
           set({ user: null, session: null, isAuthenticated: false, userRole: null });
         } catch (error) {

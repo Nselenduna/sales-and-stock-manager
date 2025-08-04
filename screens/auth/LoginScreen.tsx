@@ -10,6 +10,7 @@ import {
   Platform,
 } from 'react-native';
 import { useAuthStore } from '../../store/authStore';
+import { sanitizeEmail, sanitizePassword } from '../../lib/sanitize';
 
 const LoginScreen = ({ navigation }: any) => {
   const [email, setEmail] = useState('');
@@ -22,7 +23,21 @@ const LoginScreen = ({ navigation }: any) => {
       return;
     }
 
-    const result = await signIn(email, password);
+    // Sanitize inputs
+    const emailResult = sanitizeEmail(email);
+    const passwordResult = sanitizePassword(password);
+
+    if (!emailResult.isValid) {
+      Alert.alert('Invalid Email', emailResult.errors.join(', '));
+      return;
+    }
+
+    if (!passwordResult.isValid) {
+      Alert.alert('Invalid Password', passwordResult.errors.join(', '));
+      return;
+    }
+
+    const result = await signIn(emailResult.value, passwordResult.value);
     if (!result.success) {
       Alert.alert('Login Failed', result.error);
     }

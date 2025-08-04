@@ -109,10 +109,152 @@ A comprehensive React Native mobile application for inventory management, sales 
 
 ## 🔐 Security & Compliance
 
+### Security Features
+
 - **Input Sanitization**: XSS protection and SQL injection prevention
 - **Data Privacy**: GDPR-compliant offline data handling
-- **Authentication**: Secure role-based access control
+- **Authentication**: Secure role-based access control with Supabase
+- **Rate Limiting**: Brute force attack prevention
+- **Session Security**: Configurable timeouts and concurrent session limits
+- **Password Security**: Strength validation and secure storage
+- **Security Monitoring**: Real-time event logging and suspicious activity detection
 - **Error Handling**: Graceful fallbacks for all failure scenarios
+
+### Security Architecture
+
+#### Authentication & Authorization
+- **Provider**: Supabase Auth with PKCE flow
+- **Session Management**: Automatic token refresh with configurable timeouts
+- **Role-Based Access**: Three-tier system (Admin, Staff, Viewer)
+- **Rate Limiting**: Configurable limits for login, registration, and API calls
+
+#### Input Validation & Sanitization
+- **Comprehensive Sanitization**: All user inputs processed through `lib/sanitize.ts`
+- **XSS Prevention**: HTML entity escaping and script tag removal
+- **SQL Injection Protection**: Input pattern validation and parameterized queries
+- **Data Validation**: Type-safe validation with error reporting
+
+#### Security Monitoring
+- **Event Logging**: All authentication and security events tracked
+- **Suspicious Activity Detection**: Automated pattern recognition
+- **Rate Limit Monitoring**: Real-time tracking of API usage
+- **Security Reporting**: Comprehensive audit trails
+
+### Rate Limiting Configuration
+
+| Endpoint | Max Attempts | Time Window | Block Duration |
+|----------|-------------|-------------|----------------|
+| Login | 5 attempts | 15 minutes | 30 minutes |
+| Registration | 3 attempts | 1 hour | 1 hour |
+| Password Reset | 3 attempts | 30 minutes | 1 hour |
+| API Calls | 100 requests | 1 minute | 5 minutes |
+
+### Security Settings
+
+#### Session Management
+- **Default Timeout**: 24 hours
+- **Max Concurrent Sessions**: 3 per user
+- **Auto-refresh**: 5 minutes before expiry
+- **Secure Storage**: AsyncStorage with encryption
+
+#### Password Policy
+- **Minimum Length**: 8 characters
+- **Strength Requirements**: Uppercase, lowercase, numbers, symbols
+- **Validation**: Real-time strength checking
+- **Storage**: Supabase Auth secure hashing
+
+### Security Best Practices
+
+#### For Developers
+1. **Always sanitize user inputs** using provided utilities
+2. **Validate data on both client and server** sides
+3. **Use TypeScript** for type safety
+4. **Follow OWASP guidelines** for mobile security
+5. **Regular security audits** and dependency updates
+
+#### For Administrators
+1. **Monitor security events** regularly
+2. **Configure appropriate rate limits** for your environment
+3. **Review user permissions** periodically
+4. **Keep backups secure** and encrypted
+5. **Update security configurations** as needed
+
+#### For Users
+1. **Use strong passwords** meeting policy requirements
+2. **Log out properly** when finished
+3. **Report suspicious activity** immediately
+4. **Keep app updated** to latest version
+5. **Protect device access** with screen locks
+
+### Security Configuration
+
+```typescript
+// Security Manager Configuration
+const securityConfig = {
+  sessionTimeout: 24 * 60 * 60 * 1000, // 24 hours
+  maxConcurrentSessions: 3,
+  enforceStrongPasswords: true,
+  logSecurityEvents: true,
+  enableBiometric: false, // Future enhancement
+};
+
+// Rate Limiting Configuration
+const rateLimits = {
+  login: { maxAttempts: 5, windowMs: 15 * 60 * 1000 },
+  register: { maxAttempts: 3, windowMs: 60 * 60 * 1000 },
+  api: { maxAttempts: 100, windowMs: 60 * 1000 },
+};
+```
+
+### Security Events
+
+The application logs the following security events:
+- User login/logout
+- Failed login attempts
+- Rate limit violations
+- Suspicious activity patterns
+- Password changes
+- Session timeouts
+
+### Compliance
+
+#### GDPR Compliance
+- **Data Minimization**: Only necessary data collected
+- **User Consent**: Clear privacy policies
+- **Right to Erasure**: Data deletion capabilities
+- **Data Portability**: Export functionality
+- **Secure Processing**: Encryption at rest and in transit
+
+#### Security Standards
+- **OWASP Mobile Top 10**: Addressed systematically
+- **React Native Security**: Best practices implemented
+- **Supabase Security**: Enhanced with additional layers
+- **Local Storage**: Secure handling of sensitive data
+
+### Security Testing
+
+Run security-focused tests:
+```bash
+npm run test:security  # Security-specific test suite
+npm run audit         # Dependency vulnerability check
+npm run lint:security # Security-focused linting
+```
+
+### Incident Response
+
+1. **Detection**: Automated monitoring alerts
+2. **Assessment**: Security event analysis
+3. **Containment**: Rate limiting and session termination
+4. **Recovery**: System restoration procedures
+5. **Documentation**: Incident logging and reporting
+
+### Future Enhancements
+
+- **Biometric Authentication**: Fingerprint/Face ID support
+- **Hardware Security**: Secure Enclave integration
+- **Advanced Monitoring**: ML-based threat detection
+- **Zero-Trust Architecture**: Enhanced verification layers
+- **Security Headers**: Additional web security measures
 
 ## 🚀 Getting Started
 

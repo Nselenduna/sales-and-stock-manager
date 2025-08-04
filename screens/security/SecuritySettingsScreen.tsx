@@ -12,6 +12,8 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { supabase } from '../../lib/supabase';
+import { securityManager, SecurityConfig, SecurityEvent } from '../../lib/security/securityManager';
+import { rateLimiter, RATE_LIMIT_CONFIGS } from '../../lib/security/rateLimiter';
 import Icon from '../../components/Icon';
 
 interface SecuritySetting {
@@ -28,24 +30,53 @@ const SecuritySettingsScreen: React.FC<SecuritySettingsScreenProps> = ({
   navigation,
 }) => {
   const [settings, setSettings] = useState<SecuritySetting[]>([]);
+  const [securityConfig, setSecurityConfig] = useState<SecurityConfig | null>(null);
+  const [securityEvents, setSecurityEvents] = useState<SecurityEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showEventsModal, setShowEventsModal] = useState(false);
+  const [showConfigModal, setShowConfigModal] = useState(false);
   const [selectedSetting, setSelectedSetting] = useState<SecuritySetting | null>(null);
   const [editValue, setEditValue] = useState('');
 
   useEffect(() => {
-    fetchSecuritySettings();
+    initializeSecurityData();
   }, []);
+
+  const initializeSecurityData = async () => {
+    try {
+      setLoading(true);
+      
+      // Initialize security manager
+      await securityManager.init();
+      
+      // Load security configuration
+      const config = securityManager.getConfig();
+      setSecurityConfig(config);
+      
+      // Load recent security events
+      const events = securityManager.getSecurityEvents(20);
+      setSecurityEvents(events);
+      
+      // Fetch database security settings if they exist
+      await fetchSecuritySettings();
+    } catch (error) {
+      console.error('Error initializing security data:', error);
+      Alert.alert('Error', 'Failed to load security data');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const fetchSecuritySettings = async () => {
     try {
-      setLoading(true);
+      // Try to fetch from database, but don't fail if table doesn't exist
       const { data, error } = await supabase
         .from('security_settings')
         .select('*')
         .order('setting_key');
 
-      if (error) {
+      if (error && !error.message.includes('relation "security_settings" does not exist')) {
         console.error('Error fetching security settings:', error);
         Alert.alert('Error', 'Failed to fetch security settings');
         return;
@@ -54,10 +85,66 @@ const SecuritySettingsScreen: React.FC<SecuritySettingsScreenProps> = ({
       setSettings(data || []);
     } catch (error) {
       console.error('Error fetching security settings:', error);
-      Alert.alert('Error', 'Failed to fetch security settings');
-    } finally {
-      setLoading(false);
+      // Don't show error if table doesn't exist yet
     }
+  };
+
+  const handleConfigUpdate = async (newConfig: Partial<SecurityConfig>) => {
+    try {
+      await securityManager.updateConfig(newConfig);
+      setSecurityConfig(securityManager.getConfig());
+      Alert.alert('Success', 'Security configuration updated');
+    } catch (error) {
+      console.error('Error updating security config:', error);
+      Alert.alert('Error', 'Failed to update security configuration');
+    }
+  };
+
+  const handleClearSecurityEvents = async () => {
+    Alert.alert(
+      'Clear Security Events',
+      'Are you sure you want to clear all security event logs?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Clear',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await securityManager.clearSecurityEvents();
+              setSecurityEvents([]);
+              Alert.alert('Success', 'Security events cleared');
+            } catch (error) {
+              console.error('Error clearing security events:', error);
+              Alert.alert('Error', 'Failed to clear security events');
+            }
+          },
+        },
+      ]
+    );
+  };
+
+  const handleClearRateLimits = async () => {
+    Alert.alert(
+      'Clear Rate Limits',
+      'Are you sure you want to clear all rate limiting data?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Clear',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await rateLimiter.clearAllRateLimits();
+              Alert.alert('Success', 'Rate limits cleared');
+            } catch (error) {
+              console.error('Error clearing rate limits:', error);
+              Alert.alert('Error', 'Failed to clear rate limits');
+            }
+          },
+        },
+      ]
+    );
   };
 
   const handleSettingToggle = async (setting: SecuritySetting, newValue: string) => {
@@ -210,6 +297,166 @@ const SecuritySettingsScreen: React.FC<SecuritySettingsScreenProps> = ({
     </View>
   );
 
+  const renderSecurityOverview = () => (
+    <View style={styles.overviewSection}>
+      <Text style={styles.sectionTitle}>Security Overview</Text>
+      
+      <View style={styles.overviewGrid}>
+        <TouchableOpacity 
+          style={styles.overviewCard}
+          onPress={() => setShowEventsModal(true)}
+        >
+          <Icon name="shield-checkmark" size={24} color="#059669" />
+          <Text style={styles.overviewNumber}>{securityEvents.length}</Text>
+          <Text style={styles.overviewLabel}>Security Events</Text>
+        </TouchableOpacity>
+        
+        <TouchableOpacity 
+          style={styles.overviewCard}
+          onPress={() => setShowConfigModal(true)}
+        >
+          <Icon name="settings" size={24} color="#2563eb" />
+          <Text style={styles.overviewNumber}>
+            {securityConfig?.sessionTimeout ? Math.round(securityConfig.sessionTimeout / 60000) : 0}m
+          </Text>
+          <Text style={styles.overviewLabel}>Session Timeout</Text>
+        </TouchableOpacity>
+        
+        <TouchableOpacity 
+          style={styles.overviewCard}
+          onPress={handleClearRateLimits}
+        >
+          <Icon name="speedometer" size={24} color="#dc2626" />
+          <Text style={styles.overviewNumber}>{Object.keys(RATE_LIMIT_CONFIGS).length}</Text>
+          <Text style={styles.overviewLabel}>Rate Limits</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+
+  const renderSecurityConfigModal = () => (
+    <Modal
+      visible={showConfigModal}
+      animationType="slide"
+      transparent={true}
+    >
+      <View style={styles.modalOverlay}>
+        <View style={styles.modalContent}>
+          <Text style={styles.modalTitle}>Security Configuration</Text>
+          
+          {securityConfig && (
+            <ScrollView style={styles.configContainer}>
+              <View style={styles.configItem}>
+                <Text style={styles.configLabel}>Session Timeout (minutes)</Text>
+                <TextInput
+                  style={styles.input}
+                  value={Math.round(securityConfig.sessionTimeout / 60000).toString()}
+                  onChangeText={(value) => {
+                    const minutes = parseInt(value) || 0;
+                    handleConfigUpdate({ sessionTimeout: minutes * 60000 });
+                  }}
+                  keyboardType="numeric"
+                />
+              </View>
+              
+              <View style={styles.configItem}>
+                <Text style={styles.configLabel}>Max Concurrent Sessions</Text>
+                <TextInput
+                  style={styles.input}
+                  value={securityConfig.maxConcurrentSessions.toString()}
+                  onChangeText={(value) => {
+                    const sessions = parseInt(value) || 1;
+                    handleConfigUpdate({ maxConcurrentSessions: sessions });
+                  }}
+                  keyboardType="numeric"
+                />
+              </View>
+              
+              <View style={styles.configItem}>
+                <View style={styles.switchRow}>
+                  <Text style={styles.configLabel}>Enforce Strong Passwords</Text>
+                  <Switch
+                    value={securityConfig.enforceStrongPasswords}
+                    onValueChange={(value) => handleConfigUpdate({ enforceStrongPasswords: value })}
+                  />
+                </View>
+              </View>
+              
+              <View style={styles.configItem}>
+                <View style={styles.switchRow}>
+                  <Text style={styles.configLabel}>Log Security Events</Text>
+                  <Switch
+                    value={securityConfig.logSecurityEvents}
+                    onValueChange={(value) => handleConfigUpdate({ logSecurityEvents: value })}
+                  />
+                </View>
+              </View>
+            </ScrollView>
+          )}
+          
+          <TouchableOpacity
+            style={styles.closeButton}
+            onPress={() => setShowConfigModal(false)}
+          >
+            <Text style={styles.closeButtonText}>Close</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </Modal>
+  );
+
+  const renderSecurityEventsModal = () => (
+    <Modal
+      visible={showEventsModal}
+      animationType="slide"
+      transparent={true}
+    >
+      <View style={styles.modalOverlay}>
+        <View style={styles.modalContent}>
+          <View style={styles.eventsHeader}>
+            <Text style={styles.modalTitle}>Security Events</Text>
+            <TouchableOpacity
+              style={styles.clearEventsButton}
+              onPress={handleClearSecurityEvents}
+            >
+              <Text style={styles.clearEventsText}>Clear</Text>
+            </TouchableOpacity>
+          </View>
+          
+          <ScrollView style={styles.eventsContainer}>
+            {securityEvents.length === 0 ? (
+              <Text style={styles.noEventsText}>No security events recorded</Text>
+            ) : (
+              securityEvents.map((event, index) => (
+                <View key={index} style={styles.eventItem}>
+                  <View style={styles.eventHeader}>
+                    <Text style={styles.eventType}>{event.type.replace(/_/g, ' ').toUpperCase()}</Text>
+                    <Text style={styles.eventTime}>
+                      {new Date(event.timestamp).toLocaleString()}
+                    </Text>
+                  </View>
+                  {event.email && (
+                    <Text style={styles.eventDetail}>Email: {event.email}</Text>
+                  )}
+                  {event.details && (
+                    <Text style={styles.eventDetail}>Details: {event.details}</Text>
+                  )}
+                </View>
+              ))
+            )}
+          </ScrollView>
+          
+          <TouchableOpacity
+            style={styles.closeButton}
+            onPress={() => setShowEventsModal(false)}
+          >
+            <Text style={styles.closeButtonText}>Close</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </Modal>
+  );
+
   const renderCategorySection = (category: string, categorySettings: SecuritySetting[]) => (
     <View key={category} style={styles.categorySection}>
       <View style={styles.categoryHeader}>
@@ -232,36 +479,46 @@ const SecuritySettingsScreen: React.FC<SecuritySettingsScreenProps> = ({
         <Text style={styles.title}>Security Settings</Text>
         <TouchableOpacity
           style={styles.refreshButton}
-          onPress={fetchSecuritySettings}
+          onPress={initializeSecurityData}
         >
           <Icon name="sync" size={24} color="white" />
         </TouchableOpacity>
       </View>
 
-      <View style={styles.statsContainer}>
-        <View style={styles.statCard}>
-          <Text style={styles.statNumber}>{settings.length}</Text>
-          <Text style={styles.statLabel}>Total Settings</Text>
-        </View>
-        <View style={styles.statCard}>
-          <Text style={styles.statNumber}>
-            {settings.filter(s => s.setting_value === 'true').length}
-          </Text>
-          <Text style={styles.statLabel}>Enabled</Text>
-        </View>
-        <View style={styles.statCard}>
-          <Text style={styles.statNumber}>
-            {Object.keys(groupedSettings).length}
-          </Text>
-          <Text style={styles.statLabel}>Categories</Text>
-        </View>
-      </View>
+      {renderSecurityOverview()}
 
       <ScrollView style={styles.settingsContainer}>
-        {Object.entries(groupedSettings).map(([category, categorySettings]) =>
-          renderCategorySection(category, categorySettings)
+        {/* Database Settings */}
+        {Object.keys(groupedSettings).length > 0 && (
+          <View style={styles.sectionContainer}>
+            <Text style={styles.sectionTitle}>Database Security Settings</Text>
+            {Object.entries(groupedSettings).map(([category, categorySettings]) =>
+              renderCategorySection(category, categorySettings)
+            )}
+          </View>
         )}
+
+        {/* Rate Limiting Info */}
+        <View style={styles.sectionContainer}>
+          <Text style={styles.sectionTitle}>Rate Limiting Configuration</Text>
+          <View style={styles.rateLimitContainer}>
+            {Object.entries(RATE_LIMIT_CONFIGS).map(([endpoint, config]) => (
+              <View key={endpoint} style={styles.rateLimitItem}>
+                <Text style={styles.rateLimitEndpoint}>{endpoint}</Text>
+                <Text style={styles.rateLimitConfig}>
+                  {config.maxAttempts} attempts / {Math.round(config.windowMs / 60000)}min
+                </Text>
+              </View>
+            ))}
+          </View>
+        </View>
       </ScrollView>
+
+      {/* Security Configuration Modal */}
+      {renderSecurityConfigModal()}
+
+      {/* Security Events Modal */}
+      {renderSecurityEventsModal()}
 
       {/* Edit Setting Modal */}
       <Modal
@@ -351,6 +608,67 @@ const styles = StyleSheet.create({
     height: 40,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  overviewSection: {
+    padding: 16,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#1e293b',
+    marginBottom: 12,
+  },
+  overviewGrid: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  overviewCard: {
+    flex: 1,
+    backgroundColor: 'white',
+    padding: 16,
+    marginHorizontal: 4,
+    borderRadius: 12,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+  },
+  overviewNumber: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#1e293b',
+    marginTop: 8,
+  },
+  overviewLabel: {
+    fontSize: 12,
+    color: '#64748b',
+    marginTop: 4,
+    textAlign: 'center',
+  },
+  sectionContainer: {
+    marginBottom: 16,
+  },
+  rateLimitContainer: {
+    backgroundColor: 'white',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+  },
+  rateLimitItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f1f5f9',
+  },
+  rateLimitEndpoint: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#1e293b',
+  },
+  rateLimitConfig: {
+    fontSize: 14,
+    color: '#64748b',
   },
   statsContainer: {
     flexDirection: 'row',
@@ -460,6 +778,7 @@ const styles = StyleSheet.create({
     padding: 24,
     width: '90%',
     maxWidth: 400,
+    maxHeight: '80%',
   },
   modalTitle: {
     fontSize: 20,
@@ -468,16 +787,94 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     textAlign: 'center',
   },
-  settingLabel: {
+  configContainer: {
+    maxHeight: 300,
+    marginBottom: 20,
+  },
+  configItem: {
+    marginBottom: 16,
+  },
+  configLabel: {
     fontSize: 16,
     fontWeight: 'bold',
     color: '#1e293b',
     marginBottom: 8,
   },
-  settingDescription: {
-    fontSize: 14,
+  switchRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  eventsHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  clearEventsButton: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    backgroundColor: '#dc2626',
+    borderRadius: 8,
+  },
+  clearEventsText: {
+    color: 'white',
+    fontWeight: 'bold',
+    fontSize: 12,
+  },
+  eventsContainer: {
+    maxHeight: 300,
+    marginBottom: 20,
+  },
+  noEventsText: {
+    textAlign: 'center',
     color: '#64748b',
-    marginBottom: 16,
+    fontStyle: 'italic',
+  },
+  eventItem: {
+    padding: 12,
+    backgroundColor: '#f8fafc',
+    borderRadius: 8,
+    marginBottom: 8,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+  },
+  eventHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 4,
+  },
+  eventType: {
+    fontSize: 12,
+    fontWeight: 'bold',
+    color: '#dc2626',
+  },
+  eventTime: {
+    fontSize: 10,
+    color: '#64748b',
+  },
+  eventDetail: {
+    fontSize: 12,
+    color: '#374151',
+  },
+  closeButton: {
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    backgroundColor: '#64748b',
+  },
+  closeButtonText: {
+    textAlign: 'center',
+    fontSize: 16,
+    color: 'white',
+    fontWeight: 'bold',
+  },
+  settingLabel: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#1e293b',
+    marginBottom: 8,
   },
   input: {
     borderWidth: 1,
