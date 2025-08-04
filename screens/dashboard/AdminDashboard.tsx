@@ -265,6 +265,19 @@ const AdminDashboard = ({ navigation }: { navigation: any }) => {
                <Text style={styles.cardButtonText}>Settings</Text>
              </TouchableOpacity>
            </View>
+
+           <View style={styles.card}>
+             <Text style={styles.cardTitle}>Audit Logs</Text>
+             <Text style={styles.cardDescription}>
+               View comprehensive audit trail of all system activities including logins, role changes, stock adjustments, and security events
+             </Text>
+             <TouchableOpacity 
+               style={styles.cardButton}
+               onPress={() => navigation.navigate('AuditLogs')}
+             >
+               <Text style={styles.cardButtonText}>View Audit Logs</Text>
+             </TouchableOpacity>
+           </View>
         </View>
 
         <TouchableOpacity style={styles.signOutButton} onPress={handleSignOut}>

@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { supabase, UserWithRole } from '../lib/supabase';
+import { auditLogger } from '../lib/auditLogger';
 
 interface AuthState {
   user: UserWithRole | null;
@@ -44,10 +45,14 @@ const useAuthStore = create<AuthState & AuthActions>()(
             password,
           });
 
-          if (error) throw error;
+          if (error) {
+            await auditLogger.logLogin(email, false, error.message);
+            throw error;
+          }
 
           if (data.user) {
             await get().getUserRole();
+            await auditLogger.logLogin(email, true);
           }
 
           return { success: true };
@@ -92,8 +97,13 @@ const useAuthStore = create<AuthState & AuthActions>()(
 
       signOut: async () => {
         try {
+          const currentUser = get().user;
           await supabase.auth.signOut();
           set({ user: null, session: null, isAuthenticated: false, userRole: null });
+          
+          if (currentUser?.email) {
+            await auditLogger.logLogout(currentUser.email);
+          }
         } catch (error) {
           console.error('Sign out error:', error);
         }

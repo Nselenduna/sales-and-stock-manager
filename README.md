@@ -79,6 +79,7 @@ A comprehensive React Native mobile application for inventory management, sales 
 - **Barcode Scanning**: Product lookup and inventory updates
 - **Role-Based Access**: Admin, Staff, and Viewer permissions
 - **Offline Support**: Full functionality without internet connection
+- **Audit Logging**: Comprehensive audit trail for all critical operations
 
 ### Performance Optimizations
 - **Virtualized Lists**: Smooth scrolling with 1000+ items
@@ -92,6 +93,7 @@ A comprehensive React Native mobile application for inventory management, sales 
 - **Sales Interface**: Intuitive cart management and checkout process
 - **Sync Feedback**: Real-time status updates
 - **Accessibility**: WCAG 2.1 AA compliant interface
+- **Audit Trail**: Complete logging of all critical operations for compliance and security
 
 ## 🧪 Testing
 
@@ -113,6 +115,13 @@ A comprehensive React Native mobile application for inventory management, sales 
 - **Data Privacy**: GDPR-compliant offline data handling
 - **Authentication**: Secure role-based access control
 - **Error Handling**: Graceful fallbacks for all failure scenarios
+- **Audit Logging**: Comprehensive tracking of all critical system activities
+  - User authentication events (login/logout/failures)
+  - Role and permission changes
+  - Inventory operations (stock adjustments, product modifications)
+  - Sales transactions and receipt generation
+  - Administrative actions and security events
+- **Compliance Features**: Export capabilities for regulatory reporting
 
 ## 🚀 Getting Started
 
@@ -143,16 +152,23 @@ A comprehensive React Native mobile application for inventory management, sales 
 │   ├── sales/         # Sales module screens
 │   ├── inventory/     # Inventory management screens
 │   ├── dashboard/     # Role-based dashboards
-│   └── auth/          # Authentication screens
+│   ├── auth/          # Authentication screens
+│   └── AuditLogScreen.tsx # Admin-only audit log viewer
 ├── navigation/         # Navigation configuration
 ├── lib/               # Utility libraries and Supabase config
+│   ├── auditLogger.ts # Comprehensive audit logging service
+│   ├── types.ts       # TypeScript type definitions (including audit types)
+│   └── supabase.ts    # Database configuration
 ├── hooks/             # Custom React hooks
 ├── store/             # Zustand state management
 ├── __tests__/         # Test files
-│   └── sales/         # Sales module tests
+│   ├── lib/          # Library tests (including audit logger)
+│   ├── screens/      # Screen tests (including audit log screen)
+│   └── sales/        # Sales module tests
 ├── modules/           # Feature documentation and specs
-└── docs/              # Project documentation
-│   └── sales/         # Sales module documentation
+├── docs/             # Project documentation
+│   ├── audit-logging.md # Comprehensive audit logging guide
+│   └── sales/        # Sales module documentation
 ```
 
 ## 🤝 Contributing

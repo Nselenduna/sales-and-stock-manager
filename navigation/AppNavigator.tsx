@@ -51,6 +51,7 @@ import RealTimeDashboardScreen from '../screens/analytics/RealTimeDashboardScree
 
 // Other Screens
 import LoadingScreen from '../screens/LoadingScreen';
+import AuditLogScreen from '../screens/AuditLogScreen';
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -356,6 +357,13 @@ const AppNavigator = () => {
         <Stack.Screen
           name='Settings'
           component={SecuritySettingsScreen}
+          options={{
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name='AuditLogs'
+          component={AuditLogScreen}
           options={{
             headerShown: false,
           }}

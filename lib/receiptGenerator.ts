@@ -1,4 +1,5 @@
 import { formatCurrency } from './utils';
+import { auditLogger } from './auditLogger';
 
 export interface ReceiptItem {
   name: string;
@@ -35,6 +36,14 @@ export const generateReceipt = (saleData: ReceiptData): string => {
     customer_phone,
     notes,
   } = saleData;
+
+  // Log receipt generation
+  auditLogger.logReceiptGeneration(sale_id, {
+    format: 'text',
+    itemCount: items.length,
+    total: total,
+    customer: customer_name || 'N/A'
+  });
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -132,6 +141,14 @@ export const generateReceiptHTML = (saleData: ReceiptData): string => {
     customer_phone,
     notes,
   } = saleData;
+
+  // Log HTML receipt generation
+  auditLogger.logReceiptGeneration(sale_id, {
+    format: 'html',
+    itemCount: items.length,
+    total: total,
+    customer: customer_name || 'N/A'
+  });
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);

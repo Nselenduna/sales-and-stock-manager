@@ -25,6 +25,7 @@ import { useAuthStore } from '../../store/authStore';
 import { supabase, Product } from '../../lib/supabase';
 import { imageUploader, ImageUploadResult } from '../../lib/imageUploader';
 import { barcodeScanner, BarcodeScanResult } from '../../lib/barcodeScanner';
+import { auditLogger } from '../../lib/auditLogger';
 import Icon from '../../components/Icon';
 
 interface InventoryFormScreenProps {
@@ -91,6 +92,7 @@ const InventoryFormScreen: React.FC<InventoryFormScreenProps> = ({
   const [qrScanned, setQrScanned] = useState(false);
   const [isOffline, setIsOffline] = useState(false);
   const [draftSaved, setDraftSaved] = useState(false);
+  const [originalData, setOriginalData] = useState<FormData | null>(null);
 
   // Role-based access control
   const canEdit = userRole === 'admin' || userRole === 'staff';
@@ -182,7 +184,7 @@ const InventoryFormScreen: React.FC<InventoryFormScreenProps> = ({
 
       // Check if component is still mounted before updating state
       if (isMounted.current) {
-        setFormData({
+        const productData = {
           name: data.name || '',
           sku: data.sku || '',
           barcode: data.barcode || '',
@@ -192,7 +194,9 @@ const InventoryFormScreen: React.FC<InventoryFormScreenProps> = ({
           unit_price: data.unit_price || 0,
           description: data.description || '',
           category: data.category || '',
-        });
+        };
+        setFormData(productData);
+        setOriginalData(productData); // Store original data for audit logging
       }
     } catch (error) {
       console.error('Error fetching product:', error);
@@ -468,6 +472,16 @@ const InventoryFormScreen: React.FC<InventoryFormScreenProps> = ({
 
         if (error) throw error;
 
+        // Log product creation
+        await auditLogger.logEvent({
+          action_type: 'PRODUCT_CREATE',
+          entity_type: 'PRODUCT',
+          entity_id: data.id,
+          new_values: formData,
+          description: `Product created: ${formData.name} (SKU: ${formData.sku})`,
+          success: true
+        });
+
         Alert.alert('Success', 'Product added successfully', [
           { text: 'OK', onPress: () => navigation.goBack() },
         ]);
@@ -480,6 +494,27 @@ const InventoryFormScreen: React.FC<InventoryFormScreenProps> = ({
           .single();
 
         if (error) throw error;
+
+        // Log product update
+        await auditLogger.logEvent({
+          action_type: 'PRODUCT_UPDATE',
+          entity_type: 'PRODUCT',
+          entity_id: productId,
+          old_values: originalData,
+          new_values: formData,
+          description: `Product updated: ${formData.name} (SKU: ${formData.sku})`,
+          success: true
+        });
+
+        // Log stock adjustment if quantity changed
+        if (originalData && originalData.quantity !== formData.quantity) {
+          await auditLogger.logStockAdjustment(
+            productId!,
+            originalData.quantity,
+            formData.quantity,
+            'Manual stock adjustment via product edit'
+          );
+        }
 
         Alert.alert('Success', 'Product updated successfully', [
           { text: 'OK', onPress: () => navigation.goBack() },
