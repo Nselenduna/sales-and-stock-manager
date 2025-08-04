@@ -21,6 +21,7 @@ import { useDebouncedSearch } from '../../hooks/useDebounce';
 import Icon from '../../components/Icon';
 import { useSyncFeedback } from '../../hooks/useSyncFeedback';
 import SyncStatusBanner from '../../components/SyncStatusBanner';
+import { handleError, createNetworkError } from '../../lib/errorHandler';
 
 interface InventoryListScreenProps {
   navigation: any;
@@ -107,7 +108,13 @@ const InventoryListScreen: React.FC<InventoryListScreenProps> = ({
       } catch (error) {
         console.error('Error fetching products:', error);
         setFailed('Failed to load inventory');
-        Alert.alert('Error', 'Failed to load inventory');
+        handleError(error instanceof Error ? error : 'Failed to load inventory', {
+          component: 'InventoryListScreen',
+          action: 'fetchProducts'
+        }, {
+          retryCallback: () => fetchProducts(refresh),
+          showAlert: true
+        });
       } finally {
         setLoading(false);
       }

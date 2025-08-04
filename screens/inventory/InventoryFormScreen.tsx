@@ -26,6 +26,7 @@ import { supabase, Product } from '../../lib/supabase';
 import { imageUploader, ImageUploadResult } from '../../lib/imageUploader';
 import { barcodeScanner, BarcodeScanResult } from '../../lib/barcodeScanner';
 import Icon from '../../components/Icon';
+import { handleError, createValidationError, createNetworkError, createStorageError } from '../../lib/errorHandler';
 
 interface InventoryFormScreenProps {
   navigation: any;
@@ -197,7 +198,11 @@ const InventoryFormScreen: React.FC<InventoryFormScreenProps> = ({
     } catch (error) {
       console.error('Error fetching product:', error);
       if (isMounted.current) {
-        Alert.alert('Error', 'Failed to load product data');
+        handleError(error instanceof Error ? error : 'Failed to load product data', {
+          component: 'InventoryFormScreen',
+          action: 'fetchProduct',
+          metadata: { productId }
+        });
       }
     } finally {
       if (isMounted.current) {
@@ -382,11 +387,17 @@ const InventoryFormScreen: React.FC<InventoryFormScreenProps> = ({
           );
         }
       } else {
-        Alert.alert('Error', result.error || 'Failed to upload image');
+        handleError(result.error || 'Failed to upload image', {
+          component: 'InventoryFormScreen',
+          action: 'uploadImage'
+        });
       }
     } catch (error) {
       console.error('Image upload error:', error);
-      Alert.alert('Error', 'Failed to upload image. Please try again.');
+      handleError(error instanceof Error ? error : 'Failed to upload image', {
+        component: 'InventoryFormScreen',
+        action: 'uploadImage'
+      });
     } finally {
       setLoading(false);
     }
