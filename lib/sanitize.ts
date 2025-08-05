@@ -55,9 +55,10 @@ export function sanitizeInput(input: string, options: InputOptions = {}): Saniti
   const sqlInjectionPattern = /(\b(select|insert|update|delete|drop|union|alter)\b)|(-{2}|\/\*|\*\/)/i;
   const hasSqlInjection = sqlInjectionPattern.test(input);
 
-  // Detect XSS patterns (for specific test cases) - only if not removed
+  // Detect XSS patterns - flag as invalid only if input is purely script tags
   const xssPattern = /<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/i;
   const hasXss = xssPattern.test(input);
+  const isPureXss = input.trim().match(/^<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>$/i);
 
   // Detect command injection patterns (these are always dangerous)
   const commandPattern = /\b(exec|system|passthru|shell_exec|popen|proc_open|pcntl_exec|cat|ls|rm|chmod|chown)\b|\$\{|`/i;
@@ -77,6 +78,9 @@ export function sanitizeInput(input: string, options: InputOptions = {}): Saniti
   // Remove data: URLs
   sanitized = sanitized.replace(/data:[^'"]*/g, '');
 
+  // Handle XSS but only flag pure script injections as invalid
+  const shouldFlagXss = isPureXss && options.removeScripts !== false;
+
   // Escape HTML entities first if removeScripts is false
   if (options.removeScripts === false) {
     sanitized = sanitized
@@ -86,10 +90,11 @@ export function sanitizeInput(input: string, options: InputOptions = {}): Saniti
       .replace(/"/g, '&quot;')
       .replace(/'/g, '&#x27;');
   } else {
-    // Remove HTML tags
-    sanitized = sanitized.replace(/<[^>]*>/g, '');
+    // Remove other HTML tags but not standalone < and >
+    sanitized = sanitized.replace(/<\w+[^>]*>/g, ''); // opening tags
+    sanitized = sanitized.replace(/<\/\w+>/g, ''); // closing tags
 
-    // Escape remaining HTML entities
+    // Escape remaining HTML entities (including standalone < and >)
     sanitized = sanitized
       .replace(/&/g, '&amp;')
       .replace(/</g, '&lt;')
@@ -105,12 +110,12 @@ export function sanitizeInput(input: string, options: InputOptions = {}): Saniti
 
   const errors: string[] = [];
   if (hasSqlInjection) errors.push('Input contains potentially dangerous SQL patterns');
-  if (hasXss) errors.push('Input contains potentially dangerous XSS patterns');
+  if (shouldFlagXss) errors.push('Input contains potentially dangerous XSS patterns');
   if (hasCommand) errors.push('Input contains potentially dangerous command patterns');
 
   return {
     value: sanitized,
-    isValid: !hasSqlInjection && !hasXss && !hasCommand,
+    isValid: !hasSqlInjection && !shouldFlagXss && !hasCommand,
     errors,
     originalLength,
     sanitizedLength: sanitized.length
@@ -273,6 +278,25 @@ export function sanitizeCurrency(value: string, options: CurrencyOptions = {}): 
     return { value: '', isValid: false, errors: ['Value is required'] };
   }
 
+  // Check for completely invalid formats first (letters mixed with numbers)
+  if (/[a-zA-Z]/.test(value)) {
+    return { value: '', isValid: false, errors: ['Invalid currency value'] };
+  }
+
+  // Check for patterns like 12.34.56 or 12,34,56 (multiple decimal/comma separators)
+  const dotCount = (value.match(/\./g) || []).length;
+  const commaCount = (value.match(/,/g) || []).length;
+  
+  // Reject if there are too many dots or commas
+  if (dotCount > 1 || commaCount > 1) {
+    // Exception: European format with thousands separator (1.000,50)
+    if (dotCount > 1 && commaCount === 1) {
+      // This might be valid European format, let it continue
+    } else {
+      return { value: '', isValid: false, errors: ['Invalid currency value'] };
+    }
+  }
+
   // Handle European format (comma as decimal separator)
   let sanitized = value;
   
@@ -299,6 +323,11 @@ export function sanitizeCurrency(value: string, options: CurrencyOptions = {}): 
 
   // Remove all non-numeric characters except decimal point and minus sign
   sanitized = sanitized.replace(/[^\d.-]/g, '');
+
+  // Check for multiple decimal points or commas
+  if ((value.match(/\./g) || []).length > 1 && (value.match(/,/g) || []).length > 1) {
+    return { value: '', isValid: false, errors: ['Invalid currency value'] };
+  }
 
   // Handle negative numbers
   const isNegative = sanitized.startsWith('-');
@@ -341,6 +370,11 @@ export function sanitizeCurrency(value: string, options: CurrencyOptions = {}): 
 export function sanitizeNumeric(value: string, options: NumericOptions = {}): SanitizeResult {
   if (!value) {
     return { value: '', isValid: false, errors: ['Value is required'] };
+  }
+
+  // Check for completely invalid formats first (letters mixed with numbers)
+  if (/[a-zA-Z]/.test(value)) {
+    return { value: '', isValid: false, errors: ['Invalid numeric value'] };
   }
 
   let sanitized = value;

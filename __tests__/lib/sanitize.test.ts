@@ -18,7 +18,6 @@ import {
   sanitizeBatch,
   isBatchValid,
   getBatchErrors,
-  SanitizeOptions,
 } from '../../lib/sanitize';
 
 describe('Sanitization Module', () => {
