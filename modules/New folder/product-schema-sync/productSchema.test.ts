@@ -35,6 +35,12 @@ describe('Product Schema Validation', () => {
         sku: 'TEST001',
         quantity: 10,
         low_stock_threshold: 5,
+        barcode: undefined,
+        location: undefined,
+        unit_price: undefined,
+        description: undefined,
+        category: undefined,
+        image_url: undefined,
         created_at: '2024-01-01T00:00:00Z',
         updated_at: '2024-01-01T00:00:00Z'
       };
