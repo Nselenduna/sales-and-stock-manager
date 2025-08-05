@@ -12,8 +12,23 @@ jest.mock('react-native-safe-area-context', () => ({
   useSafeAreaInsets: () => ({ top: 0, right: 0, bottom: 0, left: 0 }),
 }));
 
+// Mock react-native-gesture-handler
+jest.mock('react-native-gesture-handler', () => {
+  const View = require('react-native/Libraries/Components/View/View');
+  return {
+    PanGestureHandler: View,
+    State: {},
+    gestureHandlerRootHOC: jest.fn((Component) => Component),
+    GestureHandlerRootView: View,
+    RectButton: View,
+    BaseButton: View,
+    createNativeWrapper: jest.fn((Component) => Component),
+  };
+});
+
 // Mock @react-navigation/native
 jest.mock('@react-navigation/native', () => ({
+  ...jest.requireActual('@react-navigation/native'),
   useNavigation: () => ({
     navigate: jest.fn(),
     goBack: jest.fn(),
@@ -58,6 +73,28 @@ jest.mock('@react-native-community/netinfo', () => ({
   addEventListener: jest.fn(),
   removeEventListener: jest.fn(),
 }));
+
+// Mock react-native-reanimated
+jest.mock('react-native-reanimated', () => {
+  const View = require('react-native/Libraries/Components/View/View');
+  return {
+    View,
+    createAnimatedComponent: jest.fn((Component) => Component),
+    useAnimatedStyle: jest.fn(() => ({})),
+    withSpring: jest.fn(),
+    withTiming: jest.fn(),
+    useSharedValue: jest.fn(() => ({ value: 0 })),
+    useAnimatedGestureHandler: jest.fn(),
+    Easing: {
+      bezier: jest.fn(),
+      linear: jest.fn(),
+      ease: jest.fn(),
+    },
+  };
+});
+
+// Mock act for testing
+global.act = (callback) => callback();
 
 // Global fetch mock
 global.fetch = jest.fn();

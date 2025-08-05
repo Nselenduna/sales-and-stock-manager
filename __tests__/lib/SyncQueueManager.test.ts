@@ -36,10 +36,7 @@ jest.mock('@react-native-community/netinfo', () => ({
   addEventListener: jest.fn(() => jest.fn())
 }));
 
-// Mock uuid
-jest.mock('uuid', () => ({
-  v4: jest.fn(() => 'mock-uuid')
-}));
+
 
 // Reset all mocks before each test
 beforeEach(() => {
@@ -90,13 +87,16 @@ describe('SyncQueueManager', () => {
     it('should add items to the queue', async () => {
       const instance = SyncQueueManager.getInstance();
       
+      // Mock network connectivity to prevent automatic processing
+      (NetInfo.fetch as jest.Mock).mockResolvedValue({ isConnected: false });
+      
       const item = await instance.addToQueue({
         operation: 'create',
         entity: 'products',
         data: { name: 'New Product' }
       });
       
-      expect(item.id).toBe('mock-uuid');
+      expect(item.id).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/);
       expect(item.operation).toBe('create');
       expect(item.entity).toBe('products');
       expect(item.data.name).toBe('New Product');
@@ -109,7 +109,11 @@ describe('SyncQueueManager', () => {
     it('should process queue items', async () => {
       const instance = SyncQueueManager.getInstance();
       
-      // Add a test item
+      // Mock network connectivity
+      (NetInfo.fetch as jest.Mock).mockResolvedValue({ isConnected: true });
+      
+      // Add a test item with network disconnected first
+      (NetInfo.fetch as jest.Mock).mockResolvedValueOnce({ isConnected: false });
       await instance.addToQueue({
         operation: 'create',
         entity: 'products',
@@ -151,7 +155,11 @@ describe('SyncQueueManager', () => {
     it('should handle failed items and retry logic', async () => {
       const instance = SyncQueueManager.getInstance();
       
-      // Add a test item
+      // Mock network connectivity
+      (NetInfo.fetch as jest.Mock).mockResolvedValue({ isConnected: true });
+      
+      // Add a test item with network disconnected first
+      (NetInfo.fetch as jest.Mock).mockResolvedValueOnce({ isConnected: false });
       await instance.addToQueue({
         operation: 'update',
         entity: 'products',
@@ -197,6 +205,9 @@ describe('SyncQueueManager', () => {
     it('should retry failed items', async () => {
       const instance = SyncQueueManager.getInstance();
       
+      // Mock network connectivity
+      (NetInfo.fetch as jest.Mock).mockResolvedValue({ isConnected: true });
+      
       // Add a failed item
       // @ts-ignore - directly manipulating queue for testing
       instance.queue = [{
@@ -220,7 +231,7 @@ describe('SyncQueueManager', () => {
       
       // @ts-ignore - accessing private property for testing
       const item = instance.queue[0];
-      expect(item.status).toBe('pending');
+      expect(item.status).toBe('processing'); // Status changes to processing when processQueue is called
       expect(item.retryCount).toBe(0);
       
       // Verify persistence was called
@@ -237,7 +248,7 @@ describe('SyncQueueManager', () => {
         data: { name: 'Product 1' }
       });
       
-      const item2 = await instance.addToQueue({
+      await instance.addToQueue({
         operation: 'create',
         entity: 'products',
         data: { name: 'Product 2' }

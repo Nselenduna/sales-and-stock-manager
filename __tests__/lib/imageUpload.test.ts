@@ -1,4 +1,4 @@
-import { ImageUploader, ImageUploadResult } from '../../lib/imageUploader';
+import { ImageUploader } from '../../lib/imageUploader';
 
 // Mock all dependencies with comprehensive implementations
 jest.mock('expo-image-picker', () => ({
@@ -53,10 +53,10 @@ describe('ImageUploader', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    imageUploader = ImageUploader.getInstance();
     
     // Reset singleton instance
     (ImageUploader as any).instance = undefined;
+    imageUploader = ImageUploader.getInstance();
     
     // Setup default mock implementations
     (ImagePicker.requestCameraPermissionsAsync as jest.Mock).mockResolvedValue({
@@ -81,7 +81,7 @@ describe('ImageUploader', () => {
     
     // Mock fetch for blob creation
     global.fetch = jest.fn().mockResolvedValue({
-      blob: jest.fn().mockResolvedValue(new Blob(['test'], { type: 'image/jpeg' })),
+      blob: jest.fn().mockResolvedValue(new global.Blob(['test'], { type: 'image/jpeg' })),
     });
     
     // Mock Supabase storage
@@ -255,7 +255,7 @@ describe('ImageUploader', () => {
       const result = await imageUploader.uploadToSupabase('file://test-image.jpg');
       expect(result.success).toBe(true);
       expect(result.url).toBeDefined();
-      expect(mockUpload).toHaveBeenCalledWith(expect.any(String), expect.any(Blob), {
+      expect(mockUpload).toHaveBeenCalledWith(expect.any(String), expect.any(global.Blob), {
         contentType: 'image/jpeg',
         cacheControl: '3600',
       });
@@ -300,9 +300,9 @@ describe('ImageUploader', () => {
       await imageUploader.uploadToSupabase('file://test-image.jpg');
       
       expect(mockSupabase.storage.from).toHaveBeenCalledWith('product-images');
-      expect(mockUpload).toHaveBeenCalledWith(
-        expect.any(String),
-        expect.any(Blob),
+             expect(mockUpload).toHaveBeenCalledWith(
+         expect.any(String),
+         expect.any(global.Blob),
         {
           contentType: 'image/jpeg',
           cacheControl: '3600',
@@ -374,6 +374,9 @@ describe('ImageUploader', () => {
 
   describe('Offline Queue Management', () => {
     it('should add image to offline queue when upload fails', async () => {
+      // Mock AsyncStorage to return empty queue initially
+      (AsyncStorage.getItem as jest.Mock).mockResolvedValue(null);
+      
       const mockUpload = jest.fn().mockResolvedValue({
         data: null,
         error: { message: 'Network error' },
@@ -386,9 +389,20 @@ describe('ImageUploader', () => {
       
       await imageUploader.uploadImage('gallery');
       
-      const status = await imageUploader.getOfflineQueueStatus();
-      expect(status.count).toBeGreaterThan(0);
-      expect(AsyncStorage.setItem).toHaveBeenCalled();
+      // Verify that AsyncStorage.setItem was called with the offline queue
+      expect(AsyncStorage.setItem).toHaveBeenCalledWith(
+        'offline_image_queue',
+        expect.any(String)
+      );
+      
+      // Get the actual data that was stored
+      const setItemCalls = (AsyncStorage.setItem as jest.Mock).mock.calls;
+      const lastCall = setItemCalls[setItemCalls.length - 1];
+      const storedData = JSON.parse(lastCall[1]);
+      
+      expect(storedData).toHaveLength(1);
+      expect(storedData[0]).toHaveProperty('uri');
+      expect(storedData[0]).toHaveProperty('timestamp');
     });
 
     it('should process offline queue successfully', async () => {
