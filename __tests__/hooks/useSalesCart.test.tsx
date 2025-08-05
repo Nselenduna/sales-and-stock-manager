@@ -1,6 +1,5 @@
 /* global setTimeout */
 
-import React from 'react';
 import { renderHook, act } from '@testing-library/react-hooks';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useSalesCart } from '../../hooks/useSalesCart';
@@ -15,7 +14,7 @@ const mockProduct = {
   name: 'Test Product',
   sku: 'TEST001',
   description: 'A test product',
-  unit_price: 1000, // £10.00
+  unit_price: 1000, // 1000 pence = 10.00 in currency
   quantity: 10,
   category: 'Test',
   image_url: null,
@@ -29,7 +28,7 @@ const mockProduct2 = {
   name: 'Test Product 2',
   sku: 'TEST002',
   description: 'Another test product',
-  unit_price: 2000, // £20.00
+  unit_price: 2000, // 2000 pence = 20.00 in currency
   quantity: 5,
   category: 'Test',
   image_url: null,

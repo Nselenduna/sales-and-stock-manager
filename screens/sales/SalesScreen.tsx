@@ -54,9 +54,20 @@ const SalesScreen: React.FC<SalesScreenProps> = ({ navigation }) => {
   }, [debouncedSearch]);
 
   const loadProducts = async () => {
+    if (!debouncedSearch.trim()) {
+      setProducts([]);
+      return;
+    }
+
     setIsLoadingProducts(true);
+    
+    // Set up timeout for the request
+    const timeoutPromise = new Promise((_, reject) => {
+      setTimeout(() => reject(new Error('Request timeout')), 10000); // 10 second timeout
+    });
+
     try {
-      const { data, error } = await supabase
+      const searchPromise = supabase
         .from('products')
         .select('*')
         .or(`name.ilike.%${debouncedSearch}%,sku.ilike.%${debouncedSearch}%,barcode.eq.${debouncedSearch}`)
@@ -64,11 +75,30 @@ const SalesScreen: React.FC<SalesScreenProps> = ({ navigation }) => {
         .order('name')
         .limit(20);
 
+      const { data, error } = await Promise.race([searchPromise, timeoutPromise]) as any;
+
       if (error) throw error;
       setProducts(data || []);
     } catch (error) {
       console.error('Failed to load products:', error);
-      Alert.alert('Error', 'Failed to load products');
+      
+      let errorMessage = 'Failed to load products';
+      if (error instanceof Error) {
+        if (error.message === 'Request timeout') {
+          errorMessage = 'Request timed out. Please check your connection and try again.';
+        } else if (error.message.includes('network') || error.message.includes('fetch')) {
+          errorMessage = 'Network error. Please check your internet connection.';
+        }
+      }
+      
+      Alert.alert(
+        'Error Loading Products',
+        errorMessage,
+        [
+          { text: 'Cancel', style: 'cancel' },
+          { text: 'Retry', onPress: () => loadProducts() }
+        ]
+      );
     } finally {
       setIsLoadingProducts(false);
     }
@@ -76,27 +106,88 @@ const SalesScreen: React.FC<SalesScreenProps> = ({ navigation }) => {
 
   const handleScanBarcode = useCallback(async (barcode: string) => {
     try {
-      const { data: product, error } = await supabase
+      // Set up timeout for the barcode lookup
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('Request timeout')), 8000); // 8 second timeout
+      });
+
+      const searchPromise = supabase
         .from('products')
         .select('*')
         .eq('barcode', barcode)
         .single();
 
-      if (error || !product) {
-        Alert.alert('Product Not Found', `No product found with barcode: ${barcode}`);
+      const { data: product, error } = await Promise.race([searchPromise, timeoutPromise]) as any;
+
+      if (error) {
+        if (error.code === 'PGRST116') {
+          // No rows returned
+          Alert.alert(
+            'Product Not Found', 
+            `No product found with barcode: ${barcode}`,
+            [
+              { text: 'OK', style: 'default' },
+              { text: 'Try Again', onPress: () => handleBarcodeScanPress() }
+            ]
+          );
+          return;
+        }
+        throw error;
+      }
+
+      if (!product) {
+        Alert.alert(
+          'Product Not Found', 
+          `No product found with barcode: ${barcode}`,
+          [
+            { text: 'OK', style: 'default' },
+            { text: 'Try Again', onPress: () => handleBarcodeScanPress() }
+          ]
+        );
         return;
       }
 
       if (product.quantity <= 0) {
-        Alert.alert('Out of Stock', `${product.name} is currently out of stock`);
+        Alert.alert(
+          'Out of Stock', 
+          `${product.name} is currently out of stock`,
+          [
+            { text: 'OK', style: 'default' },
+            { text: 'Scan Another', onPress: () => handleBarcodeScanPress() }
+          ]
+        );
         return;
       }
 
       await addToCart(product.id, 1);
-      Alert.alert('Added to Cart', `${product.name} added to cart`);
+      Alert.alert(
+        'Added to Cart', 
+        `${product.name} added to cart`,
+        [
+          { text: 'OK', style: 'default' },
+          { text: 'Scan Another', onPress: () => handleBarcodeScanPress() }
+        ]
+      );
     } catch (error) {
       console.error('Failed to add scanned product:', error);
-      Alert.alert('Error', 'Failed to add product to cart');
+      
+      let errorMessage = 'Failed to add product to cart';
+      if (error instanceof Error) {
+        if (error.message === 'Request timeout') {
+          errorMessage = 'Request timed out. Please check your connection and try again.';
+        } else if (error.message.includes('network') || error.message.includes('fetch')) {
+          errorMessage = 'Network error. Please check your internet connection.';
+        }
+      }
+      
+      Alert.alert(
+        'Error', 
+        errorMessage,
+        [
+          { text: 'Cancel', style: 'cancel' },
+          { text: 'Retry', onPress: () => handleScanBarcode(barcode) }
+        ]
+      );
     }
   }, [addToCart]);
 

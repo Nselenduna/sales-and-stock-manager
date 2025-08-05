@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
 import { render, fireEvent, act } from '@testing-library/react-native';
+import { formatCurrency } from '../../lib/currency';
 
 // Mock components
 const mockNavigate = jest.fn();
@@ -84,8 +85,8 @@ const SalesScreen = ({ navigation }: { navigation: any }) => {
           {cart.map(item => (
             <View key={item.id} testID={`cart-item-${item.id}`}>
               <Text>{item.name}</Text>
-              <Text>£{item.price.toFixed(2)} each</Text>
-              <Text testID={`item-total-${item.id}`}>£{(item.price * item.quantity).toFixed(2)}</Text>
+              <Text>{formatCurrency(item.price * 100)} each</Text>
+              <Text testID={`item-total-${item.id}`}>{formatCurrency(item.price * item.quantity * 100)}</Text>
               <TouchableOpacity
                 testID={`remove-item-${item.id}`}
                 onPress={() => removeFromCart(item.id)}
@@ -97,7 +98,7 @@ const SalesScreen = ({ navigation }: { navigation: any }) => {
 
           <View testID="cart-summary">
             <Text>Total:</Text>
-            <Text testID="cart-total">£{total.toFixed(2)}</Text>
+            <Text testID="cart-total">{formatCurrency(total * 100)}</Text>
           </View>
 
           <TouchableOpacity
@@ -149,7 +150,7 @@ describe('SalesScreen', () => {
       });
 
       expect(getByText('Test Product')).toBeTruthy();
-      expect(getByText('£10.00 each')).toBeTruthy();
+      expect(getByText(`${formatCurrency(1000)} each`)).toBeTruthy(); // 10.00 in pence
       expect(getByText('Total:')).toBeTruthy();
       expect(getByTestId('cart-total')).toBeTruthy();
       expect(getByTestId('item-total-1')).toBeTruthy();

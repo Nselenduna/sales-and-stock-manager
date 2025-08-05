@@ -1,6 +1,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Product } from '../lib/supabase';
+import { safeParseNumber, safeParseInt, calculateItemTotal, validateCartTotals } from '../lib/numberUtils';
 
 export interface CartItem {
   product: Product;
@@ -55,6 +56,14 @@ export const useSalesCart = () => {
   };
 
   const addItem = useCallback((product: Product, quantity: number = 1) => {
+    const safeQuantity = safeParseInt(quantity);
+    const safeUnitPrice = safeParseNumber(product.unit_price || 0);
+    
+    if (safeQuantity <= 0) {
+      console.warn('Invalid quantity for addItem:', quantity);
+      return;
+    }
+
     setCart(prevCart => {
       const existingItemIndex = prevCart.items.findIndex(
         item => item.product.id === product.id
@@ -64,33 +73,47 @@ export const useSalesCart = () => {
         // Update existing item
         const updatedItems = [...prevCart.items];
         const existingItem = updatedItems[existingItemIndex];
-        const newQuantity = existingItem.quantity + quantity;
+        const newQuantity = existingItem.quantity + safeQuantity;
         
         updatedItems[existingItemIndex] = {
           ...existingItem,
           quantity: newQuantity,
-          total_price: newQuantity * existingItem.unit_price,
+          total_price: calculateItemTotal(existingItem.unit_price, newQuantity),
         };
 
-        return {
+        const newTotal = updatedItems.reduce((sum, item) => sum + safeParseNumber(item.total_price), 0);
+        const newItemCount = updatedItems.reduce((sum, item) => sum + safeParseInt(item.quantity), 0);
+
+        const result = {
           items: updatedItems,
-          total: updatedItems.reduce((sum, item) => sum + item.total_price, 0),
-          itemCount: updatedItems.reduce((sum, item) => sum + item.quantity, 0),
+          total: newTotal,
+          itemCount: newItemCount,
         };
+
+        // Validate totals for consistency
+        const validation = validateCartTotals(updatedItems, newTotal);
+        if (!validation.isValid) {
+          console.warn('Cart total mismatch detected:', validation);
+        }
+
+        return result;
       } else {
         // Add new item
         const newItem: CartItem = {
           product,
-          quantity,
-          unit_price: product.unit_price || 0,
-          total_price: (product.unit_price || 0) * quantity,
+          quantity: safeQuantity,
+          unit_price: safeUnitPrice,
+          total_price: calculateItemTotal(safeUnitPrice, safeQuantity),
         };
 
         const updatedItems = [...prevCart.items, newItem];
+        const newTotal = updatedItems.reduce((sum, item) => sum + safeParseNumber(item.total_price), 0);
+        const newItemCount = updatedItems.reduce((sum, item) => sum + safeParseInt(item.quantity), 0);
+
         return {
           items: updatedItems,
-          total: updatedItems.reduce((sum, item) => sum + item.total_price, 0),
-          itemCount: updatedItems.reduce((sum, item) => sum + item.quantity, 0),
+          total: newTotal,
+          itemCount: newItemCount,
         };
       }
     });
@@ -102,10 +125,13 @@ export const useSalesCart = () => {
         item => item.product.id !== productId
       );
       
+      const newTotal = updatedItems.reduce((sum, item) => sum + safeParseNumber(item.total_price), 0);
+      const newItemCount = updatedItems.reduce((sum, item) => sum + safeParseInt(item.quantity), 0);
+      
       return {
         items: updatedItems,
-        total: updatedItems.reduce((sum, item) => sum + item.total_price, 0),
-        itemCount: updatedItems.reduce((sum, item) => sum + item.quantity, 0),
+        total: newTotal,
+        itemCount: newItemCount,
       };
     });
   }, []);
@@ -116,22 +142,27 @@ export const useSalesCart = () => {
       return;
     }
 
+    const safeQuantity = safeParseInt(quantity);
+
     setCart(prevCart => {
       const updatedItems = prevCart.items.map(item => {
         if (item.product.id === productId) {
           return {
             ...item,
-            quantity,
-            total_price: item.unit_price * quantity,
+            quantity: safeQuantity,
+            total_price: calculateItemTotal(item.unit_price, safeQuantity),
           };
         }
         return item;
       });
 
+      const newTotal = updatedItems.reduce((sum, item) => sum + safeParseNumber(item.total_price), 0);
+      const newItemCount = updatedItems.reduce((sum, item) => sum + safeParseInt(item.quantity), 0);
+
       return {
         items: updatedItems,
-        total: updatedItems.reduce((sum, item) => sum + item.total_price, 0),
-        itemCount: updatedItems.reduce((sum, item) => sum + item.quantity, 0),
+        total: newTotal,
+        itemCount: newItemCount,
       };
     });
   }, [removeItem]);

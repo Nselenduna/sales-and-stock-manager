@@ -1,38 +1,13 @@
-/**
- * Format a number as currency (in pence) to display format
- * @param amountInPence - Amount in pence (integer)
- * @param currency - Currency code (default: 'GBP')
- * @returns Formatted currency string
- */
-export const formatCurrency = (amountInPence: number, currency: string = 'GBP'): string => {
-  const amountInPounds = amountInPence / 100;
-  
-  return new Intl.NumberFormat('en-GB', {
-    style: 'currency',
-    currency: currency,
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(amountInPounds);
-};
-
-/**
- * Convert a price string to pence
- * @param priceString - Price string (e.g., "£10.50")
- * @returns Amount in pence
- */
-export const parsePriceToPence = (priceString: string): number => {
-  // Remove currency symbols and whitespace
-  const cleanPrice = priceString.replace(/[£$€,\s]/g, '');
-  
-  // Parse as float and convert to pence
-  const priceInPounds = parseFloat(cleanPrice);
-  
-  if (isNaN(priceInPounds)) {
-    return 0;
-  }
-  
-  return Math.round(priceInPounds * 100);
-};
+// Re-export currency utilities from the dedicated currency module
+export {
+  formatCurrency,
+  parsePriceToMinorUnits as parsePriceToPence,
+  setDefaultCurrency,
+  getDefaultCurrency,
+  getCurrencySymbol,
+  isSupportedCurrency,
+  SUPPORTED_CURRENCIES,
+} from './currency';
 
 /**
  * Format date for display

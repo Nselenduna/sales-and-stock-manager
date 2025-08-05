@@ -70,8 +70,19 @@ const BarcodeScannerScreen: React.FC<BarcodeScannerScreenProps> = ({
 
   useEffect(() => {
     (async () => {
-      const { status } = await Camera.requestCameraPermissionsAsync();
-      setHasPermission(status === 'granted');
+      try {
+        const { status } = await Camera.requestCameraPermissionsAsync();
+        setHasPermission(status === 'granted');
+        
+        if (status === 'denied') {
+          console.warn('Camera permission denied by user');
+        } else if (status === 'undetermined') {
+          console.warn('Camera permission is undetermined');
+        }
+      } catch (error) {
+        console.error('Error requesting camera permission:', error);
+        setHasPermission(false);
+      }
     })();
   }, []);
 
@@ -170,16 +181,34 @@ const BarcodeScannerScreen: React.FC<BarcodeScannerScreenProps> = ({
       <SafeAreaView style={styles.container}>
         <View style={styles.centerContainer}>
           <Icon name='camera-off' size={64} color='#FF3B30' />
-          <Text style={styles.errorText}>No access to camera</Text>
+          <Text style={styles.errorText}>Camera Access Required</Text>
           <Text style={styles.errorSubtext}>
-            Camera permission is required to scan barcodes
+            This app needs camera access to scan barcodes. Please enable camera permissions in your device settings.
           </Text>
-          <TouchableOpacity
-            style={styles.button}
-            onPress={() => navigation.goBack()}
-          >
-            <Text style={styles.buttonText}>Go Back</Text>
-          </TouchableOpacity>
+          <View style={styles.buttonContainer}>
+            <TouchableOpacity
+              style={styles.button}
+              onPress={async () => {
+                try {
+                  await Camera.openSettingsAsync();
+                } catch (error) {
+                  console.error('Failed to open settings:', error);
+                  Alert.alert(
+                    'Settings Unavailable',
+                    'Please manually enable camera permissions in your device settings.'
+                  );
+                }
+              }}
+            >
+              <Text style={styles.buttonText}>Open Settings</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.button, styles.secondaryButton]}
+              onPress={() => navigation.goBack()}
+            >
+              <Text style={[styles.buttonText, styles.secondaryButtonText]}>Go Back</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       </SafeAreaView>
     );
@@ -325,6 +354,18 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 16,
     fontWeight: '600',
+  },
+  buttonContainer: {
+    gap: 12,
+    alignItems: 'center',
+  },
+  secondaryButton: {
+    backgroundColor: 'transparent',
+    borderWidth: 1,
+    borderColor: '#007AFF',
+  },
+  secondaryButtonText: {
+    color: '#007AFF',
   },
   scanner: {
     ...StyleSheet.absoluteFillObject,
