@@ -3,6 +3,7 @@
         "codebar",
         "plpgsql",
         "supabase",
-        "TIMESTAMPTZ"
+        "TIMESTAMPTZ",
+        "WCAG"
     ]
 }

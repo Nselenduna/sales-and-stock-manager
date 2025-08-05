@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo, memo } from 'react';
 import {
   View,
   Text,
@@ -23,11 +23,7 @@ const SyncStatusBanner: React.FC<SyncStatusBannerProps> = ({
   onRetry,
   queueCount = 0,
 }) => {
-  if (status === 'idle') {
-    return null;
-  }
-
-  const getStatusConfig = () => {
+  const config = useMemo(() => {
     switch (status) {
       case 'syncing':
         return {
@@ -65,9 +61,11 @@ const SyncStatusBanner: React.FC<SyncStatusBannerProps> = ({
           text: 'Unknown status',
         };
     }
-  };
+  }, [status, message, queueCount]);
 
-  const config = getStatusConfig();
+  if (status === 'idle') {
+    return null;
+  }
 
   return (
     <View
@@ -144,4 +142,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default SyncStatusBanner; 
+export default memo(SyncStatusBanner); 

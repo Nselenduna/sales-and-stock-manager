@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useMemo, memo } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Image, ActivityIndicator } from 'react-native';
 import Icon from './Icon';
 import { Product } from '../lib/supabase';
@@ -30,8 +30,8 @@ const ProductCard: React.FC<ProductCardProps> = ({
     setImageError(true);
     setImageLoaded(false);
   }, []);
-  const getSyncStatusIcon = (syncStatus: string) => {
-    switch (syncStatus) {
+  const syncIcon = useMemo(() => {
+    switch (product.sync_status) {
       case 'synced':
         return { name: 'checkmark-circle', color: '#34C759' };
       case 'pending':
@@ -43,19 +43,13 @@ const ProductCard: React.FC<ProductCardProps> = ({
       default:
         return { name: 'info', color: '#666' };
     }
-  };
+  }, [product.sync_status]);
 
-  const getStockStatusColor = (quantity: number, threshold: number) => {
-    if (quantity === 0) return '#FF3B30';
-    if (quantity <= threshold) return '#FF9500';
+  const stockColor = useMemo(() => {
+    if (product.quantity === 0) return '#FF3B30';
+    if (product.quantity <= product.low_stock_threshold) return '#FF9500';
     return '#34C759';
-  };
-
-  const syncIcon = getSyncStatusIcon(product.sync_status);
-  const stockColor = getStockStatusColor(
-    product.quantity,
-    product.low_stock_threshold
-  );
+  }, [product.quantity, product.low_stock_threshold]);
 
   return (
     <TouchableOpacity
@@ -105,7 +99,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
                 source={{ uri: product.image_url }}
                 style={[
                   styles.productImage,
-                  { opacity: imageLoaded ? 1 : 0 }
+                  imageLoaded ? styles.imageLoaded : styles.imageLoading
                 ]}
                 onLoad={handleImageLoad}
                 onError={handleImageError}
@@ -231,6 +225,12 @@ const styles = StyleSheet.create({
     height: 120,
     borderRadius: 8,
   },
+  imageLoaded: {
+    opacity: 1,
+  },
+  imageLoading: {
+    opacity: 0,
+  },
   imagePlaceholder: {
     width: '100%',
     height: 120,
@@ -291,4 +291,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default ProductCard;
+export default memo(ProductCard);

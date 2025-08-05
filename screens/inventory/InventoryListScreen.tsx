@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, memo, useRef } from 'react';
 import {
   View,
   Text,
@@ -7,8 +7,8 @@ import {
   RefreshControl,
   Alert,
   TouchableOpacity,
+  FlatList,
 } from 'react-native';
-import { FlashList } from '@shopify/flash-list';
 import { useAuthStore } from '../../store/authStore';
 import { supabase, Product } from '../../lib/supabase';
 import ProductCard from '../../components/ProductCard';
@@ -26,9 +26,6 @@ interface InventoryListScreenProps {
   navigation: any; // eslint-disable-line @typescript-eslint/no-explicit-any
 }
 
-// Constants for FlashList performance optimization
-const ESTIMATED_ITEM_SIZE = 120;
-
 const InventoryListScreen: React.FC<InventoryListScreenProps> = ({
   navigation,
 }) => {
@@ -43,6 +40,8 @@ const InventoryListScreen: React.FC<InventoryListScreenProps> = ({
   >('all');
   const [page, setPage] = useState(0);
   const [hasMore, setHasMore] = useState(true);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const isInitialLoad = useRef(true);
 
   const { debouncedValue: debouncedSearchQuery, isSearching } =
     useDebouncedSearch(searchQuery, 300);
@@ -56,7 +55,7 @@ const InventoryListScreen: React.FC<InventoryListScreenProps> = ({
   );
 
   const fetchProducts = useCallback(
-    async (refresh = false) => {
+    async (refresh = false, currentSortOrder = sortOrder) => {
       if (refresh) {
         setPage(0);
         setHasMore(true);
@@ -65,7 +64,11 @@ const InventoryListScreen: React.FC<InventoryListScreenProps> = ({
       if (!hasMore && !refresh) return;
 
       try {
-        setLoading(true);
+        if (refresh) {
+          setLoading(true);
+        } else {
+          setIsLoadingMore(true);
+        }
         setSyncing();
 
         const pageSize = 20;
@@ -74,7 +77,7 @@ const InventoryListScreen: React.FC<InventoryListScreenProps> = ({
         const { data, error } = await supabase
           .from('products')
           .select('*')
-          .order('name', { ascending: sortOrder === 'asc' })
+          .order('name', { ascending: currentSortOrder === 'asc' })
           .range(pageIndex * pageSize, (pageIndex + 1) * pageSize - 1);
 
         if (error) throw error;
@@ -97,20 +100,32 @@ const InventoryListScreen: React.FC<InventoryListScreenProps> = ({
         Alert.alert('Error', 'Failed to load inventory');
       } finally {
         setLoading(false);
+        setIsLoadingMore(false);
       }
     },
-    [sortOrder, page, hasMore, setSyncing, setSuccess, setFailed]
+    [page, hasMore, setSyncing, setSuccess, setFailed]
   );
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
-    await fetchProducts(true);
+    await fetchProducts(true, sortOrder);
     setRefreshing(false);
-  }, [fetchProducts]);
+  }, [sortOrder]);
 
+  // Initial data loading
   useEffect(() => {
-    fetchProducts(true);
-  }, [sortOrder, fetchProducts]);
+    if (isInitialLoad.current) {
+      fetchProducts(true, sortOrder);
+      isInitialLoad.current = false;
+    }
+  }, []); // Only run once on mount
+
+  // Refetch when sort order changes
+  useEffect(() => {
+    if (!isInitialLoad.current) {
+      fetchProducts(true, sortOrder);
+    }
+  }, [sortOrder]);
 
   const filteredProducts = useMemo(() => {
     let filtered = products;
@@ -180,10 +195,10 @@ const InventoryListScreen: React.FC<InventoryListScreenProps> = ({
   }, []);
 
   const handleEndReached = useCallback(() => {
-    if (!loading && hasMore) {
-      fetchProducts();
+    if (!isLoadingMore && hasMore && !loading) {
+      fetchProducts(false, sortOrder);
     }
-  }, [loading, hasMore, fetchProducts]);
+  }, [isLoadingMore, hasMore, loading, sortOrder]);
 
   const renderProductCard = useCallback(
     ({ item }: { item: Product }) => (
@@ -240,14 +255,14 @@ const InventoryListScreen: React.FC<InventoryListScreenProps> = ({
   );
 
   const renderFooter = useCallback(() => {
-    if (!loading || refreshing) return null;
+    if (!isLoadingMore || !hasMore) return null;
     return (
       <View style={styles.footerLoader}>
         <ActivityIndicator size='small' color='#007AFF' />
         <Text style={styles.footerText}>Loading more...</Text>
       </View>
     );
-  }, [loading, refreshing]);
+  }, [isLoadingMore, hasMore]);
 
   if (loading && page === 0) {
     return (
@@ -278,7 +293,7 @@ const InventoryListScreen: React.FC<InventoryListScreenProps> = ({
         sortOrder={sortOrder}
         onSortToggle={handleSortToggle}
       />
-      <FlashList
+      <FlatList
         data={filteredProducts}
         renderItem={renderProductCard}
         keyExtractor={item => item.id}
@@ -289,9 +304,17 @@ const InventoryListScreen: React.FC<InventoryListScreenProps> = ({
         }
         ListEmptyComponent={renderEmptyComponent}
         ListFooterComponent={renderFooter}
-        estimatedItemSize={ESTIMATED_ITEM_SIZE}
         onEndReached={handleEndReached}
         onEndReachedThreshold={0.5}
+        removeClippedSubviews={true}
+        maxToRenderPerBatch={10}
+        windowSize={10}
+        initialNumToRender={10}
+        getItemLayout={(data, index) => ({
+          length: 120,
+          offset: 120 * index,
+          index,
+        })}
       />
       <FloatingActionButton
         onPress={handleAddProduct}
@@ -365,4 +388,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default React.memo(InventoryListScreen);
+export default memo(InventoryListScreen);

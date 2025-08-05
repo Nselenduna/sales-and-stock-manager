@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { View, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
 import Icon from './Icon';
 
@@ -82,4 +82,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default SearchBar;
+export default memo(SearchBar);

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from 'react';
 import {
   View,
   Text,
@@ -30,26 +30,26 @@ const FilterBar: React.FC<FilterBarProps> = ({
   return (
     <View style={styles.container}>
       <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-        {filters.map(filter => (
+        {filters.map(({ key, label }) => (
           <TouchableOpacity
-            key={filter.key}
+            key={key}
             style={[
               styles.filterButton,
-              activeFilter === filter.key && styles.filterButtonActive,
+              activeFilter === key && styles.filterButtonActive,
             ]}
-            onPress={() => onFilterChange(filter.key)}
+            onPress={() => onFilterChange(key)}
             accessible={true}
-            accessibilityLabel={`Filter by ${filter.label}`}
+            accessibilityLabel={`Filter by ${label}`}
             accessibilityRole='button'
-            accessibilityState={{ selected: activeFilter === filter.key }}
+            accessibilityState={{ selected: activeFilter === key }}
           >
             <Text
               style={[
                 styles.filterButtonText,
-                activeFilter === filter.key && styles.filterButtonTextActive,
+                activeFilter === key && styles.filterButtonTextActive,
               ]}
             >
-              {filter.label}
+              {label}
             </Text>
           </TouchableOpacity>
         ))}
@@ -114,4 +114,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default FilterBar;
+export default memo(FilterBar);
