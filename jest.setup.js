@@ -1,4 +1,4 @@
-// Jest setup file for React Native testing
+import '@testing-library/jest-native/extend-expect';
 
 // Mock AsyncStorage
 jest.mock('@react-native-async-storage/async-storage', () =>
@@ -14,7 +14,6 @@ jest.mock('react-native-safe-area-context', () => ({
 
 // Mock @react-navigation/native
 jest.mock('@react-navigation/native', () => ({
-  ...jest.requireActual('@react-navigation/native'),
   useNavigation: () => ({
     navigate: jest.fn(),
     goBack: jest.fn(),
@@ -67,22 +66,3 @@ global.fetch = jest.fn();
 global.Alert = {
   alert: jest.fn(),
 };
-
-// Console error suppression for expected warnings
-const originalError = console.error;
-beforeAll(() => {
-  console.error = (...args) => {
-    if (
-      typeof args[0] === 'string' &&
-      (args[0].includes('Warning: ReactDOM.render is no longer supported') ||
-        args[0].includes('Warning: Animated: `useNativeDriver`'))
-    ) {
-      return;
-    }
-    originalError.call(console, ...args);
-  };
-});
-
-afterAll(() => {
-  console.error = originalError;
-});
