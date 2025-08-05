@@ -33,6 +33,7 @@ import CustomerManagementScreen from '../screens/sales/CustomerManagementScreen'
 import InventoryAnalyticsScreen from '../screens/inventory/InventoryAnalyticsScreen';
 import SalesForecastingScreen from '../screens/sales/SalesForecastingScreen';
 import ReportsDashboardScreen from '../screens/reports/ReportsDashboardScreen';
+import ReportDetailScreen from '../screens/reports/ReportDetailScreen';
 
 // User Management Screens
 import UserManagementScreen from '../screens/user/UserManagementScreen';
@@ -84,7 +85,7 @@ const AdminTabNavigator = () => {
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
-        tabBarIcon: ({ focused: _focused, color, size }) => {
+        tabBarIcon: ({ color, size }) => {
           let iconName = 'settings';
           if (route.name === 'Inventory') {
             iconName = 'cube';
@@ -115,7 +116,7 @@ const StaffTabNavigator = () => {
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
-        tabBarIcon: ({ focused: _focused, color, size }) => {
+        tabBarIcon: ({ color, size }) => {
           let iconName = 'person';
           if (route.name === 'Inventory') {
             iconName = 'cube';
@@ -146,7 +147,7 @@ const ViewerTabNavigator = () => {
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
-        tabBarIcon: ({ focused: _focused, color, size }) => {
+        tabBarIcon: ({ color, size }) => {
           let iconName = 'eye';
           if (route.name === 'Inventory') {
             iconName = 'cube';
@@ -174,7 +175,7 @@ const ViewerTabNavigator = () => {
 
 // Main App Navigator
 const AppNavigator = () => {
-  const { user: _user, loading, isAuthenticated, userRole } = useAuthStore();
+  const { loading, isAuthenticated, userRole } = useAuthStore();
 
   if (loading) {
     return <LoadingScreen />;
@@ -349,6 +350,13 @@ const AppNavigator = () => {
         <Stack.Screen
           name='Reports'
           component={ReportsDashboardScreen}
+          options={{
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name='ReportDetail'
+          component={ReportDetailScreen}
           options={{
             headerShown: false,
           }}
