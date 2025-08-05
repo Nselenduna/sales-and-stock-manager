@@ -8,7 +8,7 @@
  * @param value - Value to parse as number
  * @returns Parsed number or 0 if invalid
  */
-export const safeParseNumber = (value: any): number => {
+export const safeParseNumber = (value: unknown): number => {
   if (typeof value === 'number') {
     return isNaN(value) || !isFinite(value) ? 0 : value;
   }
@@ -26,7 +26,7 @@ export const safeParseNumber = (value: any): number => {
  * @param value - Value to parse as integer
  * @returns Parsed integer or 0 if invalid
  */
-export const safeParseInt = (value: any): number => {
+export const safeParseInt = (value: unknown): number => {
   const num = safeParseNumber(value);
   return Math.floor(Math.abs(num)); // Ensure positive integer
 };
@@ -110,26 +110,27 @@ export const calculateItemTotal = (unitPrice: number, quantity: number): number 
  * @param item - Cart item to validate
  * @returns Sanitized cart item
  */
-export const sanitizeCartItem = (item: any): {
+export const sanitizeCartItem = (item: unknown): {
   isValid: boolean;
-  sanitized: any;
+  sanitized: unknown;
   errors: string[];
 } => {
   const errors: string[] = [];
+  const cartItem = item as Record<string, unknown>;
   
   // Validate product
-  if (!item.product || typeof item.product.id !== 'string') {
+  if (!cartItem.product || typeof (cartItem.product as Record<string, unknown>).id !== 'string') {
     errors.push('Invalid product data');
   }
   
   // Validate and sanitize quantity
-  const quantity = safeParseInt(item.quantity);
+  const quantity = safeParseInt(cartItem.quantity);
   if (!isValidQuantity(quantity)) {
     errors.push('Invalid quantity');
   }
   
   // Validate and sanitize unit price
-  const unitPrice = safeParseNumber(item.unit_price);
+  const unitPrice = safeParseNumber(cartItem.unit_price);
   if (!isValidPrice(unitPrice)) {
     errors.push('Invalid unit price');
   }
@@ -138,7 +139,7 @@ export const sanitizeCartItem = (item: any): {
   const totalPrice = calculateItemTotal(unitPrice, quantity);
   
   const sanitized = {
-    ...item,
+    ...cartItem,
     quantity,
     unit_price: unitPrice,
     total_price: totalPrice,
@@ -157,12 +158,12 @@ export const sanitizeCartItem = (item: any): {
  * @param reportedTotal - Reported total to validate against
  * @returns Validation result
  */
-export const validateCartTotals = (items: any[], reportedTotal: number): {
+export const validateCartTotals = (items: unknown[], reportedTotal: number): {
   isValid: boolean;
   calculatedTotal: number;
   difference: number;
 } => {
-  const calculatedTotal = safeSum(items.map(item => safeParseNumber(item.total_price)));
+  const calculatedTotal = safeSum(items.map(item => safeParseNumber((item as Record<string, unknown>).total_price)));
   const difference = Math.abs(calculatedTotal - safeParseNumber(reportedTotal));
   
   // Allow for tiny floating point differences (< 1 cent)

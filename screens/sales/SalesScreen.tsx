@@ -21,7 +21,10 @@ import SyncStatusBanner from '../../components/SyncStatusBanner';
 import { formatCurrency } from '../../lib/utils';
 
 interface SalesScreenProps {
-  navigation: any;
+  navigation: {
+    goBack: () => void;
+    navigate: (screen: string, params?: Record<string, unknown>) => void;
+  };
 }
 
 const SalesScreen: React.FC<SalesScreenProps> = ({ navigation }) => {
@@ -51,7 +54,7 @@ const SalesScreen: React.FC<SalesScreenProps> = ({ navigation }) => {
     } else {
       setProducts([]);
     }
-  }, [debouncedSearch]);
+  }, [debouncedSearch, loadProducts]);
 
   const loadProducts = async () => {
     if (!debouncedSearch.trim()) {
@@ -75,7 +78,10 @@ const SalesScreen: React.FC<SalesScreenProps> = ({ navigation }) => {
         .order('name')
         .limit(20);
 
-      const { data, error } = await Promise.race([searchPromise, timeoutPromise]) as any;
+      const { data, error } = await Promise.race([searchPromise, timeoutPromise]) as {
+        data?: Product[];
+        error?: Error;
+      };
 
       if (error) throw error;
       setProducts(data || []);
@@ -117,7 +123,10 @@ const SalesScreen: React.FC<SalesScreenProps> = ({ navigation }) => {
         .eq('barcode', barcode)
         .single();
 
-      const { data: product, error } = await Promise.race([searchPromise, timeoutPromise]) as any;
+      const { data: product, error } = await Promise.race([searchPromise, timeoutPromise]) as {
+        data?: Product;
+        error?: Error;
+      };
 
       if (error) {
         if (error.code === 'PGRST116') {
@@ -189,7 +198,7 @@ const SalesScreen: React.FC<SalesScreenProps> = ({ navigation }) => {
         ]
       );
     }
-  }, [addToCart]);
+  }, [addToCart, handleBarcodeScanPress]);
 
   const handleBarcodeScanPress = async () => {
     try {
@@ -203,7 +212,11 @@ const SalesScreen: React.FC<SalesScreenProps> = ({ navigation }) => {
           'Camera access is needed to scan barcodes. Please enable camera permissions in your device settings.',
           [
             { text: 'Cancel', style: 'cancel' },
-            { text: 'Open Settings', onPress: () => Camera.openSettingsAsync() }
+            { text: 'Open Settings', onPress: () => {
+              if (Camera.openSettingsAsync) {
+                Camera.openSettingsAsync();
+              }
+            } }
           ]
         );
       }

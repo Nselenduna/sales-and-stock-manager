@@ -155,14 +155,14 @@ export const getCurrencySymbol = (currencyCode?: string): string => {
  * Convert amount between different currencies
  * Note: This is a placeholder for future implementation with exchange rates
  * @param amount - Amount in minor units
- * @param fromCurrency - Source currency code
- * @param toCurrency - Target currency code
+ * @param _fromCurrency - Source currency code
+ * @param _toCurrency - Target currency code
  * @returns Converted amount in minor units
  */
 export const convertCurrency = (
   amount: number,
-  fromCurrency: string,
-  toCurrency: string
+  _fromCurrency: string,
+  _toCurrency: string
 ): number => {
   // TODO: Implement with real exchange rates
   console.warn('Currency conversion not implemented. Returning original amount.');

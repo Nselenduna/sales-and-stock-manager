@@ -13,8 +13,15 @@ import { barcodeScanner, BarcodeScanResult } from '../lib/barcodeScanner';
 import Icon from '../components/Icon';
 
 // Conditional imports to prevent crashes during development
-let BarCodeScanner: any;
-let Camera: any;
+let BarCodeScanner: {
+  Constants: {
+    BarCodeType: Record<string, string>;
+  };
+};
+let Camera: {
+  requestCameraPermissionsAsync: () => Promise<{ status: string }>;
+  openSettingsAsync?: () => Promise<void>;
+};
 
 try {
   BarCodeScanner = require('expo-barcode-scanner');
@@ -42,11 +49,11 @@ try {
 }
 
 const { width, height } = Dimensions.get('window');
-const SCREEN_WIDTH = width;
-const SCREEN_HEIGHT = height;
 
 interface BarcodeScannerScreenProps {
-  navigation: any;
+  navigation: {
+    goBack: () => void;
+  };
   route: {
     params: {
       onBarcodeScanned: (result: BarcodeScanResult) => void;
@@ -66,7 +73,7 @@ const BarcodeScannerScreen: React.FC<BarcodeScannerScreenProps> = ({
     'auto'
   );
   const [cameraType, setCameraType] = useState<'front' | 'back'>('back');
-  const scannerRef = useRef<BarCodeScanner>(null);
+  const scannerRef = useRef<unknown>(null);
 
   useEffect(() => {
     (async () => {
